@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google</title>
+    
+    <style>
+        :root {
+            /* Define variables for a clean, professional look */
+            --primary-color: #4c68ff; /* Matches your app's main color */
+            --text-color: #333333;
+            --bg-color: #f8f8f8;
+            --font-stack: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+        
+        body {
+            font-family: var(--font-stack);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+        }
+        
+        /* 🔥 THE CSS BOLDING FIX 🔥 */
+        /* This ensures that <strong> text is visibly bold (weight 700), 
+           addressing why it might not have appeared bold previously. */
+        strong {
+            font-weight: 700; 
+        }
+
+        .terms-container {
+            max-width: 900px;
+            margin: 50px auto;
+            padding: 40px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            color: var(--primary-color);
+            font-size: 2.5em;
+            border-bottom: 3px solid var(--primary-color);
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+        }
+        
+        h2 {
+            color: var(--primary-color);
+            font-size: 1.6em;
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+        
+        p, ul {
+            line-height: 1.6;
+            font-size: 1.05em;
+            margin-bottom: 20px;
+        }
+        
+        ul {
+            padding-left: 20px;
+        }
+        
+        li {
+            margin-bottom: 10px;
+        }
+
+        .update-date {
+            display: block;
+            margin-top: -20px;
+            margin-bottom: 40px;
+            font-size: 0.9em;
+            color: #777;
+        }
+
+        /* Highlight for Liability Section */
+        .liability-warning {
+            color: #d93025; /* Red warning text */
+            font-weight: bold;
+            font-style: italic;
+        }
+
+        /* STYLES for Footer and Button */
+        .footer-actions {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            text-align: right; /* Align button to the right */
+        }
+
+        .back-button {
+            padding: 10px 20px;
+            font-size: 1em;
+            font-weight: bold;
+            color: white;
+            background-color: var(--primary-color);
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .back-button:hover {
+            background-color: #3a50d8; /* Slightly darker shade on hover */
+        }
+    </style>
+    </head>
+<body>
+
+    <div class="terms-container">
+        <h1>Terms of Service - Starlight Games</h1>
+        <span class="update-date">Last Updated: November 14, 2025</span>
+
+        <h2>1. Acceptance of Terms</h2>
+        <p>
+            By accessing or using the Starlight Games application ("the Service"), you agree to be bound by these Terms of Service ("Terms"). 
+            If you disagree with any part of the terms, you <strong>must not</strong> use the Service.
+        </p>
+
+        <h2>2. User Responsibility and Liability Waiver</h2>
+        <p>
+            The Service provides access to external tools and third-party content. You expressly acknowledge and agree to the following mandatory conditions:
+        </p>
+        <ul>
+            <li>You are <strong>solely responsible</strong> for all activity that occurs during your use of the Service, including, but not limited to, any network or institutional policy violations.</li>
+            <li>You must comply with all local, state, national, and network usage policies.</li>
+            <li>
+                <span class="liability-warning">LIABILITY WAIVER: You agree that the creator/owner of Starlight Games assumes NO LIABILITY for your actions. You agree to hold the owner harmless from any claims, damages, or legal/disciplinary actions resulting from your use of the Service.</span>
+            </li>
+            <li>You agree not to use the Service for any unlawful or prohibited activity.</li>
+        </ul>
+
+        <h2>3. Use of Proxy and External Services</h2>
+        <p>
+            The Service includes features designed to access external content, such as the "Surf Web Freely" button. These tools are provided strictly <strong>"as is" and without warranty</strong> regarding their availability or compliance with external networks. 
+            We do not monitor or control the content accessed via these external tools. Any attempt to use these features to bypass institutional security or content filtering is entirely your responsibility and is undertaken <strong>at your own risk</strong>.
+        </p>
+
+        <h2>4. Content and Copyright</h2>
+        <p>
+            Starlight Games does not host the external games or web content accessed through its platform. All third-party content, games, and links are the property of their respective owners. Starlight Games does not claim ownership or responsibility for the content, privacy policies, or practices of any third-party websites or services.
+        </p>
+
+        <h2>5. Termination</h2>
+        <p>
+            We reserve the right to terminate or suspend access to our Service immediately, without prior notice or liability, for any reason whatsoever, including, without limitation, if you breach these Terms.
+        </p>
+
+        <h2>6. Changes to Terms</h2>
+        <p>
+            We reserve the right, at our sole discretion, to modify or replace these Terms at any time. We will attempt to provide reasonable notice prior to any major revisions taking effect. By continuing to access or use our Service after those revisions become effective, you agree to be bound by the revised terms.
+        </p>
+        <h2>7. Community chat</h2>
+        <p>
+            We are <strong>NOT RESPONSIBLE</strong> for the chat logs in starlight games!
+        </p>
+        <h2>8. Music Playlist</h2>
+
+        <p>
+            We are <strong>NOT RESPONSIBLE</strong> for the 'My Playlist' button to have inappropiate songs inside that affects you/their life
+         </p>
+        <h2>9. Contact Information</h2>
+        <p>
+            If you have any questions about these Terms, please contact the owner/creator. 
+        </p>
+
+        <div class="footer-actions">
+            <button class="back-button" onclick="redirectToApp()">
+                ← Back to App
+            </button>
+        </div>
+
+    </div>
+<script>
+    function redirectToApp() {
+        // IMPORTANT: Change the URL below to your application's actual link.
+        window.location.href = '/'; 
+    }
+    
+     document.addEventListener('DOMContentLoaded', function() {
+                  // Check if this window was opened by another window.
+                  // If window.opener is null, this is the *original* tab.
+                  if (!window.opener) {
+
+                      // Try to open the new 'about:blank' tab
+                      const newWindow = window.open('about:blank', '_blank');
+
+                      if (newWindow) {
+                          // Success! Popup was not blocked.
+
+                          // 1. Get the current page's entire HTML
+                          const currentHtml = document.documentElement.outerHTML;
+
+                          // 2. Write that HTML into the new 'about:blank' tab
+                          newWindow.document.write(currentHtml);
+                          newWindow.document.close();
+
+                          // 3. Redirect the *original* tab (this one) to Google
+                          window.location.replace('https://www.google.com');
+
+                      } else {
+                          // Failure! Popup was blocked.
+                          alert("Please enable popups!");
+                          // We don't redirect, so the user can still use the site
+                          // in this original tab.
+                      }
+                  }
+                  // If window.opener *exists*, this is the *newly opened* tab,
+                  // so we do nothing and let the page load normally.
+              });
+</script>
+</body>
+</html>
