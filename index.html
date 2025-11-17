@@ -980,7 +980,6 @@
     </div>
 
     <script>
-      setTimeout(() => {
      document.addEventListener('DOMContentLoaded', function() {
                   // Check if this window was opened by another window.
                   // If window.opener is null, this is the *original* tab.
@@ -1011,7 +1010,7 @@
                   }
                   // If window.opener *exists*, this is the *newly opened* tab,
                   // so we do nothing and let the page load normally.
-              });}, 100);
+              });
       // --- QUOTE ROTATOR SCRIPT (RANDOMIZED) ---
       const quoteDisplay = document.getElementById('quote-display');
       const quotes = [
