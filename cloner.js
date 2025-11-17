@@ -1,4 +1,4 @@
-settimeout(() =>{
+setTimeout(() =>{
 // cloner.js content:
 document.addEventListener('DOMContentLoaded', function() {
     
