@@ -1306,8 +1306,29 @@
           }
       function refreshIframe() {
 // 1. Get the current source URL.
-document.getElementById('iframeEl').contentWindow.location.reload();
-}
+// 1. Get the current URL that the iframe is *actually* displaying.
+    // NOTE: This will only work if the content is SAME-ORIGIN! 
+    // If it's cross-origin, you must use iframe.src (the original attribute value).
+    let currentPath;
+    try {
+        currentPath = iframeEl.contentWindow.location.href;
+    } catch (e) {
+        // Fallback for cross-origin or security restriction: use the attribute value.
+        currentPath = iframeEl.src; 
+    }
+
+    // 2. Create a new timestamp to use as a unique query parameter.
+    const uniqueTimestamp = new Date().getTime();
+    
+    // 3. Construct the new, unique URL with a cache-buster.
+    // Check if the URL already has query parameters (with '?') or not.
+    const separator = currentPath.includes('?') ? '&' : '?';
+    const newSrc = currentPath + separator + '_refresh=' + uniqueTimestamp;
+
+    // 4. Set the new unique source, forcing a fresh load.
+    iframe.src = newSrc;
+    
+    console.log('Iframe refresh triggered with cache-buster:', newSrc);}
     </script>
     <script>
       let blurEnabled = true;
