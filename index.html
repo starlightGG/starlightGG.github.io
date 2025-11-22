@@ -1063,134 +1063,75 @@
 
     <script>
 
-      // --- QUOTE ROTATOR SCRIPT (RANDOMIZED) ---
-      const quoteDisplay = document.getElementById('quote-display');
-      const quotes = [
-        // --- Meta / Fourth Wall Breaking ---
-        "This is not a bug, it's an undocumented feature.",
-        "Your save file is safe. We think.",
-        "Achievement Unlocked: Read a loading screen tip.",
-        "If you can read this, you're not playing yet. Go play.",
-        "Are you still there? The game misses you.",
-        "Shhh... I'm supposed to be rendering a beautiful landscape right now.",
-        "// TODO: Write a funny quote here.",
-        "This loading screen is brought to you by the art team. They're very proud.",
-        "Don't tell the other NPCs, but you're my favorite player.",
-        "This text was randomly generated. Or was it?",
-        "Polishing the pixels to a mirror shine.",
-        "Don't tap on the glass, you'll scare the code.",
-        "If you see the developer, tell them I need a raise.",
-        "This loading screen is hiding another loading screen.",
-        "Reticulating splines... I have no idea what that means either.",
-        "Hold on, we're converting the fun into a playable format.",
-        "Calibrating the difficulty to 'Slightly Unfair'.",
+// --- QUOTE ROTATOR SCRIPT (FETCH FROM TXT) ---
 
-        // --- Classic Gamer Problems & Habits ---
-        "It was definitely lag.",
-        "Just one more level... he said, five hours ago.",
-        "I paused my game to be here. You're welcome.",
-        "I have 99 potions, but I'll never use them 'just in case'.",
-        "My inventory is 90% vendor trash and 10% regret.",
-        "Spent two hours creating a character I'll only ever see the back of.",
-        "That moment when you forget if you saved.",
-        "Press 'F' to pay respects to my social life.",
-        "Searching every pot for a single gold coin. It's a living.",
-        "Remember to stretch. And blink. Blinking is important.",
-        "Quicksaving before talking to a friendly NPC. You never know.",
-        "That feeling when the boss has a second health bar. And then a third.",
-        "Yes, I did loot that peasant's house for a single apple. Don't judge me.",
-        "My other character is a level 99 something-or-other.",
-        "Blaming my teammates is a valid strategy.",
+const quoteDisplay = document.getElementById('quote-display');
+const quoteFilePath = 'quotes.txt'; // <-- Set your text file path here
 
-        // --- Sarcastic / Fake "Pro-Tips" ---
-        "Pro-Tip: Standing in the fire makes you warmer.",
-        "Remember, the real treasure is the monsters we slayed along the way.",
-        "That big red barrel is probably full of health potions.",
-        "To defeat the boss, hit it until it dies.",
-        "Running with scissors is a valid tactical choice.",
-        "Licking the screen will not reveal secret items. We tried.",
-        "Fun fact: The 'S' in 'Loot Box' stands for 'Skill'.",
-        "That 'shortcut' is definitely not a trap.",
-        "If an NPC repeats the same dialogue, say it back to them louder to proceed.",
-        "That suspiciously empty, large room is definitely a safe place for a break.",
-        "Friendly fire isn't.",
-        "The villain's long monologue is the perfect time to check your phone.",
-        "Alerting the guards is a great way to meet new people.",
+let quotes = []; // This array will be populated by the fetch request
+let usedQuoteIndices = [];
 
-        // --- NPC / World Logic Jokes ---
-        "I used to be a hero like you, then I took a loading screen to the knee.",
-        "Why do all these 'ancient, sealed tombs' have perfectly working torches?",
-        "That guard will forget you murdered his friend in about 30 seconds. Just crouch.",
-        "Welcome, hero! Please solve our world-ending crisis by collecting 10 wolf pelts.",
-        "I can carry 15 swords, but a single quest item is too heavy. It's complicated.",
-        "Don't mind me, just standing in this corner waiting for you to trigger my quest.",
-        "Sure, the world is ending, but have you seen my lost cat?",
-        "I'm programmed to find your lack of skill disturbing.",
-        "Is that a legendary sword, or are you just happy to see me?",
-        "That 'impenetrable' fortress has a very large, unguarded sewer pipe.",
+// Function to fetch the quotes from the text file
+async function loadQuotes() {
+    try {
+        const response = await fetch(quoteFilePath);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const text = await response.text();
+        
+        // Split the text into an array, one item per line, and filter out empty lines
+        quotes = text.split('\n').map(quote => quote.trim()).filter(quote => quote.length > 0);
+        
+        console.log(`Successfully loaded ${quotes.length} quotes.`);
 
-        // --- Just Plain Silly / Puns ---
-        "Never trust an atom. They make up everything.",
-        "404: Witty quote not found.",
-        "Powered by caffeine and questionable life choices.",
-        "Warning: May contain traces of fun.",
-        "If at first you don't succeed, blame the controller.",
-        "On a scale of 1 to 10, what is your favorite color of the alphabet?",
-        "This game is 10% skill, 20% luck, and 70% wondering where you left your keys.",
-        "What do you call a magic owl? Hoodini.",
-        "Why don't skeletons fight each other? They don't have the guts.",
-        "Compiling shaders... and my thoughts.",
-        "I'm on a seafood diet. I see food, and I click it.",
-        "Buffering... please wait while I remember the joke.",
-        "Error 418: I'm a teapot.",
-        "This is my favorite quote on the citadel."
-      ];
-      // Assuming 'quotes' is an array of strings defined elsewhere
-      // e.g., const quotes = ["Quote 1", "Quote 2", "Quote 3", "Quote 4"];
+        // Once loaded, start the display routine
+        updateQuote();
+        setInterval(updateQuote, 5000); // 5000 milliseconds = 5 seconds
 
-      // Assuming 'quoteDisplay' is a reference to your HTML element
-      // e.g., const quoteDisplay = document.getElementById('quote-display');
+    } catch (error) {
+        console.error('Failed to load quotes:', error);
+        if (quoteDisplay) {
+            quoteDisplay.textContent = "Error: Failed to load quotes file. (Check console)";
+        }
+    }
+}
 
-      // This new array will store the indices of quotes we've already shown
-      let usedQuoteIndices = [];
 
-      function updateQuote() {
-          if (quoteDisplay) {
-              // Fade out the current quote
-              quoteDisplay.style.opacity = 0;
+function updateQuote() {
+    // Only proceed if quotes have been loaded and the display element exists
+    if (quoteDisplay && quotes.length > 0) {
+        // Fade out the current quote
+        quoteDisplay.style.opacity = 0;
 
-              // After the fade-out, change the text and fade in
-              setTimeout(() => {
-                  // --- MODIFICATION START ---
+        // After the fade-out, change the text and fade in
+        setTimeout(() => {
+            // Check if we've shown all the quotes. If so, reset the list.
+            if (usedQuoteIndices.length === quotes.length) {
+                usedQuoteIndices = [];
+                console.log("All quotes shown. Resetting list.");
+            }
 
-                  // Check if we've shown all the quotes. If so, reset the list.
-                  if (usedQuoteIndices.length === quotes.length) {
-                      usedQuoteIndices = [];
-                      console.log("All quotes shown. Resetting list."); // Optional: for debugging
-                  }
+            let newQuoteIndex;
+            // This loop ensures the new quote has not been shown before in this cycle
+            do {
+                newQuoteIndex = Math.floor(Math.random() * quotes.length);
+            } while (usedQuoteIndices.includes(newQuoteIndex));
 
-                  let newQuoteIndex;
-                  // This loop ensures the new quote has not been shown before in this cycle
-                  do {
-                      newQuoteIndex = Math.floor(Math.random() * quotes.length);
-                  } while (usedQuoteIndices.includes(newQuoteIndex));
+            // Add the new index to our list of used quotes
+            usedQuoteIndices.push(newQuoteIndex);
 
-                  // Add the new index to our list of used quotes
-                  usedQuoteIndices.push(newQuoteIndex);
+            // Update the text content with the new random quote, adding the quotation marks
+            quoteDisplay.textContent = `"${quotes[newQuoteIndex]}"`;
 
-                  // --- MODIFICATION END ---
+            // Fade the new quote in
+            quoteDisplay.style.opacity = 0.7;
+        }, 500); // This delay should match the CSS transition time
+    }
+}
 
-                  // Update the text content with the new random quote
-                  quoteDisplay.textContent = `"${quotes[newQuoteIndex]}"`;
-
-                  // Fade the new quote in
-                  quoteDisplay.style.opacity = 0.7;
-              }, 500); // This delay should match the CSS transition time
-          }
-      }
-      // Show the first quote immediately and then update it every 5 seconds
-      updateQuote();
-      setInterval(updateQuote, 5000); // 5000 milliseconds = 5 seconds
+// Start the process by loading the quotes
+loadQuotes();
 
           // --- BASIC ELEMENTS ---
           const root = document.documentElement;
