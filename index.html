@@ -313,7 +313,6 @@
                   color: var(--text-color);
                   margin: 0;
                   padding: 0;
-                  overflow: hidden;
                   transition: background-color 0.4s ease-in-out, color 0.4s ease-in-out;
               }
 
@@ -759,13 +758,20 @@
           box-shadow: var(--shadow-inset-light);
           color: var(--primary-color);
       }
+      .sticky-on-scroll {
+    position: fixed;
+    top: 0; /* Example: sticks to the top edge of the screen */
+    left: 0; /* Example: sticks to the left edge of the screen */
+    width: 100%; /* Example: spans the full width of the screen */
+    z-index: 100; /* Ensures it stays above other page content */
+}
 
     </style>
   </head>
   <body>
       <!-- 3. Modal HTML Structure (from modal_structure.html) -->
     <!-- It's best to place this right before the closing </body> tag -->
-    <div id="custom-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div id="custom-modal" class="modal-overlay" class"sticky-on-scroll" role="dialog" aria-modal="true" aria-labelledby="modal-title">
         <div class="modal-content bg-white rounded-xl shadow-2xl w-full max-w-md p-6 m-4" 
              role="document">
             
@@ -801,7 +807,7 @@
         </div>
     </div>
 
-    <div id="loading-screen">
+    <div id="loading-screen" class"sticky-on-scroll">
       <div class="loader-container">
         <div class="loader-circle"></div>
         <p>Loading Games Hub...</p>
@@ -809,7 +815,7 @@
     </div>
     <div id="offscreen-overlay"></div>
 
-    <div id="content-wrapper">
+    <div id="content-wrapper" >
       <div id="bottom-bar">
         <div id="footer-time"></div>
         
@@ -823,7 +829,7 @@
 
 
       
-      <div id="tab-bar">
+      <div id="tab-bar" class"sticky-on-scroll">
         <button
           id="tab-home"
           class="active-tab"
