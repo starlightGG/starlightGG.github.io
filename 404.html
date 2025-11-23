@@ -9,12 +9,11 @@
             @import url('https://fonts.googleapis.com/css?family=Fira+Mono:400');
 
             body {
-                color: #5e9bdb;
                 background: repeating-linear-gradient(0deg, #0e0d0e 25%, #0e0d0e 50%, #171819 50%, #171819 75%);
                 background-size: 10px 10px;
-                height: 100%;
-                width: 100%;
-                font-size: 2vw;
+                height: 100vh;
+                width: 100vw;
+                font-size: 5vw;
                 overflow: hidden;
                 display: flex;
                 flex-direction: column;
@@ -23,228 +22,321 @@
                 align-items: center;
             }
 
-            @keyframes single-shake {
-                0% { transform: translate(2px, 2px) rotate(0deg); }
-                25% { transform: translate(-3px, -2px) rotate(-0.5deg); }
-                50% { transform: translate(3px, -2px) rotate(0.5deg); }
-                75% { transform: translate(-2px, 3px) rotate(-0.3deg); }
-                100% { transform: translate(0, 0) rotate(0deg); }
-            }
-
-
             .wisedom {
                 font-family: url(VGA.tff);
                 font-weight: 400;
                 text-rendering: optimizelegibility;
-                color: #80c0ff;
+                color: #009400;
                 letter-spacing: 0px;
                 font-size: 40px;
-                text-align: center;
-                max-width: 80%;
-                padding-right: 3px; 
-            }
-
-            .shaky-char {
-                display: inline-block;
-                animation: single-shake 100ms infinite;
-            }
-
-            .cursor {
-                display: inline-block;
-                width: 3px;
-                height: 1.1em;
-                background-color: #80c0ff;
-                animation: blink 0.5s step-end infinite alternate;
+                min-height: 50px;
+                animation: typing 2s steps(22), blink 0.5s step-end infinite alternate;
+                border-right: 3px solid #009400;
             }
 
             @keyframes blink {
                 50% {
-                    background-color: transparent;
+                    border-color: transparent;
                 }
             }
-            /* --- AGGRESSIVE GLITCH CSS --- */
             .glitch {
-                font-size: 9vw;
+                font-size: 10vw;
                 position: relative;
-                color: #5e9bdb; /* Base color */
+                color: #fff;
             }
             .line:not(:first-child) {
                 position: absolute;
                 top: 0;
                 left: 0;
             }
-            
-            /* Glitch layers applied to the main text */
             .line:nth-child(1) {
-                animation: clip 2500ms -250ms linear infinite, glitch1 300ms -100ms linear infinite; /* Faster and shorter duration */
+                animation: clip 3000ms -300ms linear infinite, glitch1 500ms -184ms linear infinite;
             }
             @keyframes glitch1 {
-                0% { transform: translateX(0); }
-                70% { transform: translateX(0); color: #fff; }
-                75% { transform: translateX(8px); color: #ff0000; } /* Max shift 8px, using red for aggression */
-                80% { transform: translateX(-6px); color: #80c0ff; }
-                85% { transform: translateX(3px); color: #fff; }
-                90% { transform: translateX(-8px); color: #5e9bdb; }
-                95% { transform: translateX(5px); color: #fff; }
-                100% { transform: translateX(0); }
-            }
-            .line:nth-child(2) {
-                animation: clip 2500ms -500ms linear infinite, glitch2 300ms -700ms linear infinite;
-            }
-            @keyframes glitch2 {
-                0% { transform: translateX(0); }
-                70% { transform: translateX(0); color: #fff; }
-                75% { transform: translateX(-10px); color: #00ff00; } /* Max shift 10px, green */
-                80% { transform: translateX(5px); color: #80c0ff; }
-                85% { transform: translateX(-2px); color: #fff; }
-                90% { transform: translateX(9px); color: #5e9bdb; }
-                95% { transform: translateX(-7px); color: #fff; }
-                100% { transform: translateX(0); }
-            }
-            .line:nth-child(3) {
-                animation: clip 2500ms -750ms linear infinite, glitch3 300ms -300ms linear infinite;
-            }
-            @keyframes glitch3 {
-                0% { transform: translateX(0); }
-                70% { transform: translateX(0); color: #fff; }
-                75% { transform: translateX(6px); color: #ffff00; } /* Yellow */
-                80% { transform: translateX(-7px); color: #80c0ff; }
-                85% { transform: translateX(4px); color: #fff; }
-                90% { transform: translateX(-9px); color: #5e9bdb; }
-                95% { transform: translateX(2px); color: #fff; }
-                100% { transform: translateX(0); }
-            }
-            .line:nth-child(4) {
-                animation: clip 2500ms -1000ms linear infinite, glitch4 300ms -700ms linear infinite;
-            }
-            @keyframes glitch4 {
-                0% { transform: translateX(0); }
-                70% { transform: translateX(0); color: #fff; }
-                75% { transform: translateX(-8px); color: #ff00ff; } /* Magenta */
-                80% { transform: translateX(4px); color: #80c0ff; }
-                85% { transform: translateX(-5px); color: #fff; }
-                90% { transform: translateX(7px); color: #5e9bdb; }
-                95% { transform: translateX(-3px); color: #fff; }
-                100% { transform: translateX(0); }
-            }
-            .line:nth-child(5) {
-                animation: clip 2500ms -1250ms linear infinite, glitch5 300ms -800ms linear infinite;
-            }
-            @keyframes glitch5 {
-                0% { transform: translateX(0); }
-                70% { transform: translateX(0); color: #fff; }
-                75% { transform: translateX(10px); color: #00ffff; } /* Cyan */
-                80% { transform: translateX(-3px); color: #80c0ff; }
-                85% { transform: translateX(6px); color: #fff; }
-                90% { transform: translateX(-7px); color: #5e9bdb; }
-                95% { transform: translateX(4px); color: #fff; }
-                100% { transform: translateX(0); }
-            }
-            .line:nth-child(6) {
-                animation: clip 2500ms -1500ms linear infinite, glitch6 300ms -800ms linear infinite;
-            }
-            @keyframes glitch6 {
-                0% { transform: translateX(0); }
-                70% { transform: translateX(0); color: #fff; }
-                75% { transform: translateX(-6px); color: #ff4500; } /* Orange Red */
-                80% { transform: translateX(8px); color: #80c0ff; }
-                85% { transform: translateX(-4px); color: #fff; }
-                90% { transform: translateX(5px); color: #5e9bdb; }
-                95% { transform: translateX(-10px); color: #fff; }
-                100% { transform: translateX(0); }
-            }
-            .line:nth-child(7) {
-                animation: clip 2500ms -1750ms linear infinite, glitch7 300ms -30ms linear infinite;
-            }
-            @keyframes glitch7 {
-                0% { transform: translateX(0); }
-                70% { transform: translateX(0); color: #fff; }
-                75% { transform: translateX(9px); color: #ff69b4; } /* Hot Pink */
-                80% { transform: translateX(-5px); color: #80c0ff; }
-                85% { transform: translateX(2px); color: #fff; }
-                90% { transform: translateX(-8px); color: #5e9bdb; }
-                95% { transform: translateX(7px); color: #fff; }
-                100% { transform: translateX(0); }
-            }
-            .line:nth-child(8) {
-                animation: clip 2500ms -2000ms linear infinite, glitch8 300ms -800ms linear infinite;
-            }
-            @keyframes glitch8 {
-                0% { transform: translateX(0); }
-                70% { transform: translateX(0); color: #fff; }
-                75% { transform: translateX(-7px); color: #00fa9a; } /* Medium Spring Green */
-                80% { transform: translateX(3px); color: #80c0ff; }
-                85% { transform: translateX(-6px); color: #fff; }
-                90% { transform: translateX(10px); color: #5e9bdb; }
-                95% { transform: translateX(-4px); color: #fff; }
-                100% { transform: translateX(0); }
-            }
-            .line:nth-child(9) {
-                animation: clip 2500ms -2250ms linear infinite, glitch9 300ms -700ms linear infinite;
-            }
-            @keyframes glitch9 {
-                0% { transform: translateX(0); }
-                70% { transform: translateX(0); color: #fff; }
-                75% { transform: translateX(5px); color: #8a2be2; } /* Blue Violet */
-                80% { transform: translateX(-8px); color: #80c0ff; }
-                85% { transform: translateX(1px); color: #fff; }
-                90% { transform: translateX(-6px); color: #5e9bdb; }
-                95% { transform: translateX(9px); color: #fff; }
-                100% { transform: translateX(0); }
-            }
-            .line:nth-child(10) {
-                animation: clip 2500ms -2500ms linear infinite, glitch10 300ms -600ms linear infinite;
-            }
-            @keyframes glitch10 {
-                0% { transform: translateX(0); }
-                70% { transform: translateX(0); color: #fff; }
-                75% { transform: translateX(-9px); color: #f08080; } /* Light Coral */
-                80% { transform: translateX(6px); color: #80c0ff; }
-                85% { transform: translateX(-3px); color: #fff; }
-                90% { transform: translateX(8px); color: #5e9bdb; }
-                95% { transform: translateX(-5px); color: #fff; }
-                100% { transform: translateX(0); }
-            }
-            @keyframes clip {
-                /* Faster, more chaotic clipping */
                 0% {
-                    clip-path: polygon(0 100%, 100% 100%, 100% 150%, 0 150%);
+                    transform: translateX(0);
+                }
+                80% {
+                    transform: translateX(0);
+                    color: #fff;
+                }
+                85% {
+                    transform: translateX(2px);
+                    color: #4e9a26;
+                }
+                90% {
+                    transform: translateX(5px);
+                    color: #ac1212;
+                }
+                95% {
+                    transform: translateX(1px);
+                    color: #fff;
                 }
                 100% {
-                    clip-path: polygon(0 -50%, 100% -50%, 100% 0%, 0 0);
+                    transform: translateX(0);
                 }
             }
-
-            .button-container {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                gap: 35px;
-                margin-top: 20px;
+            .line:nth-child(2) {
+                animation: clip 3000ms -600ms linear infinite, glitch2 500ms -740ms linear infinite;
+            }
+            @keyframes glitch2 {
+                0% {
+                    transform: translateX(0);
+                }
+                80% {
+                    transform: translateX(0);
+                    color: #fff;
+                }
+                85% {
+                    transform: translateX(5px);
+                    color: #4e9a26;
+                }
+                90% {
+                    transform: translateX(-1px);
+                    color: #ac1212;
+                }
+                95% {
+                    transform: translateX(-1px);
+                    color: #fff;
+                }
+                100% {
+                    transform: translateX(0);
+                }
+            }
+            .line:nth-child(3) {
+                animation: clip 3000ms -900ms linear infinite, glitch3 500ms -333ms linear infinite;
+            }
+            @keyframes glitch3 {
+                0% {
+                    transform: translateX(0);
+                }
+                80% {
+                    transform: translateX(0);
+                    color: #fff;
+                }
+                85% {
+                    transform: translateX(-2px);
+                    color: #4e9a26;
+                }
+                90% {
+                    transform: translateX(3px);
+                    color: #ac1212;
+                }
+                95% {
+                    transform: translateX(0px);
+                    color: #fff;
+                }
+                100% {
+                    transform: translateX(0);
+                }
+            }
+            .line:nth-child(4) {
+                animation: clip 3000ms -1200ms linear infinite, glitch4 500ms -733ms linear infinite;
+            }
+            @keyframes glitch4 {
+                0% {
+                    transform: translateX(0);
+                }
+                80% {
+                    transform: translateX(0);
+                    color: #fff;
+                }
+                85% {
+                    transform: translateX(-4px);
+                    color: #4e9a26;
+                }
+                90% {
+                    transform: translateX(5px);
+                    color: #ac1212;
+                }
+                95% {
+                    transform: translateX(0px);
+                    color: #fff;
+                }
+                100% {
+                    transform: translateX(0);
+                }
+            }
+            .line:nth-child(5) {
+                animation: clip 3000ms -1500ms linear infinite, glitch5 500ms -896ms linear infinite;
+            }
+            @keyframes glitch5 {
+                0% {
+                    transform: translateX(0);
+                }
+                80% {
+                    transform: translateX(0);
+                    color: #fff;
+                }
+                85% {
+                    transform: translateX(-3px);
+                    color: #4e9a26;
+                }
+                90% {
+                    transform: translateX(5px);
+                    color: #ac1212;
+                }
+                95% {
+                    transform: translateX(3px);
+                    color: #fff;
+                }
+                100% {
+                    transform: translateX(0);
+                }
+            }
+            .line:nth-child(6) {
+                animation: clip 3000ms -1800ms linear infinite, glitch6 500ms -815ms linear infinite;
+            }
+            @keyframes glitch6 {
+                0% {
+                    transform: translateX(0);
+                }
+                80% {
+                    transform: translateX(0);
+                    color: #fff;
+                }
+                85% {
+                    transform: translateX(-4px);
+                    color: #4e9a26;
+                }
+                90% {
+                    transform: translateX(-4px);
+                    color: #ac1212;
+                }
+                95% {
+                    transform: translateX(-3px);
+                    color: #fff;
+                }
+                100% {
+                    transform: translateX(0);
+                }
+            }
+            .line:nth-child(7) {
+                animation: clip 3000ms -2100ms linear infinite, glitch7 500ms -34ms linear infinite;
+            }
+            @keyframes glitch7 {
+                0% {
+                    transform: translateX(0);
+                }
+                80% {
+                    transform: translateX(0);
+                    color: #fff;
+                }
+                85% {
+                    transform: translateX(2px);
+                    color: #4e9a26;
+                }
+                90% {
+                    transform: translateX(5px);
+                    color: #ac1212;
+                }
+                95% {
+                    transform: translateX(-3px);
+                    color: #fff;
+                }
+                100% {
+                    transform: translateX(0);
+                }
+            }
+            .line:nth-child(8) {
+                animation: clip 3000ms -2400ms linear infinite, glitch8 500ms -842ms linear infinite;
+            }
+            @keyframes glitch8 {
+                0% {
+                    transform: translateX(0);
+                }
+                80% {
+                    transform: translateX(0);
+                    color: #fff;
+                }
+                85% {
+                    transform: translateX(4px);
+                    color: #4e9a26;
+                }
+                90% {
+                    transform: translateX(1px);
+                    color: #ac1212;
+                }
+                95% {
+                    transform: translateX(-4px);
+                    color: #fff;
+                }
+                100% {
+                    transform: translateX(0);
+                }
+            }
+            .line:nth-child(9) {
+                animation: clip 3000ms -2700ms linear infinite, glitch9 500ms -751ms linear infinite;
+            }
+            @keyframes glitch9 {
+                0% {
+                    transform: translateX(0);
+                }
+                80% {
+                    transform: translateX(0);
+                    color: #fff;
+                }
+                85% {
+                    transform: translateX(1px);
+                    color: #4e9a26;
+                }
+                90% {
+                    transform: translateX(2px);
+                    color: #ac1212;
+                }
+                95% {
+                    transform: translateX(-4px);
+                    color: #fff;
+                }
+                100% {
+                    transform: translateX(0);
+                }
+            }
+            .line:nth-child(10) {
+                animation: clip 3000ms -3000ms linear infinite, glitch10 500ms -648ms linear infinite;
+            }
+            @keyframes glitch10 {
+                0% {
+                    transform: translateX(0);
+                }
+                80% {
+                    transform: translateX(0);
+                    color: #fff;
+                }
+                85% {
+                    transform: translateX(-3px);
+                    color: #4e9a26;
+                }
+                90% {
+                    transform: translateX(2px);
+                    color: #ac1212;
+                }
+                95% {
+                    transform: translateX(3px);
+                    color: #fff;
+                }
+                100% {
+                    transform: translateX(0);
+                }
+            }
+            @keyframes clip {
+                0% {
+                    clip-path: polygon(0 100%, 100% 100%, 100% 120%, 0 120%);
+                }
+                100% {
+                    clip-path: polygon(0 -20%, 100% -20%, 100% 0%, 0 0);
+                }
             }
 
             a {
                 padding: 10px 20px;
-                background-color: #80c0ff;
-                color: #0e0d0e;
+                background-color: #00fa00;
+                color: #000;
                 border-radius: 5px;
                 text-decoration: none;
                 cursor: pointer;
                 transition: 0s;
-                font-weight: bold;
             }
-
-            .return-home {
-                background: none;
-                color: #5e9bdb;
-                padding: 0;
-                font-weight: normal;
-                text-decoration: underline;
-            }
-            .return-home:hover {
-                filter: brightness(120%);
-            }
-
 
             a:hover {
                 filter: brightness(90%);
@@ -260,140 +352,50 @@
             <div class="line">Error 404</div>
             <div class="line">Error 404</div>
             <div class="line">Error 404</div>
-            <div class="line">Error 404</div>
         </div>
         <span class="wisedom"></span>
+        <h6><a href="/">Return home?</a></h6>
+        <script>
+            const wiseness = [
+                'Welcome to the land of Nothing!',
+                'Here there is absolutely nothing for you.',
+                'I recommend you to go back home',
+                'Please. Go.',
+                'Why are you here?',
+                'I will not repeat this once more.',
+                'GO. NOW.',
+            ];
+            const element = document.getElementsByClassName('wisedom')[0];
+            const button = document.getElementsByTagName('a')[0];
 
-        <div class="button-container">
-            <a href="/chat.html" target="_blank">Contact Support</a>
-            <a href="/" class="return-home">Return home?</a>
-        </div>
+            let currentTextIndex = 0;
+            let charIndex = 0;
 
-<script>
-const element = document.getElementsByClassName('wisedom')[0];
-const textFilePath = 'wiseness.txt'; // <-- Set your text file name here
+            function type() {
+                let text = wiseness[currentTextIndex];
+                let typeSpeed = 100;
 
-let currentTextIndex = 0;
-let charIndex = 0;
-let typingTimeout;
-let deletingTimeout;
-let shuffledWiseness = []; // This will be filled later
+                if (charIndex < text.length) {
+                    element.innerHTML += text.charAt(charIndex);
+                    charIndex++;
+                    setTimeout(type, typeSpeed);
+                } else {
+                    setTimeout(deleteText, 3000); // wait 1 second before deleting the text
+                }
+            }
 
-// --- Fisher-Yates Shuffle Algorithm ---
-function shuffle(array) {
-    let currentIndex = array.length, randomIndex;
-    while (currentIndex !== 0) {
-        randomIndex = Math.floor(Math.random() * currentIndex);
-        currentIndex--;
-        [array[currentIndex], array[randomIndex]] = [
-            array[randomIndex], array[currentIndex]];
-    }
-    return array;
-}
+            function deleteText() {
+                let text = wiseness[currentTextIndex];
+                let deleteSpeed = 100;
 
-// Cursor element setup
-const cursor = document.createElement('span');
-cursor.className = 'cursor';
-element.appendChild(cursor); 
+                if (charIndex > 0) {
+                    element.innerHTML = text.substring(0, charIndex - 1);
+                    charIndex--;
+                    setTimeout(deleteText, deleteSpeed);
+                }
+            }
 
-// 🚀 Core Logic to Fetch and Start Typing
-async function loadWiseness() {
-    try {
-        const response = await fetch(textFilePath);
-        
-        // Throw an error if the file isn't found
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const text = await response.text();
-        
-        // Split the text file content into an array based on new lines
-        const wisenessArray = text.split('\n')
-            // Clean up any empty lines or lines with only whitespace
-            .map(line => line.trim())
-            .filter(line => line.length > 0);
-
-        if (wisenessArray.length === 0) {
-            // Fallback message if file is empty
-            shuffledWiseness = ["Suprising! I can't even type anything else because the txt file didn't load. Haha."];
-        } else {
-            // Use the fetched and cleaned array to initialize the shuffled list
-            shuffledWiseness = wisenessArray; 
-        }
-
-        // Shuffle the quotes once at the beginning
-        shuffle(shuffledWiseness);
-        
-        // Start the typing loop after data is loaded and shuffled
-        setTimeout(type, 2000); 
-
-    } catch (e) {
-        console.error("Failed to load wisdom file:", e);
-            shuffledWiseness = ["Suprising! I can't even type anything else because the txt file didn't load. Haha."];
-        setTimeout(type, 2000); 
-    }
-}
-
-
-function type() {
-    // Check if we reached the end of the shuffled list
-    if (currentTextIndex >= shuffledWiseness.length) {
-        // Reset the index and re-shuffle the list for a new cycle
-        currentTextIndex = 0;
-        shuffle(shuffledWiseness);
-    }
-
-    // Use the current message from the shuffled array
-    let text = shuffledWiseness[currentTextIndex];
-    let typeSpeed = 50;
-
-    if (cursor.parentElement !== element) {
-        element.appendChild(cursor);
-    }
-
-    if (charIndex < text.length) {
-        const char = text.charAt(charIndex);
-
-        const shakySpan = document.createElement('span');
-        shakySpan.className = 'shaky-char';
-        shakySpan.textContent = char;
-
-        element.insertBefore(shakySpan, cursor);
-
-        setTimeout(() => {
-            shakySpan.outerHTML = shakySpan.innerHTML;
-        }, 100);
-
-        charIndex++;
-        typingTimeout = setTimeout(type, typeSpeed);
-    } else {
-        deletingTimeout = setTimeout(deleteText, 5000);
-    }
-}
-
-function deleteText() {
-    let text = shuffledWiseness[currentTextIndex]; 
-    let deleteSpeed = 25; 
-
-    if (charIndex > 0) {
-        // 1. Overwrite content with one less character
-        element.innerHTML = text.substring(0, charIndex - 1);
-        
-        // 2. RE-ATTACH the cursor
-        element.appendChild(cursor); 
-
-        charIndex--;
-        deletingTimeout = setTimeout(deleteText, deleteSpeed);
-    } else {
-        // Move to the next message in the shuffled list
-        currentTextIndex++; 
-        typingTimeout = setTimeout(type, 800);
-    }
-}
-
-// 🔑 Start the entire process by loading the data
-loadWiseness();
-</script>
+            setTimeout(type, 2000);
+        </script>
     </body>
 </html>
