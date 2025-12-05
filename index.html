@@ -1745,7 +1745,7 @@ loadQuotes();
         });
     </script>
 <script>
-  // Wrap the entire script execution in DOMContentLoaded to ensure all HTML elements
+// Wrap the entire script execution in DOMContentLoaded to ensure all HTML elements
 // are loaded and available before the script attempts to find them.
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -1854,7 +1854,7 @@ document.addEventListener('DOMContentLoaded', () => {
             let newLeft = e.clientX - dragOffsetX;
             let newTop = e.clientY - dragOffsetY;
 
-            // Boundary checks for the main element
+            // Boundary checks for the main element (Button)
             if (newLeft < 0) newLeft = 0;
             if (newTop < 0) newTop = 0;
             if (newLeft + element.offsetWidth > window.innerWidth) newLeft = window.innerWidth - element.offsetWidth;
@@ -1869,17 +1869,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 const M_width = followerElement.offsetWidth;
                 const M_height = followerElement.offsetHeight;
 
-                // New Modal Top: Button Top - Modal Height - Gap
+                // Initial Modal position: Above and right-aligned with the button
                 let M_top = newTop - M_height - VERTICAL_GAP;
-                
-                // New Modal Left: Right-align the modal with the button
                 let M_left = newLeft + B_width - M_width;
 
-                // Boundary check for the follower modal
-                if (M_top < 0) M_top = 0;
-                if (M_left < 0) M_left = 0;
-                if (M_left + M_width > window.innerWidth) M_left = window.innerWidth - M_width;
-                // The button's boundary check covers the lower limit for the modal since M_top depends on B_top.
+                // *** NEW: Boundary checks for the follower modal during drag ***
+                if (M_top < 0) M_top = 0; // Prevent top overflow
+                if (M_left < 0) M_left = 0; // Prevent left overflow
+                if (M_left + M_width > window.innerWidth) M_left = window.innerWidth - M_width; // Prevent right overflow
+                if (M_top + M_height > window.innerHeight) M_top = window.innerHeight - M_height; // Prevent bottom overflow
 
                 followerElement.style.top = M_top + "px";
                 followerElement.style.left = M_left + "px";
@@ -1892,8 +1890,7 @@ document.addEventListener('DOMContentLoaded', () => {
             document.removeEventListener('mouseup', endDrag);
             document.removeEventListener('mousemove', handleDrag);
 
-            // *** CRITICAL FIX: Trigger the click action only if no movement occurred.
-            // This replaces the unreliable `click` event listener. ***
+            // CRITICAL FIX: Trigger the click action only if no movement occurred.
             if (!moved && clickCallback) {
                 clickCallback();
             }
@@ -1901,8 +1898,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Attach the mouse down handler
         element.onmousedown = startDrag;
-
-        // REMOVED THE PREVIOUS UNRELIABLE `element.addEventListener('click', ...)` BLOCK
     }
 
     // --- 2. Modal Toggle Callback ---
@@ -1911,19 +1906,28 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isModalVisible) {
             // Show modal
             modal.style.opacity = '1';
-            // Remove the translateY transition effect as position is now strictly managed by top/left in drag
             modal.style.transform = 'translateY(0)'; 
             modal.style.pointerEvents = 'auto';
             
-            // Immediately reposition the modal relative to the button when opened
+            // Reposition modal relative to the button when opened
             const B_rect = infoBtn.getBoundingClientRect();
             const M_width = modal.offsetWidth;
             const M_height = modal.offsetHeight;
             const B_width = infoBtn.offsetWidth;
             const VERTICAL_GAP = 16;
             
-            modal.style.top = (B_rect.top - M_height - VERTICAL_GAP) + 'px';
-            modal.style.left = (B_rect.left + B_width - M_width) + 'px';
+            // Calculate initial position (Above and right-aligned)
+            let M_top = B_rect.top - M_height - VERTICAL_GAP;
+            let M_left = B_rect.left + B_width - M_width;
+
+            // *** NEW: Boundary checks for the modal when first opened (Click/Tap) ***
+            if (M_top < 0) M_top = 0; // Prevent top overflow
+            if (M_left < 0) M_left = 0; // Prevent left overflow
+            if (M_left + M_width > window.innerWidth) M_left = window.innerWidth - M_width; // Prevent right overflow
+            if (M_top + M_height > window.innerHeight) M_top = window.innerHeight - M_height; // Prevent bottom overflow
+
+            modal.style.top = M_top + 'px';
+            modal.style.left = M_left + 'px';
             
             measurePing();
         } else {
