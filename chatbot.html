@@ -3,184 +3,187 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Google</title>
-
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght300;500;700;900&display=swap" rel="stylesheet">
-    
-
+    <title>Groq Chatbot (Client-Side Fetch)</title>
     <style>
-        /* --- GAME HUB STYLE: VARIABLES (Fonts, Colors) --- */
-        :root {
-            --bg-color: #e0e5ec;
-            --text-color: #333333;
-            --primary-color: #4c68ff;
-            --border-radius: 12px;
-            /* This is the Game Hub font */
-            --font-stack: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            --glass-color: rgba(255, 255, 255, 0.4);
-            --line-color: rgba(0, 0, 0, 0.07);
-        }
-
-        [data-theme="dark"] {
-            --bg-color: #1e2023;
-            --text-color: #f0f0f0;
-            --primary-color: #6a7eff;
-            --glass-color: rgba(30, 32, 35, 0.6);
-            --line-color: rgba(255, 255, 255, 0.08);
-        }
-
-        /* --- GAME HUB STYLE: BASE & BACKGROUND --- */
-        *, *::before, *::after {
-            box-sizing: border-box;
-        }
-        html {
-            height: 100%;
-        }
-        body {
-            height: 100%;
-            width: 100%;
-            margin: 0;
-            overflow: hidden;
-            /* Apply the Game Hub font */
-            font-family: var(--font-stack);
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            transition: background-color 0.3s, color 0.3s;
-            
-            /* This is for the centered text */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            
-            /* Needed for the pattern overlay */
-            position: relative; 
-        }
-
-        /* --- GAME HUB STYLE: "BETTER BACKGROUND" PATTERN --- */
-        body::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-repeat: repeat;
-            opacity: 0.2;
-            pointer-events: none;
-            z-index: -1; /* Place it behind the content */
-            
-            /* Default Pattern */
-            background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1MCIgaGVpZ2h0PSI1MCIgdmlld0JveD0iMCAwIDUwIDUwIj4KICA8cGF0aCBkPSJNNTAgMEwwIDUwWk01MSAxTDEgNTEiIHN0cm9rZT0iIzc5NzY5MyIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2Utb3BhY2l0eT0iMC4xNSIvPgogIDxwYXRoIGQ9Ik10MCAtMTBMMCA0MFptMTAgMTBMMTAgNTBaTTIwIDYwTDMwIC0xMFpNNCA1TDUgNFoiIHN0cm9rZT0iIzc5NzY5MyIgc3Ryb2tlLXdpZHRoPSIxIiBzdHJva2Utb3BhY2l0eT0iMC4xIi8+Cjwvc3ZnPg==');
-        }
-        
-        /* --- YOUR TEXT, BUT STYLED "BETTER" --- */
-        p.main-text {
-            font-size: 1.8rem;
-            font-weight: 300;
-            color: var(--text-color);
-            opacity: 0.7;
-            padding: 20px;
-        }
-
-        /* --- Top Controls (for theme) --- */
-        .top-controls {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            display: flex;
-            gap: 10px;
-            z-index: 1000;
-        }
-        .top-controls button {
-            font-family: var(--font-stack);
-            height: 44px;
-            width: 44px;
-            font-size: 1.1em;
-            border-radius: 50%;
-            border: none;
-            cursor: pointer;
-            background-color: var(--glass-color);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            color: var(--text-color);
-            transition: background-color 0.2s;
-        }
-        .top-controls button:hover {
-            background-color: rgba(255, 255, 255, 0.7);
-        }
-        [data-theme="dark"] .top-controls button:hover {
-            background-color: rgba(30, 32, 35, 0.9);
-        }
+        /* ... (Your existing, fixed CSS styles remain here) ... */
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #eef2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
+        .chat-container { background-color: white; border-radius: 12px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); width: 100%; max-width: 450px; height: 90vh; max-height: 700px; display: flex; flex-direction: column; overflow: hidden; }
+        .chat-header { padding: 15px 20px; background-color: #007bff; color: white; border-top-left-radius: 12px; border-top-right-radius: 12px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); text-align: center; }
+        .chat-header h3 { margin: 0; font-size: 1.1em; }
+        .model-name { font-size: 0.8em; color: #cce0ff; margin-top: 5px; }
+        .chat-box { flex-grow: 1; overflow-y: auto; padding: 20px; background-color: #f7f9fc; scrollbar-width: thin; scrollbar-color: #ccc transparent; }
+        .chat-box::-webkit-scrollbar { width: 8px; }
+        .chat-box::-webkit-scrollbar-thumb { background-color: #ccc; border-radius: 4px; }
+        .message { margin-bottom: 15px; padding: 10px 15px; border-radius: 18px; line-height: 1.5; max-width: 85%; transition: all 0.2s ease-in-out; word-wrap: break-word; }
+        .user-message { background-color: #007bff; color: white; margin-left: auto; border-bottom-right-radius: 4px; }
+        .ai-message { background-color: #ffffff; border: 1px solid #e0e0e0; color: #333; margin-right: auto; border-bottom-left-radius: 4px; }
+        .input-area { display: flex; padding: 15px; background-color: white; box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.05); }
+        .input-area input { flex-grow: 1; padding: 12px 18px; border: 1px solid #ddd; border-radius: 25px; margin-right: 10px; font-size: 1em; transition: border-color 0.3s, box-shadow 0.3s; }
+        .input-area input:focus { outline: none; border-color: #007bff; box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25); }
+        .input-area button { padding: 10px 20px; background-color: #28a745; color: white; border: none; border-radius: 25px; cursor: pointer; transition: background-color 0.3s, transform 0.1s; font-weight: bold; }
+        .input-area button:hover:not(:disabled) { background-color: #1e7e34; }
+        .input-area button:active:not(:disabled) { transform: scale(0.98); }
+        .input-area button:disabled { background-color: #90a4ae; cursor: not-allowed; }
+        @media (max-width: 600px) { .chat-container { width: 100%; height: 100vh; max-height: 100vh; border-radius: 0; } body { padding: 0; align-items: flex-start; } }
     </style>
 </head>
-<body data-pattern="lines"> <div class="top-controls">
-        <button id="theme-toggle" title="Toggle Theme">
-            <i class="fas fa-sun"></i>
-        </button>
+<body>
+
+    <div class="chat-container">
+        <div class="chat-header">
+            <h3>Groq Chatbot</h3>
+            <div class="model-name">Model: llama3-8b-8192 on Groq (Key from URL)</div>
+        </div>
+        <div class="chat-box" id="chat-box">
+            <div class="message ai-message" id="initial-message">Initializing...</div>
+        </div>
+        <div class="input-area">
+            <input type="text" id="user-input" placeholder="Type your message..." autofocus disabled>
+            <button onclick="sendMessage()" id="send-button" disabled>Send</button>
+        </div>
     </div>
 
-<iframe width = 100%; height = 95%; src="https://www.getmerlin.in/chat"></iframe>
-</body>
+    <script>
+        // 🛑 🛑 🛑 WARNING: This method exposes your key via network inspection! 🛑 🛑 🛑
+        // Use a secure backend proxy for production environments.
 
-   <script>
-     document.addEventListener('DOMContentLoaded', function() {
-                  // Check if this window was opened by another window.
-                  // If window.opener is null, this is the *original* tab.
-                  if (!window.opener) {
+        // --- Configuration ---
+        const API_KEY_URL = "/t.txt"; // <<<--- REPLACE WITH YOUR ACTUAL URL
+        const GROQ_MODEL = "openai/gpt-oss-20b"; 
+        const GROQ_ENDPOINT = "https://api.groq.com/openai/v1/chat/completions";
+        
+        let GROQ_API_KEY = null; // Key will be stored here after fetching
 
-                      // Try to open the new 'about:blank' tab
-                      const newWindow = window.open('about:blank', '_blank');
+        const chatBox = document.getElementById('chat-box');
+        const userInput = document.getElementById('user-input');
+        const sendButton = document.getElementById('send-button');
+        const initialMessage = document.getElementById('initial-message');
 
-                      if (newWindow) {
-                          // Success! Popup was not blocked.
+        // Stores the conversation history for context
+        let conversationHistory = [
+            { "role": "system", "content": "You are a helpful and fast AI assistant powered by Groq. Keep your responses concise." }
+        ];
 
-                          // 1. Get the current page's entire HTML
-                          const currentHtml = document.documentElement.outerHTML;
+        // --- Utility Functions ---
 
-                          // 2. Write that HTML into the new 'about:blank' tab
-                          newWindow.document.write(currentHtml);
-                          newWindow.document.close();
+        function scrollToBottom() {
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
 
-                          // 3. Redirect the *original* tab (this one) to Google
-                          window.location.replace('https://www.google.com');
+        function addMessage(role, content) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `message ${role}-message`;
+            msgDiv.innerHTML = content.replace(/\n/g, '<br>'); 
+            chatBox.appendChild(msgDiv);
+            scrollToBottom();
+            return msgDiv;
+        }
 
-                      } else {
-                          // Failure! Popup was blocked.
-                          alert("Please enable popups!");
-                          // We don't redirect, so the user can still use the site
-                          // in this original tab.
-                      }
-                  }
-                  // If window.opener *exists*, this is the *newly opened* tab,
-                  // so we do nothing and let the page load normally.
-              });
+        // --- New Function to Load Key ---
+        async function loadApiKey() {
+            try {
+                // Fetch the text content of the URL
+                const response = await fetch(API_KEY_URL);
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch key from URL. HTTP Status: ${response.status}`);
+                }
+                
+                // Read the plain text, trim whitespace, and store it
+                GROQ_API_KEY = (await response.text()).trim();
+                
+                if (GROQ_API_KEY.length < 10) { // Basic check for a valid key length
+                    throw new Error("Key loaded is too short or invalid.");
+                }
 
-        // --- GAME HUB STYLE SCRIPT (For Theme Toggle) ---
-        const root = document.documentElement;
-        const themeToggleBtn = document.getElementById('theme-toggle');
+                // Update UI on success
+                initialMessage.innerHTML = "Key loaded. Hello! I am a Llama 3 powered by Groq. Ask me anything!";
+                sendButton.disabled = false;
+                userInput.disabled = false;
+                userInput.focus();
 
-        function applyTheme(theme) {
-            root.setAttribute('data-theme', theme);
-            if(themeToggleBtn) {
-                themeToggleBtn.innerHTML = theme === 'dark' ? '<i class="fas fa-moon"></i>' : '<i class="fas fa-sun"></i>';
+            } catch (error) {
+                console.error('API Key Loading Error:', error);
+                initialMessage.innerHTML = `<span style="color:red;">Error: Could not load API Key. Check URL and CORS settings. (${error.message})</span>`;
             }
-            localStorage.setItem('theme', theme);
         }
         
-        if(themeToggleBtn) {
-            themeToggleBtn.addEventListener('click', () => {
-                const newTheme = (root.getAttribute('data-theme') || 'light') === 'light' ? 'dark' : 'light';
-                applyTheme(newTheme);
-            });
+        // --- Main Send Function ---
+        async function sendMessage() {
+            const userText = userInput.value.trim();
+            if (!userText || !GROQ_API_KEY) return; // Exit if no text or no key
+
+            // 1. Disable input and button
+            userInput.value = '';
+            sendButton.disabled = true;
+            userInput.disabled = true;
+
+            // 2. Add user message to history and UI
+            addMessage('user', userText);
+            conversationHistory.push({ "role": "user", "content": userText });
+
+            // 3. Add AI loading message
+            const aiMessageElement = addMessage('ai', 'Thinking...'); 
+
+            try {
+                // 4. Use fetch to call the Groq API
+                const response = await fetch(GROQ_ENDPOINT, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${GROQ_API_KEY}`, // Now using the fetched key
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        model: GROQ_MODEL,
+                        messages: conversationHistory,
+                        temperature: 0.7,
+                        max_tokens: 500
+                    })
+                });
+
+                if (!response.ok) {
+                    let errorText = `HTTP Error: ${response.status} ${response.statusText}`;
+                    try {
+                        const errorData = await response.json();
+                        if (errorData.error && errorData.error.message) {
+                            errorText = errorData.error.message;
+                        }
+                    } catch (e) {}
+                    throw new Error(errorText);
+                }
+
+                const data = await response.json();
+                
+                // 5. Extract the AI's response text
+                const assistantResponse = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content
+                    ? data.choices[0].message.content
+                    : "Sorry, I received an empty response from the API.";
+
+                // 6. Update the AI message in the UI and history
+                aiMessageElement.innerHTML = assistantResponse.replace(/\n/g, '<br>');
+                conversationHistory.push({ "role": "assistant", "content": assistantResponse });
+                
+                scrollToBottom();
+
+            } catch (error) {
+                console.error('Groq API Call Failed:', error);
+                aiMessageElement.innerHTML = `<span style="color:red;">API Error: ${error.message}</span>`;
+            } finally {
+                // 7. Re-enable input and button
+                sendButton.disabled = false;
+                userInput.disabled = false;
+                userInput.focus();
+            }
         }
-        
-        // Check for saved theme on load
-        document.addEventListener('DOMContentLoaded', () => {
-            const savedTheme = localStorage.getItem('theme') || 'light';
-            applyTheme(savedTheme);
+
+        // Allow sending message by pressing Enter
+        userInput.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter' && !sendButton.disabled) { 
+                sendMessage();
+            }
         });
+
+        // --- Start the key loading process immediately ---
+        loadApiKey(); 
     </script>
+</body>
 </html>
