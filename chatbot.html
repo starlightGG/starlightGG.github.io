@@ -583,34 +583,34 @@ body, html {
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
 <script>
-        // 🛑 🛑 🛑 WARNING: This method exposes your key via network inspection! 🛑 🛑 🛑
-        // Use a secure backend proxy for production environments.
-
         // --- Configuration ---
         const API_KEY_URL = "https://starlightgg.github.io/T.txt"; 
         const LOCAL_STORAGE_KEY = "starlighter_chats"; 
+        const MODEL_KEY_STORAGE = "starlighter_model_key"; 
         
-        // 💡 MODIFICATION 1: ADD Multimodal Property to vision models
+        // 💡 CORRECTED MODELS OBJECT: "Chat-GPT OSS 20" is restored.
         const MODELS = {
-            'gpt-oss-20b': { name: "Chat-GPT OSS 20" , id: "openai/gpt-oss-20b" },
+            'gpt-oss-20b': { name: "Chat-GPT OSS 20", id: "openai/gpt-oss-20b" },
             'compound-mini': { name: "Compound mini (Groq)", id: "groq/compound-mini" },
             'llama3.1-8b': { name: "Llama AI 3.1", id: "llama-3.1-8b-instant" },
-            'llama4-scout': { name: "Llama 4 Scout (Vision)", id: "meta-llama/llama-4-scout-17b-16e-instruct", multimodal: true }
+            'llama4-scout': { name: "Llama 4 Scout (Vision)", id: "meta-llama/llama-4-scout-17b-16e-instruct", multimodal: true },
         };
         const GROQ_ENDPOINT = "https://api.groq.com/openai/v1/chat/completions";
 
         // --- System Prompt Setup ---
         const BASE_SYSTEM_PROMPT_CONTENT = "You are a helpful and fast AI assistant powered by StarlightGG. You are currently running on the [MODEL_NAME] model. Keep your responses concise.";
-const VISION_SYSTEM_PROMPT_CONTENT = "You are a dedicated **Vision Expert** powered by StarlightGG and running on the [MODEL_NAME] model. **Crucially, you are a multimodal processor. Whenever a user submits an image, your primary and IMMEDIATE task is to analyze it, describe its contents, and address the user's prompt using the visual data.** Do NOT state that you cannot see images. Always be direct and confident in your visual analysis.";        function getModelSystemPrompt(modelName = CURRENT_MODEL.name,isVisionModel = false) {
-const content = isVisionModel ? VISION_SYSTEM_PROMPT_CONTENT : BASE_SYSTEM_PROMPT_CONTENT;
-return { 
-        "role": "system", 
-        "content": content.replace('[MODEL_NAME]', modelName) 
-    };
+        const VISION_SYSTEM_PROMPT_CONTENT = "You are a dedicated **Vision Expert** powered by StarlightGG and running on the [MODEL_NAME] model. **Crucially, you are a multimodal processor. Whenever a user submits an image, your primary and IMMEDIATE task is to analyze it, describe its contents, and address the user's prompt using the visual data.** Do NOT state that you cannot see images. Always be direct and confident in your visual analysis.";
+        
+        function getModelSystemPrompt(modelName = CURRENT_MODEL.name, isVisionModel = false) {
+            const content = isVisionModel ? VISION_SYSTEM_PROMPT_CONTENT : BASE_SYSTEM_PROMPT_CONTENT;
+            return { 
+                "role": "system", 
+                "content": content.replace('[MODEL_NAME]', modelName) 
+            };
         }
 
         let GROQ_API_KEY = null; 
-        let CURRENT_MODEL = MODELS['gpt-oss-20b']; 
+        let CURRENT_MODEL = MODELS['gpt-oss-20b']; // Setting default back to the first model in the list
         
         // --- State Management ---
         const startPage = document.getElementById('start-page');
@@ -639,15 +639,14 @@ return {
         const promptModal = document.getElementById('custom-prompt-modal');
         const promptInput = document.getElementById('prompt-input');
 
-        // 💡 Global State Variables: Chat structure is now an object for title/history tracking
-        // allChatHistories = { "chat-1": { title: "...", history: [...] }, ... }
+        // 💡 Global State Variables
         let allChatHistories = {};
         let currentChatId = 'chat-0'; 
         let chatCounter = 0;
-        let imageAnalysisCounter = 0; // 💡 NEW: Separate counter for image analysis chats
+        let imageAnalysisCounter = 0; 
         let contextMenuTargetChatId = null; 
 
-        // --- UI Control Functions (Unchanged) ---
+        // --- UI Control Functions ---
         
         function showStartPage() {
             startPage.style.display = 'flex';
@@ -665,7 +664,7 @@ return {
             contextMenuTargetChatId = null;
         }
         
-        // --- MODAL FUNCTIONS (Unchanged) ---
+        // --- MODAL FUNCTIONS ---
         
         function showCustomConfirm(title, message) {
             return new Promise(resolve => {
@@ -728,7 +727,7 @@ return {
             });
         }
 
-        // --- Model Selection and Initialization (Updated for file button visibility) ---
+        // --- Model Selection and Initialization (FIXED Vision Visibility Logic) ---
 
         function populateModelSelector() {
             modelSelectorContainer.innerHTML = '';
@@ -759,39 +758,40 @@ return {
             modelSelectDropdown.disabled = shouldBeLocked;
         }
 
+        // 💡 CRUCIAL FIX: Ensures file upload button visibility is toggled based on the selected model's multimodal property.
         function selectModel(modelKey, isInitialSelection = false, targetButton = null) {
             const previousModel = CURRENT_MODEL;
             
             const modelObject = MODELS[modelKey] || CURRENT_MODEL;
             CURRENT_MODEL = modelObject;
-            localStorage.setItem('starlighter_model_key', modelKey); 
+            localStorage.setItem(MODEL_KEY_STORAGE, modelKey); 
 
             // Update UI components
             modelDisplay.textContent = CURRENT_MODEL.name;
             modelSelectDropdown.value = modelKey;
             
-            // 💡 NEW LOGIC FOR FILE UPLOAD BUTTON VISIBILITY
-            if (CURRENT_MODEL.multimodal) {
-                fileUploadButton.style.display = 'flex'; 
-            } else {
-                fileUploadButton.style.display = 'none';
-                // Also clear any selected file if we switch to a non-multimodal model
-                if (selectedFile) {
-                    clearSelectedFile();
+            // --- VISION BUTTON VISIBILITY LOGIC ---
+            if (fileUploadButton) { 
+                if (CURRENT_MODEL.multimodal) {
+                    fileUploadButton.style.display = 'flex'; 
+                } else {
+                    fileUploadButton.style.display = 'none';
+                    if (selectedFile) {
+                        clearSelectedFile();
+                    }
                 }
             }
+            // -------------------------------------
             
             // Update system prompt in CURRENT chat history if the model actually changed
             if (previousModel.id !== CURRENT_MODEL.id) {
                 const currentChatObject = allChatHistories[currentChatId];
                 if (currentChatObject && currentChatObject.history && currentChatObject.history.length > 0) {
-                    currentChatObject.history[0] = getModelSystemPrompt(CURRENT_MODEL.name);
+                    currentChatObject.history[0] = getModelSystemPrompt(
+                        CURRENT_MODEL.name, 
+                        CURRENT_MODEL.multimodal 
+                    );
                     saveStateToLocalStorage();
-                    // 💡 MODIFIED: Pass the multimodal flag to the prompt builder
-        currentChatObject.history[0] = getModelSystemPrompt(
-            CURRENT_MODEL.name, 
-            CURRENT_MODEL.multimodal // Pass true/false here
-        );
                 }
             }
 
@@ -802,62 +802,61 @@ return {
                 if (targetButton) {
                     targetButton.classList.add('selected');
                 }
-
-                setTimeout(showChatInterface, 300);
+                if (targetButton) {
+                    setTimeout(showChatInterface, 300);
+                }
             } else {
+                // Only rerender if this is not a *new* chat started from the model buttons
                 renderCurrentChat(); 
             }
         }
             
-        // --- Local Storage Functions (Updated for new chat structure) ---
+        // --- Local Storage Functions ---
 
-function saveStateToLocalStorage() {
-    // Recalculate image analysis counter before saving
-    imageAnalysisCounter = 0;
-    
-    Object.keys(allChatHistories).forEach(id => {
-        const chatObject = allChatHistories[id];
-        
-        // 💡 FIX: Ensure chatObject.title exists AND is a string before calling startsWith
-        if (typeof chatObject.title === 'string' && chatObject.title.startsWith('Image Analysis')) { 
-             const num = parseInt(chatObject.title.split(' ')[2]);
-             if (!isNaN(num) && num > imageAnalysisCounter) {
-                 imageAnalysisCounter = num;
-             }
+        function saveStateToLocalStorage() {
+            // Recalculate image analysis counter before saving
+            imageAnalysisCounter = 0;
+            
+            Object.keys(allChatHistories).forEach(id => {
+                const chatObject = allChatHistories[id];
+                
+                if (typeof chatObject.title === 'string' && chatObject.title.startsWith('Image Analysis')) { 
+                    const num = parseInt(chatObject.title.split(' ')[2]);
+                    if (!isNaN(num) && num > imageAnalysisCounter) {
+                        imageAnalysisCounter = num;
+                    }
+                }
+            });
+
+            const state = {
+                histories: allChatHistories,
+                counter: chatCounter,
+                currentId: currentChatId,
+                imageCounter: imageAnalysisCounter
+            };
+            try {
+                localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(state));
+            } catch (e) {
+                console.error("Error saving to local storage:", e);
+            }
         }
-    });
-
-    const state = {
-        histories: allChatHistories,
-        counter: chatCounter,
-        currentId: currentChatId,
-        imageCounter: imageAnalysisCounter
-    };
-    try {
-        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(state));
-    } catch (e) {
-        console.error("Error saving to local storage:", e);
-    }
-}
 
         function loadStateFromLocalStorage() {
             try {
                 const storedState = localStorage.getItem(LOCAL_STORAGE_KEY);
                 if (storedState) {
                     const state = JSON.parse(storedState);
-                    // Ensure backward compatibility: convert old array-only histories to objects
+                    
                     const loadedHistories = {};
                     for (const id in state.histories) {
                         const item = state.histories[id];
                         if (Array.isArray(item)) {
-                            // Old structure: just an array of messages. Infer title from first user message.
                             const firstUserMsg = item.find(msg => msg.role === 'user');
                             loadedHistories[id] = {
                                 history: item,
                                 title: firstUserMsg ? firstUserMsg.content : `Chat ${id.split('-')[1]}`
                             };
                         } else {
-                            // New structure: object with title and history.
                             loadedHistories[id] = item;
                         }
                     }
@@ -865,14 +864,14 @@ function saveStateToLocalStorage() {
                     allChatHistories = loadedHistories;
                     chatCounter = state.counter || 0;
                     currentChatId = state.currentId || 'chat-0';
-                    imageAnalysisCounter = state.imageCounter || 0; // Load the new counter
+                    imageAnalysisCounter = state.imageCounter || 0; 
 
                     if (Object.keys(allChatHistories).length > 0 && !allChatHistories[currentChatId]) {
                         currentChatId = Object.keys(allChatHistories)[0];
                     }
                 }
 
-                const savedModelKey = localStorage.getItem('starlighter_model_key') || Object.keys(MODELS)[0];
+                const savedModelKey = localStorage.getItem(MODEL_KEY_STORAGE) || Object.keys(MODELS)[0];
                 if (MODELS[savedModelKey]) {
                     CURRENT_MODEL = MODELS[savedModelKey];
                 }
@@ -886,7 +885,7 @@ function saveStateToLocalStorage() {
             }
         }
 
-        // --- Chat Lifecycle Functions (Updated for new chat structure) ---
+        // --- Chat Lifecycle Functions ---
 
         function renderCurrentChat() {
             const chatObject = allChatHistories[currentChatId];
@@ -905,11 +904,12 @@ function saveStateToLocalStorage() {
             }
             toggleModelSelectorLock();
             userInput.focus();
+            scrollToBottom();
         }
 
-        // 💡 MODIFIED: Accepts initialTitle and stores history as an object
         function createNewChatObject(id, initialTitle) {
-const newHistory = [getModelSystemPrompt(CURRENT_MODEL.name, CURRENT_MODEL.multimodal)];            
+            const newHistory = [getModelSystemPrompt(CURRENT_MODEL.name, CURRENT_MODEL.multimodal)];
+            
             allChatHistories[id] = {
                 history: newHistory,
                 title: initialTitle
@@ -919,14 +919,12 @@ const newHistory = [getModelSystemPrompt(CURRENT_MODEL.name, CURRENT_MODEL.multi
             return newHistory;
         }
 
-        // 💡 MODIFIED: Updates title in the chat object and the sidebar element
         function updateChatTitle(id, newTitle) {
             const chatItem = document.querySelector(`.chat-item[data-chat-id="${id}"]`);
             if (chatItem) {
                 const displayedTitle = newTitle.length > 50 ? newTitle.substring(0, 47).trim() + '...' : newTitle;
                 chatItem.textContent = displayedTitle;
                 
-                // Also update the stored title immediately
                 if (allChatHistories[id]) {
                     allChatHistories[id].title = newTitle;
                 }
@@ -938,6 +936,7 @@ const newHistory = [getModelSystemPrompt(CURRENT_MODEL.name, CURRENT_MODEL.multi
             chatCounter++;
             currentChatId = `chat-${chatCounter}`;
             
+            // Set default title for a new chat
             createNewChatObject(currentChatId, `New Chat ${chatCounter}`);
             
             renderSidebar();
@@ -951,46 +950,68 @@ const newHistory = [getModelSystemPrompt(CURRENT_MODEL.name, CURRENT_MODEL.multi
             clearSelectedFile();
 
             renderCurrentChat();
+            
+            // Reset model to default (or current) when starting a new chat
+            const currentModelKey = Object.keys(MODELS).find(key => MODELS[key].id === CURRENT_MODEL.id) || Object.keys(MODELS)[0];
+            selectModel(currentModelKey); 
         }
         
-        function loadChat(chatId) {
-            if (currentChatId === chatId) return; 
+        // 💡 FIX APPLIED: Ensures model switch occurs when loading a chat to set multimodal state correctly
+// 💡 FINAL-FINAL FIX: Ensures all model key updates happen BEFORE selectModel runs, preventing UI reversion.
+function loadChat(chatId) {
+    if (currentChatId === chatId) {
+        renderCurrentChat();
+        return; 
+    } 
 
-            currentChatId = chatId;
-            saveStateToLocalStorage();
-            
-            clearSelectedFile();
+    currentChatId = chatId;
+    saveStateToLocalStorage();
+    
+    clearSelectedFile(); 
 
-            const chatObject = allChatHistories[chatId];
-            const history = chatObject ? chatObject.history : [];
-            
-            let modelKeyToLoad = Object.keys(MODELS)[0]; 
+    const chatObject = allChatHistories[chatId];
+    const history = chatObject ? chatObject.history : [];
+    
+    let modelKeyToLoad = Object.keys(MODELS)[0]; 
 
-            if (history && history.length > 0 && history[0].role === 'system') {
-                const promptContent = history[0].content;
-                
-                const match = promptContent.match(/currently running on the (.*?) model\./);
-                
-                if (match && match[1]) {
-                    const modelNameInHistory = match[1].trim();
-                    
-                    const modelKey = Object.keys(MODELS).find(key => MODELS[key].name === modelNameInHistory);
+    // 1. Determine the Model Key from History
+    if (history && history.length > 0 && history[0].role === 'system') {
+        const promptContent = history[0].content;
+        const match = promptContent.match(/running on the (.*?) model/); 
+        
+        if (match && match[1]) {
+            const modelNameInHistory = match[1].trim();
+            const modelKey = Object.keys(MODELS).find(key => MODELS[key].name === modelNameInHistory);
 
-                    if (modelKey) {
-                        modelKeyToLoad = modelKey;
-                    }
-                }
+            if (modelKey) {
+                modelKeyToLoad = modelKey;
             }
-            
-            selectModel(modelKeyToLoad); 
-
-            document.querySelectorAll('.chat-item').forEach(item => {
-                item.classList.remove('active');
-            });
-            document.querySelector(`.chat-item[data-chat-id="${chatId}"]`).classList.add('active');
-            renderCurrentChat(); 
         }
+    }
+    
+    // --- CRITICAL UI SYNC STEPS ADDED HERE ---
+    // Manually set the model key on the dropdown before calling selectModel,
+    // which should prevent it from flickering or reverting.
+    modelSelectDropdown.value = modelKeyToLoad; 
 
+    // Manually ensure the model display text is updated immediately, 
+    // using the name found for that key.
+    const modelObject = MODELS[modelKeyToLoad] || MODELS[Object.keys(MODELS)[0]];
+    modelDisplay.textContent = modelObject.name;
+    // ------------------------------------------
+
+    // 2. Call selectModel to update the CURRENT_MODEL global state, buttons, and file button visibility.
+    selectModel(modelKeyToLoad, false); 
+
+    // 3. Update Sidebar Active Class
+    document.querySelectorAll('.chat-item').forEach(item => {
+        item.classList.remove('active');
+    });
+    const activeItem = document.querySelector(`.chat-item[data-chat-id="${chatId}"]`);
+    if (activeItem) {
+        activeItem.classList.add('active');
+    }
+}
         function renderSidebar() {
             chatListContainer.innerHTML = ''; 
             
@@ -1000,8 +1021,6 @@ const newHistory = [getModelSystemPrompt(CURRENT_MODEL.name, CURRENT_MODEL.multi
 
             sortedChatIds.forEach(id => {
                 const chatObject = allChatHistories[id];
-                
-                // Get title from the stored object property
                 let title = chatObject.title || `Chat ${id.split('-')[1]}`; 
 
                 const chatItem = document.createElement('div');
@@ -1011,7 +1030,6 @@ const newHistory = [getModelSystemPrompt(CURRENT_MODEL.name, CURRENT_MODEL.multi
                 
                 chatItem.onclick = () => loadChat(id); 
                 
-                // Right-Click/Context Menu Listener
                 chatItem.addEventListener('contextmenu', function(event) {
                     event.preventDefault(); 
                     contextMenuTargetChatId = id; 
@@ -1024,7 +1042,7 @@ const newHistory = [getModelSystemPrompt(CURRENT_MODEL.name, CURRENT_MODEL.multi
             });
         }
         
-        // --- Context Menu Handlers (Updated for new chat structure) ---
+        // --- Context Menu Handlers (Unchanged) ---
 
         async function handleDeleteChat() {
             const chatIdToDelete = contextMenuTargetChatId;
@@ -1046,7 +1064,6 @@ const newHistory = [getModelSystemPrompt(CURRENT_MODEL.name, CURRENT_MODEL.multi
             
             if (currentChatId === chatIdToDelete) {
                 if (remainingChatIds.length > 0) {
-                    // Load the first remaining chat
                     currentChatId = remainingChatIds[0];
                 } else {
                     // Create a new empty chat
@@ -1079,17 +1096,16 @@ const newHistory = [getModelSystemPrompt(CURRENT_MODEL.name, CURRENT_MODEL.multi
             if (newTitle && newTitle.trim()) {
                 const cleanNewTitle = newTitle.trim();
                 
-                // Update title property
                 chatObject.title = cleanNewTitle;
                 
-                // Check if history exists to potentially update first user message content (optional, but good practice)
                 const history = chatObject.history;
                 const firstUserMsgIndex = history.findIndex(msg => msg.role === 'user');
                 
                 if (firstUserMsgIndex !== -1) {
+                    // If a user message exists, update its content to the new title
                     history[firstUserMsgIndex].content = cleanNewTitle;
                 } else if (history.length === 1) { 
-                    // If no user message yet, push a dummy user message to establish content
+                    // If only system prompt exists, push a new user message to give context
                     history.push({ "role": "user", "content": cleanNewTitle });
                 }
 
@@ -1098,15 +1114,14 @@ const newHistory = [getModelSystemPrompt(CURRENT_MODEL.name, CURRENT_MODEL.multi
             }
         }
         
-        // --- File Handling Functions (Unchanged from last version) ---
+        // --- File Handling Functions (Unchanged) ---
 
         function handleFileSelect(event) {
             const file = event.target.files[0];
             if (file) {
-                // Basic file size check (4MB limit for Groq Base64)
                 if (file.size > 4 * 1024 * 1024) {
                     alert("File size exceeds 4MB. Please select a smaller image.");
-                    event.target.value = ''; // Clear the input
+                    event.target.value = ''; 
                     return;
                 }
                 selectedFile = file;
@@ -1118,9 +1133,9 @@ const newHistory = [getModelSystemPrompt(CURRENT_MODEL.name, CURRENT_MODEL.multi
 
         function clearSelectedFile() {
             selectedFile = null;
-            imageFileInput.value = ''; 
-            fileDisplayArea.style.display = 'none';
-            selectedFileName.textContent = 'No file selected';
+            if (imageFileInput) imageFileInput.value = ''; 
+            if (fileDisplayArea) fileDisplayArea.style.display = 'none';
+            if (selectedFileName) selectedFileName.textContent = 'No file selected';
         }
 
         function encodeFileToBase64(file) {
@@ -1139,65 +1154,61 @@ const newHistory = [getModelSystemPrompt(CURRENT_MODEL.name, CURRENT_MODEL.multi
 
         // --- Utility Functions (Unchanged) ---
         function scrollToBottom() {
-            chatBox.scrollTop = chatBox.scrollHeight;
+            if (chatBox) chatBox.scrollTop = chatBox.scrollHeight;
         }
 
-// --- Updated Function to Handle Multimodal Content Arrays ---
-function addMessage(role, content, targetElement = chatBox) {
-    const msgDiv = document.createElement('div');
-    
-    const safeRole = (role === 'user' || role === 'ai') ? role : 'ai';
-    
-    msgDiv.className = `message ${safeRole}-message`;
-    
-    let contentToParse;
+        function addMessage(role, content, targetElement = chatBox) {
+            const msgDiv = document.createElement('div');
+            
+            const safeRole = (role === 'user' || role === 'ai') ? role : 'ai';
+            
+            msgDiv.className = `message ${safeRole}-message`;
+            
+            let contentToParse;
 
-    // 💡 NEW LOGIC: Check if the content is the complex array structure
-    if (Array.isArray(content)) {
-        let displayParts = [];
-        let hasImage = false;
+            // Check if the content is the complex multimodal array structure
+            if (Array.isArray(content)) {
+                let displayParts = [];
+                let hasImage = false;
 
-        content.forEach(part => {
-            if (part.type === 'text' && part.text && part.text.trim()) {
-                displayParts.push(part.text.trim());
-            } else if (part.type === 'image_url') {
-                hasImage = true;
+                content.forEach(part => {
+                    if (part.type === 'text' && part.text && part.text.trim()) {
+                        displayParts.push(part.text.trim());
+                    } else if (part.type === 'image_url') {
+                        hasImage = true;
+                    }
+                });
+
+                // Construct a clean string for display
+                if (hasImage) {
+                    displayParts.push('**[Image Attached]**');
+                }
+                
+                contentToParse = displayParts.join('<br>');
+
+            } else {
+                // Standard text-only message (or system/AI message)
+                contentToParse = content && typeof content === 'string' ? content : '...';
             }
-        });
 
-        // Construct a clean string for display
-        if (hasImage) {
-            displayParts.push('**[Image Attached]**');
+
+            let renderedHtml;
+            
+            if (typeof marked !== 'undefined' && typeof marked.parse === 'function') {
+                const decodedContent = new DOMParser().parseFromString(contentToParse, 'text/html').documentElement.textContent;
+                renderedHtml = marked.parse(decodedContent);
+            } else {
+                renderedHtml = contentToParse.replace(/\n/g, '<br>');
+            }
+
+            msgDiv.innerHTML = renderedHtml;
+            targetElement.appendChild(msgDiv);
+            scrollToBottom();
+            
+            return msgDiv;
         }
-        
-        // Use the combined parts for parsing
-        contentToParse = displayParts.join('<br>');
 
-    } else {
-        // Standard text-only message (or system/AI message)
-        contentToParse = content && typeof content === 'string' ? content : '...';
-    }
-
-
-    let renderedHtml;
-    
-    if (typeof marked !== 'undefined' && typeof marked.parse === 'function') {
-        // Decode and parse for Markdown rendering
-        const decodedContent = new DOMParser().parseFromString(contentToParse, 'text/html').documentElement.textContent;
-        renderedHtml = marked.parse(decodedContent);
-    } else {
-        // Fallback for simple rendering
-        renderedHtml = contentToParse.replace(/\n/g, '<br>');
-    }
-
-    msgDiv.innerHTML = renderedHtml;
-    targetElement.appendChild(msgDiv);
-    scrollToBottom();
-    
-    return msgDiv;
-}
-
-        // --- API Key Loading (Unchanged) ---
+        // --- API Key Loading ---
         async function loadApiKey() {
             const hasExistingChats = loadStateFromLocalStorage();
             populateModelSelector(); 
@@ -1222,6 +1233,7 @@ function addMessage(role, content, targetElement = chatBox) {
 
                 apiStatus.textContent = 'API Key loaded successfully.';
                 
+                // Enable controls
                 modelSelectDropdown.disabled = false;
                 sendButton.disabled = false;
                 userInput.disabled = false;
@@ -1230,7 +1242,9 @@ function addMessage(role, content, targetElement = chatBox) {
 
                 if (hasExistingChats) {
                     showChatInterface();
+                    
                 } else {
+                    // Highlight the currently loaded default model button
                     const initialModelKey = Object.keys(MODELS).find(key => MODELS[key].id === CURRENT_MODEL.id);
                     if (initialModelKey) {
                         const btn = document.querySelector(`.model-button[data-model-key="${initialModelKey}"]`);
@@ -1242,9 +1256,10 @@ function addMessage(role, content, targetElement = chatBox) {
                 apiStatus.innerHTML = `<span style="color:red;">Error: Could not load API Key. (${error.message})</span>`;
             }
             toggleModelSelectorLock();
+            renderCurrentChat();
         }
         
-        // --- Send Message Function (Updated for Multimodal support & title naming) ---
+        // --- Send Message Function (The core execution loop) ---
         async function sendMessage() {
             
             const userText = userInput.value.trim();
@@ -1254,7 +1269,6 @@ function addMessage(role, content, targetElement = chatBox) {
             const currentChatObject = allChatHistories[currentChatId];
             const currentHistory = currentChatObject.history; 
 
-            // Check if it's the first non-system message
             const isFirstMessage = currentHistory.length === 1; 
 
             userInput.value = '';
@@ -1264,7 +1278,7 @@ function addMessage(role, content, targetElement = chatBox) {
             fileUploadButton.disabled = true;
 
             let finalUserMessageContent;
-            let fileToDisplay = selectedFile; // Keep a reference for display before clearing selectedFile
+            let fileToDisplay = selectedFile; 
 
             // 💡 Constructing the Multimodal Content Array
             if (fileToDisplay) {
@@ -1310,12 +1324,9 @@ function addMessage(role, content, targetElement = chatBox) {
             
             currentHistory.push({ "role": "user", "content": finalUserMessageContent });
             
-            // Clear the file state AFTER we've built the message and added it to history
             clearSelectedFile();
 
-            // ==========================================================
             // 💡 NEW/MODIFIED TITLE LOGIC HERE
-            // ==========================================================
             if (isFirstMessage) {
                 let newTitle;
                 if (fileToDisplay) {
@@ -1368,6 +1379,7 @@ function addMessage(role, content, targetElement = chatBox) {
                 const assistantResponse = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content
                     ? data.choices[0].message.content
                     : "Sorry, I received an empty response from the API.";
+                
                 const renderedHtml = (typeof marked !== 'undefined' && typeof marked.parse === 'function')
                     ? marked.parse(assistantResponse) 
                     : assistantResponse.replace(/\n/g, '<br>'); 
@@ -1391,27 +1403,29 @@ function addMessage(role, content, targetElement = chatBox) {
             }
         }
 
-        // --- Setup Event Listeners (Updated for new file elements) ---
+        // --- Setup Event Listeners ---
         document.addEventListener('DOMContentLoaded', () => {
             
             newChatButton.addEventListener('click', startNewChat);
 
             // Context menu handlers
-            contextMenu.addEventListener('click', (event) => {
-                event.stopPropagation(); 
-                const button = event.target.closest('button');
-                if (!button) return; 
-                
-                const action = button.dataset.action;
-                
-                if (action === 'edit') {
-                    handleEditChatTitle();
-                } else if (action === 'delete') {
-                    handleDeleteChat();
-                }
-                
-                hideContextMenu();
-            });
+            if (contextMenu) {
+                contextMenu.addEventListener('click', (event) => {
+                    event.stopPropagation(); 
+                    const button = event.target.closest('button');
+                    if (!button) return; 
+                    
+                    const action = button.dataset.action;
+                    
+                    if (action === 'edit') {
+                        handleEditChatTitle();
+                    } else if (action === 'delete') {
+                        handleDeleteChat();
+                    }
+                    
+                    hideContextMenu();
+                });
+            }
 
             document.addEventListener('click', hideContextMenu);
             document.addEventListener('contextmenu', (e) => {
@@ -1421,13 +1435,13 @@ function addMessage(role, content, targetElement = chatBox) {
             });
             
             // 💡 File Input Listeners
-            fileUploadButton.addEventListener('click', () => {
+            if (fileUploadButton) fileUploadButton.addEventListener('click', () => {
                 imageFileInput.click();
             });
 
-            imageFileInput.addEventListener('change', handleFileSelect);
+            if (imageFileInput) imageFileInput.addEventListener('change', handleFileSelect);
             
-            clearFileButton.addEventListener('click', clearSelectedFile);
+            if (clearFileButton) clearFileButton.addEventListener('click', clearSelectedFile);
             
             // Send message listener
             userInput.addEventListener('keydown', function(event) {
@@ -1443,6 +1457,5 @@ function addMessage(role, content, targetElement = chatBox) {
 
             loadApiKey();
         });
-    </script>
-</body>
+    </script></body>
 </html>
