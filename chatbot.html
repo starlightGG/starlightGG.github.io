@@ -558,15 +558,41 @@
                 modelSelectorContainer.appendChild(button);
             });
         }
-
-        function selectModel(modelKey, isInitialSelection = false, targetButton = null) {
+/**
+         * Disables the model selection dropdown if a conversation has already started.
+         * The history length check ensures only the system prompt exists (length = 1).
+         */
+        function toggleModelSelectorLock() {
+            const history = allChatHistories[currentChatId];
+            
+            // If history exists and has more than 1 entry (i.e., user sent a message)
+            const shouldBeLocked = history && history.length > 1; 
+            
+            modelSelectDropdown.disabled = shouldBeLocked;
+            
+            // Optionally update the send button/input state as well, though it's managed elsewhere
+            // userInput.disabled = !GROQ_API_KEY || shouldBeLocked; 
+        }
+function selectModel(modelKey, isInitialSelection = false, targetButton = null) {
+            const previousModel = CURRENT_MODEL;
             CURRENT_MODEL = MODELS[modelKey];
             localStorage.setItem('starlighter_model_key', modelKey); 
             
             modelDisplay.textContent = CURRENT_MODEL.name;
             modelSelectDropdown.value = modelKey;
             
+            // 💡 FIX: Update system prompt in CURRENT chat history if the model actually changed
+            if (previousModel.id !== CURRENT_MODEL.id) {
+                 const currentHistory = allChatHistories[currentChatId];
+                 if (currentHistory && currentHistory.length > 0) {
+                     // Replace the old system prompt (always the first message)
+                     currentHistory[0] = getModelSystemPrompt();
+                     saveStateToLocalStorage();
+                 }
+            }
+            
             if (isInitialSelection) {
+                // ... (rest of initial selection logic remains the same)
                 document.querySelectorAll('.model-button').forEach(btn => {
                     btn.classList.remove('selected');
                 });
@@ -639,6 +665,7 @@
                     addMessage(msg.role, msg.content, chatBox);
                 });
             }
+            toggleModelSelectorLock();
             userInput.focus();
         }
 
@@ -972,9 +999,9 @@ async function sendMessage() {
                 console.error('Groq API Call Failed:', error);
                 aiMessageElement.innerHTML = `<span style="color:red;">${error.message}</span>`;
             } finally {
+              toggleModelSelectorLock();
                 sendButton.disabled = false;
                 userInput.disabled = false;
-                modelSelectDropdown.disabled = false;
                 userInput.focus();
             }
         }
