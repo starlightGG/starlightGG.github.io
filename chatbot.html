@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Google</title>
 <style>
+
         /* --- Neumorphic Base Color and Variables --- */
         :root {
             --neumorphic-bg: #e0e5ec;
@@ -615,14 +616,16 @@
             // Optionally update the send button/input state as well, though it's managed elsewhere
             // userInput.disabled = !GROQ_API_KEY || shouldBeLocked; 
         }
+
 function selectModel(modelKey, isInitialSelection = false, targetButton = null) {
             const previousModel = CURRENT_MODEL;
             CURRENT_MODEL = MODELS[modelKey];
             localStorage.setItem('starlighter_model_key', modelKey); 
-            
+
             modelDisplay.textContent = CURRENT_MODEL.name;
             modelSelectDropdown.value = modelKey;
-            
+                renderCurrentChat();
+
             // 💡 FIX: Update system prompt in CURRENT chat history if the model actually changed
             if (previousModel.id !== CURRENT_MODEL.id) {
                  const currentHistory = allChatHistories[currentChatId];
@@ -630,9 +633,11 @@ function selectModel(modelKey, isInitialSelection = false, targetButton = null) 
                      // Replace the old system prompt (always the first message)
                      currentHistory[0] = getModelSystemPrompt();
                      saveStateToLocalStorage();
+                     
+
                  }
             }
-            
+
             if (isInitialSelection) {
                 // ... (rest of initial selection logic remains the same)
                 document.querySelectorAll('.model-button').forEach(btn => {
@@ -912,10 +917,20 @@ function addMessage(role, content, targetElement = chatBox) {
             const safeRole = (role === 'user' || role === 'ai') ? role : 'ai';
             
             msgDiv.className = `message ${safeRole}-message`;
-            const contentToParse = content && typeof content === 'string' ? content : '...';
-            // Sanitize content and convert new lines to <br> tags
-const renderedHtml = marked.parse(contentToParse);            
-msgDiv.innerHTML = renderedHtml;            
+const contentToParse = content && typeof content === 'string' ? content : '...';
+            let renderedHtml;
+            
+            // This entire block relies on marked.js being defined.
+            if (typeof marked !== 'undefined' && typeof marked.parse === 'function') {
+                // Decode the content before parsing to handle HTML-encoded characters from the textarea.
+                const decodedContent = new DOMParser().parseFromString(contentToParse, 'text/html').documentElement.textContent;
+                
+                renderedHtml = marked.parse(decodedContent);
+            } else {
+                // Fallback (only used if window.onload somehow fails)
+                renderedHtml = contentToParse.replace(/\n/g, '<br>');
+            }
+msgDiv.innerHTML = renderedHtml;
             targetElement.appendChild(msgDiv);
             scrollToBottom();
             
@@ -970,6 +985,7 @@ msgDiv.innerHTML = renderedHtml;
         }
         
 async function sendMessage() {
+  
             const userText = userInput.value.trim();
             if (!userText || !GROQ_API_KEY) return;
             
@@ -1028,9 +1044,12 @@ async function sendMessage() {
                 const assistantResponse = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content
                     ? data.choices[0].message.content
                     : "Sorry, I received an empty response from the API.";
-
+const renderedHtml = (typeof marked !== 'undefined' && typeof marked.parse === 'function')
+? marked.parse(assistantResponse) // Use marked.parse for formatting
+                    : assistantResponse.replace(/\n/g, '<br>'); // Fallback
                 // 3. Update AI Placeholder with final response
                 aiMessageElement.innerHTML = assistantResponse.replace(/\n/g, '<br>');
+                aiMessageElement.innerHTML = renderedHtml;
                 currentHistory.push({ "role": "assistant", "content": assistantResponse });
                 
                 scrollToBottom();
