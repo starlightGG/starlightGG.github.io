@@ -512,6 +512,7 @@ body, html {
             <p id="prompt-message">Enter value:</p>
             <input type="text" id="prompt-input">
             <div class="modal-buttons">
+              
                 <button class="cancel-btn" data-prompt-response="false">Cancel</button>
                 <button class="confirm-btn" data-prompt-response="true">Save</button>
             </div>
@@ -566,7 +567,9 @@ body, html {
                         </button>
                         
                         <textarea id="user-input" placeholder="Type your message here..." rows="1" disabled></textarea>
-                        
+                        <div id="main-char-counter" style="text-align: right; font-size: 0.7em; color: #888; padding: 0 10px;">
+        0 / 4000
+    </div>
                         <button id="send-button" class="send-button" disabled>Send</button>
                     </div>
                     
@@ -625,7 +628,8 @@ body, html {
         const modelDisplay = document.getElementById('displayed-model'); 
         const contextMenu = document.getElementById('context-menu'); 
         const newChatButton = document.getElementById('new-chat-button');
-        
+        // --- NEW GLOBAL ELEMENT FOR COUNTER ---
+const mainCharCounter = document.getElementById('main-char-counter');
         // 💡 File Upload Elements & State
         const imageFileInput = document.getElementById('image-file-input');
         const fileUploadButton = document.getElementById('file-upload-button');
@@ -656,6 +660,8 @@ body, html {
         function showChatInterface() {
             startPage.style.display = 'none';
             mainChatContainer.style.display = 'flex';
+                        setupMainInputCounter();
+
             userInput.focus();
         }
 
@@ -811,6 +817,42 @@ body, html {
             }
         }
             
+/**
+ * Sets the character limit and attaches the live counter logic 
+ * to the main chat input field (userInput).
+ */
+function setupMainInputCounter() {
+    if (!userInput || !mainCharCounter) {
+        // Safety check: Don't run if the elements aren't found in the HTML
+        console.warn("Input or counter element not found. Skipping counter setup.");
+        return;
+    }
+
+    // 1. Enforce the limit directly on the HTML input element
+    userInput.maxLength = 4000;
+
+    const updateCounter = () => {
+        const currentLength = userInput.value.length;
+        
+        // 2. Update the counter display text
+        mainCharCounter.textContent = `${currentLength} / ${4000}`;
+        
+        // Optional: Change color if close to limit
+        if (currentLength >= 4000 * 0.9) {
+            mainCharCounter.style.color = 'orange';
+        } else {
+            mainCharCounter.style.color = '#888';
+        }
+    };
+
+    // 3. Attach the 'input' event listener to update the counter in real-time
+    userInput.addEventListener('input', updateCounter);
+    
+    // 4. Initial update (shows '0 / 4000' when the page loads)
+    updateCounter();
+}
+
+
         // --- Local Storage Functions ---
 
         function saveStateToLocalStorage() {
@@ -922,7 +964,8 @@ body, html {
         function updateChatTitle(id, newTitle) {
             const chatItem = document.querySelector(`.chat-item[data-chat-id="${id}"]`);
             if (chatItem) {
-                const displayedTitle = newTitle.length > 50 ? newTitle.substring(0, 47).trim() + '...' : newTitle;
+// Replacement line:
+const displayedTitle = truncateText(newTitle);
                 chatItem.textContent = displayedTitle;
                 
                 if (allChatHistories[id]) {
@@ -1026,8 +1069,8 @@ function loadChat(chatId) {
                 const chatItem = document.createElement('div');
                 chatItem.className = `chat-item ${id === currentChatId ? 'active' : ''}`;
                 chatItem.dataset.chatId = id;
-                chatItem.textContent = title.length > 50 ? title.substring(0, 47).trim() + '...' : title;
-                
+// Replacement line:
+chatItem.textContent = truncateText(title);                
                 chatItem.onclick = () => loadChat(id); 
                 
                 chatItem.addEventListener('contextmenu', function(event) {
@@ -1042,6 +1085,23 @@ function loadChat(chatId) {
             });
         }
         
+        // --- NEW UTILITY: TRUNCATION FUNCTION ---
+const TITLE_MAX_LENGTH = 50; // Set the character limit for display in the sidebar
+
+/**
+ * Truncates a string to a specified length and appends '...' if necessary.
+ * @param {string} text The original string to truncate.
+ * @param {number} maxLength The maximum number of characters allowed.
+ * @returns {string} The truncated or original string.
+ */
+function truncateText(text, maxLength = TITLE_MAX_LENGTH) {
+    if (!text || typeof text !== 'string' || text.length <= maxLength) {
+        return text;
+    }
+    // Truncate and add ellipsis
+    return text.substring(0, maxLength).trim() + '...';
+}
+// ----------------------------------------
         // --- Context Menu Handlers (Unchanged) ---
 
 async function handleDeleteChat() {
@@ -1352,7 +1412,7 @@ async function handleDeleteChat() {
                     newTitle = `Image Analysis ${imageAnalysisCounter}`;
                 } else {
                     // If it's the first message and is only text:
-                    newTitle = userText; 
+newTitle = truncateText(userText);
                 }
                 
                 updateChatTitle(currentChatId, newTitle); 
