@@ -8,6 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 
     <style>
+        /* ... (All your existing CSS remains here, unchanged) ... */
         :root {
             --primary-color: #4c68ff;
             --secondary-color: #008069; 
@@ -16,11 +17,10 @@
             --bg-color: #f8f8f8;
         }
         
-        /* 💥 FIX: Eliminate ALL default browser margins/gaps 💥 */
         html, body {
             margin: 0;
             padding: 0;
-            height: 100%; /* Important for 100vh calculation */
+            height: 100%; 
             width: 100%;
         }
 
@@ -34,8 +34,6 @@
             min-height: 100vh; 
         }
         
-        /* Ensures the main container fills the entire screen when the document is fullscreen */
-        /* Use :host or :root for maximum scope when dealing with full-screen */
         :fullscreen .main-app-container,
         :-webkit-full-screen .main-app-container,
         :-moz-full-screen .main-app-container,
@@ -76,13 +74,8 @@
             overflow: hidden; 
         }
         
-        /* The chat widget container */
-        #rt-d4dc4ea0e6ecd094ad1bfd1cbb0bfcf5 {
-            width: 100%;
-            height: 100%;
-        }
-
-        /* --- Button Styles --- */
+        /* Removed unnecessary #rt-d4dc4ea0e6ecd094ad1bfd1cbb0bfcf5 CSS */
+        
         .footer-actions {
             margin-top: 15px;
             padding-top: 10px;
@@ -119,16 +112,21 @@
     <div class="main-app-container">
         <h1>Starlight Games | Community Chat</h1>
         <p>For the best experience, we recommend using the fullscreen option, especially on Chromebooks.</p>
+        
         <div class="chat-embed-area" id="chatEmbedArea">
-            <div id="rt-d4dc4ea0e6ecd094ad1bfd1cbb0bfcf5"></div> 
-            <script id="rumbletalk-script" src="https://rumbletalk.com/client/?AFeSblMD"></script>
+            <iframe id="chatIframe" 
+                    src="./chat_embed.html" 
+                    style="width: 100%; height: 100%; border: none;">
+            </iframe>
         </div>
         
         <div class="footer-actions">
             <button class="nav-button back-button" onclick="redirectToApp()">
                 ← Back to App
             </button>
-
+            <button class="nav-button refresh-button" onclick="refreshChat()">
+                ↻ Refresh Chat
+            </button>
             <button class="nav-button fullscreen-button" onclick="toggleFullscreen()">
                 ⛶ Fullscreen Document
             </button>
@@ -139,50 +137,27 @@
         // --- Core Functions ---
         const CHAT_WIDGET_ID = 'rt-d4dc4ea0e6ecd094ad1bfd1cbb0bfcf5';
         const CHAT_AREA_ID = 'chatEmbedArea';
-        const RUMBLETALK_SRC = 'https://rumbletalk.com/client/?AFeSblMD';
+        const RUMBLETALK_SRC = 'https://rumbletalk.com/client/?AFeSblMD'; // Not used, but kept for context
 
         function redirectToApp() {
             window.location.href = '/'; 
         }
         
         /**
-         * Recreates the chat div and reloads the RumbleTalk script.
-         * This version is maximally aggressive to force re-initialization.
+         * The non-reload fix: Reloads the IFRAME content only.
          */
         function refreshChat() {
-            const chatArea = document.getElementById(CHAT_AREA_ID);
-            
-            // 1. Remove ALL chat elements and scripts by their IDs
-            let oldChatDiv = document.getElementById(CHAT_WIDGET_ID);
-            let oldScript = document.getElementById('rumbletalk-script');
-
-            if (oldChatDiv) oldChatDiv.remove();
-            if (oldScript) oldScript.remove();
-            
-            // 2. Create and append the new chat div
-            const newChatDiv = document.createElement('div');
-            newChatDiv.id = CHAT_WIDGET_ID;
-            chatArea.appendChild(newChatDiv);
-            
-            // 3. Create and append the new script element
-            const newScript = document.createElement('script');
-            newScript.id = 'rumbletalk-script';
-            newScript.src = RUMBLETALK_SRC;
-            chatArea.appendChild(newScript);
-
-            // 4. (Advanced/Last Resort) Clear any global script-specific variables if known.
-            // Since RumbleTalk uses a unique element ID, removing and re-adding should be enough.
+            console.log("Forcing Iframe content reload for clean reset.");
+            const iframe = document.getElementById('chatIframe');
+            // Setting src = src forces the browser to reload the iframe content
+            iframe.src = iframe.src; 
         }
 
         function toggleFullscreen() {
-            // TARGETING THE ENTIRE DOCUMENT'S ROOT ELEMENT (<html> tag)
             const element = document.documentElement; 
-
-            // Check if ANY element is currently in fullscreen mode
             const isFullscreen = document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement || document.msFullscreenElement;
 
             if (!isFullscreen) {
-                // Request fullscreen on the document
                 if (element.requestFullscreen) {
                     element.requestFullscreen();
                 } else if (element.mozRequestFullScreen) {
@@ -192,8 +167,10 @@
                 } else if (element.msRequestFullscreen) {
                     element.msRequestFullscreen();
                 }
+                
+                document.addEventListener('fullscreenchange', handleFullscreenChange);
+
             } else {
-                // Exit fullscreen (always called on the document)
                 if (document.exitFullscreen) {
                     document.exitFullscreen();
                 } else if (document.mozCancelFullScreen) {
@@ -204,6 +181,14 @@
                     document.msExitFullscreen();
                 }
             }
+        }
+        
+        function handleFullscreenChange() {
+            document.removeEventListener('fullscreenchange', handleFullscreenChange);
+            // Give the browser time to render the new full-screen size
+            setTimeout(() => {
+                refreshChat();
+            }, 50); 
         }
         
         // Function for custom inputs (Cloaking)
@@ -223,7 +208,7 @@
             }
         }
         
-        // Apply the cloak after a small delay
+        // Apply the cloak after a small delay. No need to call refreshChat.
         window.addEventListener('load', () => {
             setTimeout(()=>{
                 applyCustomCloak('Google','https://google.com/favicon.ico');
