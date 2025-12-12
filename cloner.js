@@ -55,7 +55,7 @@ function executeCloningLogic() {
 document.addEventListener('DOMContentLoaded', function() {
     
     // Set a delay of 150 milliseconds (0.15 seconds)
-    const delayInMilliseconds = 150; 
+    const delayInMilliseconds = 500; 
     
     console.log(`Cloning will start in ${delayInMilliseconds / 1000} seconds...`);
 
