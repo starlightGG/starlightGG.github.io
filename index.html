@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -836,24 +837,7 @@ width: 80%;
               }
 
               /* --- Individual Control Overrides --- */
-              /* Blur Toggle Button (High Contrast - overrides glass effect background) */
-              #blur-toggle {
-                  min-width: 100px;
-                  font-weight: 700;
-                  color: white;
-                  background-color: #d93025;
-                  box-shadow: 0 4px 10px rgba(217, 48, 37, 0.4);
-                  border: none;
-              }
-              #blur-toggle:hover {
-                   box-shadow: 0 6px 15px rgba(217, 48, 37, 0.6);
-                   transform: translateY(-1px);
-              }
-              /* Styling based on the JS data attribute */
-              #blur-toggle[data-blur-enabled="false"] {
-                  background-color: #4CAF50;
-                  box-shadow: 0 4px 10px rgba(76, 175, 80, 0.4);
-              }
+
 
               /* Theme Toggle (Round Button) */
               #theme-toggle {
@@ -1312,25 +1296,60 @@ width: 80%;
               </div>
             
               </div>
-                        <div class="menu-section-title">⚙️ Page Security</div>
+<div class="menu-section-title">⚙️ Page Security</div>
+<div class="settings-item">
+    <label for="theme-toggle-switch">Theme:</label>
+
+    <div id="theme-toggle-switch" 
+         class="switch-container flex items-center cursor-pointer p-1" 
+         onclick="toggleTheme()"> 
+        
+        <div id="switch-thumb-theme" class="switch-thumb flex items-center justify-center">
+            
+            <svg id="switch-icon-theme" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path id="theme-icon-path" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+            </svg>
+        </div>
+    </div>
+    
+    <span id="theme-status" class="status-text">Light Mode</span>
+</div>
+<div class="settings-item">
+    
+    <label for="blur-toggle-switch">Redirect:</label>
+
+    <div id="blur-toggle-switch" 
+         class="switch-container flex items-center cursor-pointer p-1" 
+         onclick="toggleRedirect()"> 
+        
+        <div id="switch-thumb-redirect" class="switch-thumb flex items-center justify-center">
+            
+            <svg id="switch-icon-redirect" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+            </svg>
+        </div>
+    </div>
+    
+</div>
 
 <div class="settings-item">
-                <label for="toggle-switch">Close tab prevention:</label>
+    
+    <label for="protection-toggle-switch">Close tab prevention:</label>
 
-<div id="toggle-switch" 
-                     class="switch-container flex items-center cursor-pointer p-1" 
-                     onclick="toggleProtection()">
-                    
-                    <div id="switch-thumb" class="switch-thumb flex items-center justify-center">
-                      
-                        <!-- Icon size reduced from h-8 w-8 to h-6 w-6 -->
-                        <svg id="switch-icon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
-                        </svg>
-                    </div>
-                </div>
+    <div id="protection-toggle-switch" 
+         class="switch-container flex items-center cursor-pointer p-1" 
+         onclick="toggleTabProtection()"> 
+        
+        <div id="switch-thumb-protection" class="switch-thumb flex items-center justify-center">
+            
+            <svg id="switch-icon-protection" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+            </svg>
+        </div>
+    </div>
 </div>
         </div>
+        
         <div class="absolutely-positioned-div"></div>
 
       </div>
@@ -1355,15 +1374,7 @@ width: 80%;
       </div>
 
       <div class="top-controls">
-        <button id="theme-toggle" aria-label="Toggle Theme"></button>
-        <button
-          id="blur-toggle"
-          onclick="toggleBlur()"
-          title="Toggle Blur Redirect"
-          data-blur-enabled="true"
-        >
-          Redirect: ON
-        </button>
+
         <!-- Performance Monitor Modal -->
 <div id="performance-modal">
     <h3>Performance Stats</h3>
@@ -1472,7 +1483,6 @@ loadQuotes();
           const mainMenu = document.getElementById('main-menu');
           const iframeContainer = document.getElementById('iframe-container');
           const blurToggleBtn = document.getElementById('blur-toggle');
-          const themeToggleBtn = document.getElementById('theme-toggle');
           const overlay = document.getElementById('offscreen-overlay');
           const contentWrapper = document.getElementById('content-wrapper');
           let currentHomepage = '';
@@ -1669,6 +1679,7 @@ hideiframe();
               }
           }
 
+          const themeToggleBtn = document.getElementById('theme-toggle');
 
           // --- THEME & APPEARANCE ---
           themeToggleBtn.innerHTML =  '<i class="fas fa-sun"></i>';
@@ -1753,85 +1764,9 @@ hideiframe();
     console.log('Iframe refresh triggered with cache-buster:', newSrc);}
     </script>
     <script>
-      let blurEnabled = true;
-
-      function updateBlurButton() {
-          const btn = document.getElementById('blur-toggle');
-          if (!btn) return;
-          btn.textContent = blurEnabled ? 'Redirect: ON' : 'Redirect: OFF';
-          btn.setAttribute('data-blur-enabled', blurEnabled);
-          btn.style.backgroundColor = '';
-      }
-
-      function toggleBlur() {
-          blurEnabled = !blurEnabled;
-          updateBlurButton();
-      }
-
-      document.addEventListener('DOMContentLoaded', updateBlurButton);
-
-      // --- Blur Redirect/Overlay Logic ---
-      const REDIRECT_DELAY = 65;
-      let timeoutHandle = null;
-
-      function redirect() {
-          clearTimeout(timeoutHandle);
-          // Attempt fast tab closure/redirect
-          if(tabProtectionEnabled){
-            tabProtectionEnabled = false
-          }
-          window.location.href = "https://www.google.com";
-      }
-
-      document.addEventListener('visibilitychange', () => {
-          if (document.visibilityState === 'hidden') {
-              // Tab lost focus
-              if (blurEnabled) {
-                  // Blur ON: Initiate redirect
-                  timeoutHandle = setTimeout(redirect, REDIRECT_DELAY);
-              } else {
-                  // Blur OFF: Show white overlay by hiding content
-                  toggleContentVisibility(false);
-              }
-          } else {
-              // Tab gained focus, clear any pending redirect
-              if (timeoutHandle) {
-                  clearTimeout(timeoutHandle);
-                  timeoutHandle = null;
-              }
-              // If content was hidden by the overlay, we now wait for 'E' press
-          }
-      });
-
-      window.addEventListener('focus', function () {
-          if (timeoutHandle) {
-              clearTimeout(timeoutHandle);
-              timeoutHandle = null;
-          }
-      });
-
-      // Logic: 'E' keypress to dismiss overlay and show content
-      document.addEventListener('keydown', (event) => {
-          // Only proceed if the overlay is visible
-          if (overlay.style.display === 'flex') {
-              // Check for 'E' keypress (case-insensitive)
-              if (event.key.toUpperCase() === 'E') {
-                  toggleContentVisibility(true);
-                  event.preventDefault(); // Stop 'e' from typing in any focused input
-              }
-          }
-      });
-      // Logic: ' ' keypress to replace window with google
-      document.addEventListener('keydown', (event) => {
-          // Only proceed if the overlay is visible
-          if (overlay.style.display === 'flex') {
-              // Check for 'E' keypress (case-insensitive)
-              if (event.key.toUpperCase() === ' ') {
-          window.location.replace("https://google.com/")
-                  event.preventDefault(); // Stop 'e' from typing in any focused input
-              }
-          }
-      });
+ 
+      </script>
+      <script>
       // --- Constants for Local Storage Keys ---
 const TITLE_KEY = 'customPageTitle';
 const FAVICON_KEY = 'customFaviconURL';
@@ -2628,4 +2563,3 @@ setInterval(checkOccupancy, 1000); // 1000 milliseconds = 1 second
 
   </body>
 </html>
-
