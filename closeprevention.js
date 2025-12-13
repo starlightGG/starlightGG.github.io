@@ -1,7 +1,7 @@
 // === CONFIGURATION CONSTANTS (Global Scope) ===
 // Define the fade duration once. This drives both the CSS transition and the JS delay.
-const FADE_DURATION_MS = 300; // 400 milliseconds
-const FADE_DURATION_CSS = `${FADE_DURATION_MS / 1000}s`; // Creates "0.4s" for CSS
+const FADE_DURATION_MS = 300; // 300 milliseconds
+const FADE_DURATION_CSS = `${FADE_DURATION_MS / 1000}s`; // Creates "0.3" for CSS
 
 // === IMMEDIATE EXECUTION: THEME ATTRIBUTE LOAD & CSS INJECTION ===
 // This function runs the moment the script is loaded.
@@ -100,8 +100,6 @@ setTimeout(() => {
         overlay.id = 'offscreen-overlay';
         overlay.innerHTML = `
             <div style="text-align: center;">
-                <h1>Access Halted</h1>
-                <p style="margin-top: 10px;">Press **E** to continue or **SPACE** to redirect.</p>
             </div>
         `;
         document.body.appendChild(overlay);
@@ -165,7 +163,7 @@ setTimeout(() => {
 
     // === CORE OVERLAY LOGIC (Implements Fading) ===
     
-    function toggleContentVisibility(showContent) {
+function toggleContentVisibility(showContent) {
         if (!overlay) return;
 
         if (showContent) {
