@@ -1879,10 +1879,10 @@ const FAVICON_KEY = 'customFaviconURL';
 document.getElementById('url-cloak-input').value = ""; // Assuming this is your new input ID
 
               // The "Select Preset..." (empty value) was chosen
-        localStorage.setItem(FAVICON_KEY, faviconURL);
+        localStorage.setItem(storedFavicon, faviconURL);
 
               // The "Select Preset..." (empty value) was chosen
-        localStorage.setItem(TITLE_KEY, selected);
+        localStorage.setItem(storedTitle, selected);
 
           } else {
 
@@ -1903,12 +1903,12 @@ function applyCustomCloak(customTitle, faviconURL) {
     if (customTitle) {
         document.title = customTitle;
         // 🔑 Store the title in Local Storage
-        localStorage.setItem(TITLE_KEY, customTitle);
+        localStorage.setItem(storedTitle, customTitle);
     }
     
     if (faviconURL) {
         // 🔑 Store the favicon URL in Local Storage
-        localStorage.setItem(FAVICON_KEY, faviconURL);
+        localStorage.setItem(storedFavicon, faviconURL);
         
         let faviconEl = document.getElementById("dynamic-favicon");
         if (!faviconEl) {
@@ -1921,15 +1921,16 @@ function applyCustomCloak(customTitle, faviconURL) {
     }
 }
 
-/**
- * Retrieves and applies the stored custom title and favicon 
- * from Local Storage when the page loads.
- */
 function applyStoredCloak() {
+    // 1. Define the variables and retrieve the stored data
+    // (TITLE_KEY and FAVICON_KEY must be defined outside this function as constants)
+    const storedTitle = localStorage.getItem(TITLE_KEY);
+    const storedFavicon = localStorage.getItem(FAVICON_KEY);
 
-applyCustomCloak(TITLE_KEY,FAVICON_KEY);
+    // 2. Pass the retrieved data to the function that performs the action
+    // applyCustomCloak handles checking if storedTitle/storedFavicon are null/empty.
+    applyCustomCloak(storedTitle, storedFavicon);
 }
-
 // 🔑 Call the function to apply the stored cloak when the page loads
 
 // NEW/CORRECTED Helper Function: Uses Google's Favicon Service (Safe & Reliable)
