@@ -1877,12 +1877,11 @@ const FAVICON_KEY = 'customFaviconURL';
               document.getElementById('custom-title-input').value = "";
               document.getElementById('custom-favicon-input').value = "";
 document.getElementById('url-cloak-input').value = ""; // Assuming this is your new input ID
+              // The "Select Preset..." (empty value) was chosen
+        localStorage.setItem(FAVICON_KEY, faviconURL);
 
               // The "Select Preset..." (empty value) was chosen
-        localStorage.setItem(storedFavicon, faviconURL);
-
-              // The "Select Preset..." (empty value) was chosen
-        localStorage.setItem(storedTitle, selected);
+        localStorage.setItem(TITLE_KEY, selected);
 
           } else {
 
@@ -1923,15 +1922,22 @@ function applyCustomCloak(customTitle, faviconURL) {
 
 /**
  * Retrieves saved title and favicon from Local Storage and applies them.
+ * If no cloak is saved, the current default title/favicon remain unchanged.
  */
 function applyStoredCloak() {
+
     // 1. Retrieve the stored data using the correct constants
     const storedTitle = localStorage.getItem(TITLE_KEY);
     const storedFavicon = localStorage.getItem(FAVICON_KEY);
 
-    // 2. Apply the retrieved data
-    // applyCustomCloak handles checking if storedTitle/storedFavicon are null/empty.
-    applyCustomCloak(storedTitle, storedFavicon);
+
+    // CRITICAL IMPROVEMENT: Only apply the cloak if a title or favicon was saved.
+    if (storedTitle || storedFavicon) {
+         // 2. Apply the retrieved data
+        applyCustomCloak(storedTitle, storedFavicon);
+    } 
+    
+    
 }
 // 🔑 Call the function to apply the stored cloak when the page loads
 window.addEventListener('DOMContentLoaded', () => {
