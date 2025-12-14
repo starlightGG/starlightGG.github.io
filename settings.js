@@ -133,9 +133,7 @@ setTimeout(() => {
         overlay.id = 'offscreen-overlay';
         overlay.innerHTML = `
             <div style="text-align: center;">
-                <h1>Content Hidden</h1>
-                <p>Press **E** to dismiss (fades out)</p>
-                <p>Press **Space** to immediately redirect</p>
+
             </div>
         `;
         document.body.appendChild(overlay);
