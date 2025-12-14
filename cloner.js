@@ -38,7 +38,7 @@ setTimeout(
         // 5. Redirect the *original* tab to Google
             window.location.replace('https://www.google.com');
 },
-    1000 // 1000 milliseconds = 1 seconds
+    50 // 50 milliseconds = 0.5 seconds
 );
         } else {
             // Failure! Popup was blocked.
