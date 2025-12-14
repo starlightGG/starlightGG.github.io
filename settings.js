@@ -91,6 +91,7 @@ window.toggleStats = function() {
     console.log(`[SETTINGSYNC] Show Stats toggled to: ${newState}`);
 };
 
+      window.addEventListener('load', () => {
 
 // === MAIN SETUP LOGIC (Runs 800ms after script load) ===
 setTimeout(() => {
@@ -329,4 +330,5 @@ setTimeout(() => {
     applyThemeUI(savedTheme);
     updateStatsUI(savedStatsState);
     
-}, 800);
+}, 700);
+      });
