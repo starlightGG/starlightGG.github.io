@@ -1,5 +1,19 @@
 <script>
-// index.js or your-service.js
-const apiKey = process.env.API; // Use the name you set in GitHub
-alert(`My key is: ${apiKey}`);
+const FUNCTION_ENDPOINT = '/secure-proxy'; 
+
+fetch(FUNCTION_ENDPOINT)
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Access the text using the 'llmResponse' key from the function's return body
+            const groqOutput = data.llmResponse; 
+            document.body.innerHTML += `<p>Groq Response: ${groqOutput}</p>`;
+            alert(`Groq said: ${groqOutput}`);
+        } else {
+            alert(`API Error: ${data.message}`);
+        }
+    })
+    .catch(error => {
+        console.error('Fetch error:', error);
+    });
 </script>
