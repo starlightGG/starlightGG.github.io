@@ -212,12 +212,12 @@ setTimeout(() => {
         
         if (isEnabled) {
             aboutBlankToggleSwitch.classList.add('switch-on');
-                localStorage.setItem('aboutBlankPopupState', true);
+                localStorage.setItem('aboutBlankPopupState', 'true');
             if(aboutBlankSwitchIcon) aboutBlankSwitchIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />`;
         } else {
             aboutBlankToggleSwitch.classList.remove('switch-on');
             if(aboutBlankSwitchIcon) aboutBlankSwitchIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />`;
-                            localStorage.setItem('aboutBlankPopupState', false);
+                            localStorage.setItem('aboutBlankPopupState', 'false');
 
             // <<< CHANGE: Only show modal if it's NOT the initial page load
             if (!isInitialLoad) { 
