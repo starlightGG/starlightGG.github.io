@@ -33,14 +33,15 @@ function executeCloningLogic() {
             // 4. Write that HTML into the new 'about:blank' tab
             newWindow.document.write(currentHtml);
             newWindow.document.close();
-setTimeout(
-    () => { 
-        // 5. Redirect the *original* tab to Google
-            window.location.replace('https://www.google.com');
-},
-    150 // 150 milliseconds = 0.15 seconds
-);
-        } else {
+
+
+              const savedLink = localStorage.getItem('LINKTAB_KEY');
+if(savedLink){
+  window.location.replace(savedLink);
+}else{
+  window.location.replace('https://google.com/')
+}
+  } else {
             // Failure! Popup was blocked.
             alert("Please enable popups!");
                         // 1. Find the script element itself
@@ -79,3 +80,4 @@ if (localStorage.getItem(localStorageKey4) === null) {
     // Use setTimeout to wrap the cloning logic
     setTimeout(executeCloningLogic, delayInMilliseconds);
 });
+
