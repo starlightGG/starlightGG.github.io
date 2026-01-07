@@ -3,20 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Coding Manual: AI & User Count</title>
+    <title>Coding Manual: AI, Users & Analytics</title>
     <style>
         :root { --primary: #4f46e5; --dark: #0f172a; --gray: #64748b; }
         body { font-family: 'Inter', system-ui, sans-serif; background: #f8fafc; color: var(--dark); padding: 40px; line-height: 1.6; }
-        .manual-container { max-width: 800px; margin: 0 auto; background: white; padding: 40px; border-radius: 12px; border: 1px solid #e2e8f0; }
+        .manual-container { max-width: 900px; margin: 0 auto; background: white; padding: 40px; border-radius: 12px; border: 1px solid #e2e8f0; }
         
         h1 { border-bottom: 2px solid #f1f5f9; padding-bottom: 10px; }
-        .step-tag { background: var(--primary); color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px; text-transform: uppercase; margin-right: 10px; }
 
         /* Manual Buttons */
-        .btn-row { display: flex; gap: 15px; margin: 30px 0; }
-        .manual-btn { flex: 1; padding: 20px; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 700; transition: 0.2s; color: white; display: flex; flex-direction: column; align-items: center; }
+        .btn-row { display: flex; gap: 15px; margin: 30px 0; flex-wrap: wrap; }
+        .manual-btn { flex: 1; min-width: 200px; padding: 20px; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 700; transition: 0.2s; color: white; display: flex; flex-direction: column; align-items: center; }
+        
         .ai-btn { background: #6366f1; }
         .count-btn { background: #06b6d4; }
+        .analyst-btn { background: #10b981; } /* New Color for Analytics */
+        
         .manual-btn:hover { filter: brightness(1.1); transform: scale(1.02); }
         .btn-sub { font-weight: 400; font-size: 12px; opacity: 0.9; margin-top: 5px; }
 
@@ -25,9 +27,7 @@
         .modal-body { background: white; width: 90%; max-width: 600px; padding: 30px; border-radius: 16px; position: relative; max-height: 80vh; overflow-y: auto; }
         .close-x { position: absolute; top: 15px; right: 20px; font-size: 24px; cursor: pointer; color: var(--gray); }
 
-        /* Manual Styling */
         code { background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-family: monospace; color: #be185d; }
-        .instruction-block { margin-top: 20px; }
         .instruction-block li { margin-bottom: 15px; }
     </style>
 </head>
@@ -35,16 +35,20 @@
 
     <div class="manual-container">
         <h1>📖 Project Setup Manual</h1>
-        <p>Follow these steps to connect your website to <b>Groq AI</b> and <b>PubNub</b>. Click the manuals below to see the specific requirements for each service.</p>
+        <p>Follow these steps to connect your website to external services. Click the manuals below to see the specific requirements.</p>
 
         <div class="btn-row">
             <button class="manual-btn ai-btn" onclick="show('ai')">
-                🤖 AI SETUP MANUAL
-                <span class="btn-sub">Click for Groq API Guide</span>
+                🤖 AI SETUP
+                <span class="btn-sub">Groq API Guide</span>
             </button>
             <button class="manual-btn count-btn" onclick="show('count')">
-                📊 COUNTER MANUAL
-                <span class="btn-sub">Click for PubNub Guide</span>
+                📊 COUNTER
+                <span class="btn-sub">PubNub Guide</span>
+            </button>
+            <button class="manual-btn analyst-btn" onclick="show('analytics')">
+                📈 STATUS
+                <span class="btn-sub">Status Setup</span>
             </button>
         </div>
 
@@ -60,12 +64,10 @@
             <hr>
             <div class="instruction-block">
                 <ol>
-                    <li><b>Create Account:</b> Go to <a href="https://console.groq.com/keys" target="_blank">console.groq.com</a> and sign in.</li>
-                    <li><b>Generate Key:</b> Click "API Keys" on the sidebar and create a new one.</li>
+                    <li><b>Create Account:</b> Go to <a href="https://console.groq.com/keys" target="_blank">console.groq.com</a>.</li>
+                    <li><b>Generate Key:</b> Click "API Keys" and create a new one.</li>
                     <li><b>Copy Key:</b> Copy the string starting with <code>gsk_...</code>.</li>
-                    <li><b>Link AI:</b> To link the AI, go to the repo and look for txt folder, after found, click <code>token.txt</code> and replace it with your token.</li>
-                     <li>You are done, you may need to rotate the keys after a while</li>
-
+                    <li><b>Link AI:</b> Open <code>/txt/token.txt</code> in your repo and paste the key there.</li>
                 </ol>
             </div>
         </div>
@@ -78,11 +80,25 @@
             <hr>
             <div class="instruction-block">
                 <ol>
-                    <li><b>Register:</b> Visit <a href="http://pubnub.com/" target="_blank">PubNub.com</a> and create a free account.</li>
-                    <li><b>App Instance:</b> Create a new App in your dashboard titled "User Counter".</li>
-                    <li><b>Keyset:</b> Create an Keyset, click into the app to find your <b>Publish Key</b> and <b>Subscribe Key</b>.</li>
-                    <li><b>Live feedback:</b> to make it live feedback, go to keyrule for the keyset and enable all checkboxes, after that go to the tab <b>Presence</b> and enable <bold>"Generate Leave on TCP FIN or RST"</bold></li>
-                    <li>You are done, you may need to rotate the keys after a while</li>
+                    <li><b>Register:</b> Visit <a href="http://pubnub.com/" target="_blank">PubNub.com</a>.</li>
+                    <li><b>App Instance:</b> Create an App titled "User Counter".</li>
+                    <li><b>Keyset:</b> Locate your <b>Publish Key</b> and <b>Subscribe Key</b>.</li>
+                    <li><b>Presence:</b> In the "Presence" tab, enable <b>"Generate Leave on TCP FIN or RST"</b> for real-time tracking.</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <div id="analytics-modal" class="modal">
+        <div class="modal-body">
+            <span class="close-x" onclick="hide('analytics')">&times;</span>
+            <h2>📈 Status Setup</h2>
+            <hr>
+            <div class="instruction-block">
+                <ol>
+                    <li><b>Create Bin:</b> Go to <a href="https://www.npoint.io/" target="_blank">npoint.io</a> and create a bin.</li>
+ <li><b>Setup:</b> Go back to repo and go to pages folder, then change for both admin.html and status.html the id from the link, for example <code>https://www.npoint.io/docs/ID-HERE</code>. DO NOT CHANGE THE DEFAULT BIN SETUP!</li>
+
                 </ol>
             </div>
         </div>
@@ -92,7 +108,6 @@
         function show(type) { document.getElementById(type + '-modal').style.display = 'flex'; }
         function hide(type) { document.getElementById(type + '-modal').style.display = 'none'; }
         
-        // Close if clicking outside the box
         window.onclick = function(e) {
             if (e.target.className === 'modal') { e.target.style.display = 'none'; }
         }
