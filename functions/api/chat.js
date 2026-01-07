@@ -9,7 +9,7 @@ export async function onRequestPost(context) {
       "Content-Type": "application/json"
     },
     body: JSON.stringify({
-      model: body.model || "llama-3.2-11b-vision-preview",
+model: body.model || "openai/gpt-oss-20b", // Updated default to your favorite
       messages: body.messages, // Pass the whole history securely
       max_tokens: 1000
     })
