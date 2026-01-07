@@ -1479,55 +1479,64 @@ function addMessage(role, content, targetElement = chatBox) {
     return msgDiv; 
 }
 
-// --- Updated for Cloudflare: Keeps the name, but removes the insecure file fetch ---
-async function loadApiKey() {
-    const hasExistingChats = loadStateFromLocalStorage();
-    populateModelSelector(); 
+        // --- API Key Loading ---
+        async function loadApiKey() {
+            const hasExistingChats = loadStateFromLocalStorage();
+            populateModelSelector(); 
 
-    // Find and set the correct model
-    const initialModelKey = Object.keys(MODELS).find(key => MODELS[key].id === CURRENT_MODEL.id) || Object.keys(MODELS)[0];
-    selectModel(initialModelKey);
+            selectModel(Object.keys(MODELS).find(key => MODELS[key].id === CURRENT_MODEL.id) || Object.keys(MODELS)[0]);
 
-    // Ensure we have a starting chat
-    if (Object.keys(allChatHistories).length === 0) {
-        createNewChatObject('chat-0', 'Initial Chat');
-        currentChatId = 'chat-0';
-    }
+            if (Object.keys(allChatHistories).length === 0) {
+                createNewChatObject('chat-0', 'Initial Chat');
+                currentChatId = 'chat-0';
+            }
 
-    renderSidebar();
-    showStartPage();
+            renderSidebar();
+            
+            showStartPage();
+            apiStatus.textContent = 'Fetching API Key...';
+            try {
+                const response = await fetch(API_KEY_URL);
+                if (!response.ok) throw new Error(`HTTP Status: ${response.status}`);
+                GROQ_API_KEY = (await response.text()).trim();
+                
+                if (GROQ_API_KEY.length < 10) throw new Error("Key is too short or invalid.");
 
-    // 💡 Logic Change: We don't need to 'fetch' the key anymore. 
-    // We just set the status to ready because Cloudflare handles the key on the backend.
-    apiStatus.textContent = 'System Ready (Secure Mode)';
-    
-    // Enable all buttons and inputs immediately
-    modelSelectDropdown.disabled = false;
-    sendButton.disabled = false;
-    userInput.disabled = false;
-    document.querySelectorAll('.model-button').forEach(btn => btn.style.pointerEvents = 'auto');
+                apiStatus.textContent = 'API Key loaded successfully.';
+                
+                // Enable controls
+                modelSelectDropdown.disabled = false;
+                sendButton.disabled = false;
+                userInput.disabled = false;
+                
+                document.querySelectorAll('.model-button').forEach(btn => btn.style.pointerEvents = 'auto');
 
-    if (hasExistingChats) {
-        showChatInterface();
-    } else {
-        // Highlight the default model button
-        const btn = document.querySelector(`.model-button[data-model-key="${initialModelKey}"]`);
-        if(btn) btn.classList.add('selected');
-    }
-
-    toggleModelSelectorLock();
-    renderCurrentChat();
-}
+                if (hasExistingChats) {
+                    showChatInterface();
+                    
+                } else {
+                    // Highlight the currently loaded default model button
+                    const initialModelKey = Object.keys(MODELS).find(key => MODELS[key].id === CURRENT_MODEL.id);
+                    if (initialModelKey) {
+                        const btn = document.querySelector(`.model-button[data-model-key="${initialModelKey}"]`);
+                        if(btn) btn.classList.add('selected');
+                    }
+                }
+            } catch (error) {
+                console.error('Groq API Key Loading Error:', error);
+                apiStatus.innerHTML = `<span style="color:red;">Error: Could not load API Key. (${error.message})</span>`;
+            }
+            toggleModelSelectorLock();
+            renderCurrentChat();
+        }
         
-// --- Updated Send Message Function (Secure Cloudflare Version) ---
+ // --- Send Message Function (The core execution loop) ---
 async function sendMessage() {
            
     const userText = userInput.value.trim();
     if (!userText && !selectedFile) return; 
-    
-    // 💡 REMOVED: if (!GROQ_API_KEY) return; 
-    // The key is now handled securely by Cloudflare!
-
+    if (!GROQ_API_KEY) return;
+           
     const currentChatObject = allChatHistories[currentChatId];
     const currentHistory = currentChatObject.history; 
 
@@ -1542,10 +1551,10 @@ async function sendMessage() {
     let finalUserMessageContent;
     let fileToDisplay = selectedFile; 
 
-    // 💡 Constructing the Multimodal Content Array
+    // 💡 Constructing the Multimodal Content Array (Logic unchanged)
     if (fileToDisplay) {
         if (!CURRENT_MODEL.multimodal) {
-            alert("Cannot send image. Please select a Multimodal model.");
+            alert("Cannot send image. Please select a Multimodal model (like Llama 4 Scout).");
             clearSelectedFile(); 
             sendButton.disabled = false;
             userInput.disabled = false;
@@ -1574,52 +1583,10 @@ async function sendMessage() {
             return;
         }
     } else {
+        // Standard text-only message
         finalUserMessageContent = userText; 
     }
 
-    // 💡 UI Update: Add user message to screen and history
-    addMessage('user', finalUserMessageContent, chatBox);
-    currentHistory.push({ "role": "user", "content": finalUserMessageContent });
-    
-    if (isFirstMessage) {
-        updateChatTitle(currentChatId, userText || "Image Analysis");
-    }
-
-    clearSelectedFile();
-    scrollToBottom();
-
-    try {
-        // 💡 SECURE FETCH: We now call our OWN function path
-        const response = await fetch("/api/chat", {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                model: CURRENT_MODEL.id,
-                messages: currentHistory
-            })
-        });
-
-        if (!response.ok) throw new Error(`Server error: ${response.status}`);
-
-        const data = await response.json();
-        const aiMessage = data.choices[0].message;
-
-        addMessage('ai', aiMessage.content, chatBox);
-        currentHistory.push(aiMessage);
-        saveStateToLocalStorage();
-
-    } catch (error) {
-        console.error("Fetch error:", error);
-        addMessage('ai', `Connection Error: Make sure your Cloudflare Secret is set.`, chatBox);
-    } finally {
-        sendButton.disabled = false;
-        userInput.disabled = false;
-        fileUploadButton.disabled = false;
-        toggleModelSelectorLock();
-        userInput.focus();
-        scrollToBottom();
-    }
-}
     // 1. Add User Message (Appended directly to the chatBox)
     const displayContent = fileToDisplay ? `${userText} [Image: ${fileToDisplay.name}]` : userText;
     addMessage('user', displayContent);
