@@ -1479,56 +1479,45 @@ function addMessage(role, content, targetElement = chatBox) {
     return msgDiv; 
 }
 
-        // --- API Key Loading ---
-        async function loadApiKey() {
-            const hasExistingChats = loadStateFromLocalStorage();
-            populateModelSelector(); 
+// --- Updated for Cloudflare: Keeps the name, but removes the insecure file fetch ---
+async function loadApiKey() {
+    const hasExistingChats = loadStateFromLocalStorage();
+    populateModelSelector(); 
 
-            selectModel(Object.keys(MODELS).find(key => MODELS[key].id === CURRENT_MODEL.id) || Object.keys(MODELS)[0]);
+    // Find and set the correct model
+    const initialModelKey = Object.keys(MODELS).find(key => MODELS[key].id === CURRENT_MODEL.id) || Object.keys(MODELS)[0];
+    selectModel(initialModelKey);
 
-            if (Object.keys(allChatHistories).length === 0) {
-                createNewChatObject('chat-0', 'Initial Chat');
-                currentChatId = 'chat-0';
-            }
+    // Ensure we have a starting chat
+    if (Object.keys(allChatHistories).length === 0) {
+        createNewChatObject('chat-0', 'Initial Chat');
+        currentChatId = 'chat-0';
+    }
 
-            renderSidebar();
-            
-            showStartPage();
-            apiStatus.textContent = 'Fetching API Key...';
-            try {
-                const response = await fetch(API_KEY_URL);
-                if (!response.ok) throw new Error(`HTTP Status: ${response.status}`);
-                GROQ_API_KEY = (await response.text()).trim();
-                
-                if (GROQ_API_KEY.length < 10) throw new Error("Key is too short or invalid.");
+    renderSidebar();
+    showStartPage();
 
-                apiStatus.textContent = 'API Key loaded successfully.';
-                
-                // Enable controls
-                modelSelectDropdown.disabled = false;
-                sendButton.disabled = false;
-                userInput.disabled = false;
-                
-                document.querySelectorAll('.model-button').forEach(btn => btn.style.pointerEvents = 'auto');
+    // 💡 Logic Change: We don't need to 'fetch' the key anymore. 
+    // We just set the status to ready because Cloudflare handles the key on the backend.
+    apiStatus.textContent = 'System Ready (Secure Mode)';
+    
+    // Enable all buttons and inputs immediately
+    modelSelectDropdown.disabled = false;
+    sendButton.disabled = false;
+    userInput.disabled = false;
+    document.querySelectorAll('.model-button').forEach(btn => btn.style.pointerEvents = 'auto');
 
-                if (hasExistingChats) {
-                    showChatInterface();
-                    
-                } else {
-                    // Highlight the currently loaded default model button
-                    const initialModelKey = Object.keys(MODELS).find(key => MODELS[key].id === CURRENT_MODEL.id);
-                    if (initialModelKey) {
-                        const btn = document.querySelector(`.model-button[data-model-key="${initialModelKey}"]`);
-                        if(btn) btn.classList.add('selected');
-                    }
-                }
-            } catch (error) {
-                console.error('Groq API Key Loading Error:', error);
-                apiStatus.innerHTML = `<span style="color:red;">Error: Could not load API Key. (${error.message})</span>`;
-            }
-            toggleModelSelectorLock();
-            renderCurrentChat();
-        }
+    if (hasExistingChats) {
+        showChatInterface();
+    } else {
+        // Highlight the default model button
+        const btn = document.querySelector(`.model-button[data-model-key="${initialModelKey}"]`);
+        if(btn) btn.classList.add('selected');
+    }
+
+    toggleModelSelectorLock();
+    renderCurrentChat();
+}
         
 // --- Updated Send Message Function (Secure Cloudflare Version) ---
 async function sendMessage() {
