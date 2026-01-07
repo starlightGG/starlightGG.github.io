@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+      <script id="cloning-script" src="/js/cloner.js"></script>
+
+    <title>Google</title>
+    <style>
+        body { font-family: sans-serif; padding: 40px; text-align: center; background: #f4f7f6; }
+        .card { background: white; padding: 20px; display: inline-block; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        select, input, button { padding: 12px; margin: 5px; width: 90%; border-radius: 5px; border: 1px solid #ddd; }
+        button { background: #28a745; color: white; font-weight: bold; border: none; cursor: pointer; }
+        button:hover { background: #218838; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>Post New Update</h2>
+        <select id="typeSelect">
+            <option value="Online">🟢 Online</option>
+            <option value="Offline">🔴 Offline</option>
+            <option value="Error">⚠️ Error</option>
+            <option value="Bug">🐛 Bug</option>
+        </select><br>
+        <input type="text" id="msgInput" placeholder="Brief message (e.g. 'Fixing database')"><br>
+        <button id="updateBtn">Push Update</button>
+    </div>
+
+    <script>
+        const binID = 'b0d54f3aac6cad7e0d2c'; // Replace with your ID
+        const binURL = `https://api.npoint.io/${binID}`;
+
+        document.getElementById('updateBtn').addEventListener('click', async () => {
+            const btn = document.getElementById('updateBtn');
+            btn.innerText = "Processing...";
+            btn.disabled = true;
+
+            try {
+                // 1. Get current history
+                const response = await fetch(binURL);
+                const data = await response.json();
+                let history = data.history || [];
+
+                // 2. Create new status object
+                const newEntry = {
+                    type: document.getElementById('typeSelect').value,
+                    message: document.getElementById('msgInput').value,
+                    time: new Date().toLocaleString() // Adds local time
+                };
+
+                // 3. Add to start of list and limit to 3 items
+                history.unshift(newEntry); 
+                if (history.length > 3) {
+                    history = history.slice(0, 3);
+                }
+
+                // 4. Save back to bin
+                await fetch(binURL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ history: history })
+                });
+
+                alert("Updated!");
+                document.getElementById('msgInput').value = "";
+            } catch (e) {
+                alert("Error: " + e.message);
+            } finally {
+                btn.innerText = "Push Update";
+                btn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
