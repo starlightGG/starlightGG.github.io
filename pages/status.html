@@ -1,50 +1,49 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>System Status</title>
+    
+    <title>Live System Status</title>
     <style>
-        body { font-family: sans-serif; text-align: center; padding: 50px; background: #fafafa; }
-        .status-item { 
-            background: white; border: 1px solid #eee; margin: 10px auto; 
-            padding: 15px; width: 350px; border-radius: 8px; text-align: left;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-        .time { color: #888; font-size: 0.8em; }
-        .type { font-weight: bold; margin-right: 10px; }
-        .Online { color: green; }
-        .Offline { color: red; }
-        .Error { color: orange; }
-        .Bug { color: purple; }
+        body { font-family: sans-serif; text-align: center; padding: 40px; background: #f0f2f5; }
+        .log-container { max-width: 500px; margin: 0 auto; }
+        .status-card { background: white; margin: 15px 0; padding: 20px; border-radius: 12px; text-align: left; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border-left: 8px solid #ccc; }
+        .Online { border-left-color: #4caf50; }
+        .Offline { border-left-color: #f44336; }
+        .Error { border-left-color: #ff9800; }
+        .Bug { border-left-color: #9c27b0; }
+        .time { font-size: 0.8em; color: #777; float: right; }
+        .type-label { font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
     </style>
 </head>
 <body>
-    <h1>System History</h1>
-    <div id="statusList">Loading logs...</div>
+    <h1>System Status History</h1>
+    <div id="logs" class="log-container">Loading...</div>
 
     <script>
-        const binID = 'b0d54f3aac6cad7e0d2c'; // Replace with your ID
-        
-        fetch(`https://api.npoint.io/${binID}`)
-            .then(res => res.json())
-            .then(data => {
-                const list = document.getElementById('statusList');
-                list.innerHTML = ""; // Clear loading text
+        const binURL = 'https://api.npoint.io/b0d54f3aac6cad7e0d2c';
 
-                if (!data.history || data.history.length === 0) {
-                    list.innerHTML = "<p>No history found.</p>";
-                    return;
-                }
+        async function refreshStatus() {
+            try {
+                const res = await fetch(binURL + '?nocache=' + Date.now());
+                const data = await res.json();
+                const container = document.getElementById('logs');
+                container.innerHTML = "";
 
                 data.history.forEach(item => {
-                    list.innerHTML += `
-                        <div class="status-item">
-                            <span class="type ${item.type}">${item.type}</span>
+                    container.innerHTML += `
+                        <div class="status-card ${item.type}">
                             <span class="time">${item.time}</span>
-                            <p style="margin: 5px 0 0 0;">${item.message || 'No details provided.'}</p>
+                            <div class="type-label ${item.type}">${item.type}</div>
+                            <p>${item.message}</p>
                         </div>
                     `;
                 });
-            });
+            } catch (e) { console.log("Refresh failed"); }
+        }
+
+        // Run every 30 seconds
+        setInterval(refreshStatus, 30000); 
+        refreshStatus(); // Initial run
     </script>
 </body>
 </html>
