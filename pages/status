@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>System Status</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; padding: 50px; background: #fafafa; }
+        .status-item { 
+            background: white; border: 1px solid #eee; margin: 10px auto; 
+            padding: 15px; width: 350px; border-radius: 8px; text-align: left;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .time { color: #888; font-size: 0.8em; }
+        .type { font-weight: bold; margin-right: 10px; }
+        .Online { color: green; }
+        .Offline { color: red; }
+        .Error { color: orange; }
+        .Bug { color: purple; }
+    </style>
+</head>
+<body>
+    <h1>System History</h1>
+    <div id="statusList">Loading logs...</div>
+
+    <script>
+        const binID = 'b0d54f3aac6cad7e0d2c'; // Replace with your ID
+        
+        fetch(`https://api.npoint.io/${binID}`)
+            .then(res => res.json())
+            .then(data => {
+                const list = document.getElementById('statusList');
+                list.innerHTML = ""; // Clear loading text
+
+                if (!data.history || data.history.length === 0) {
+                    list.innerHTML = "<p>No history found.</p>";
+                    return;
+                }
+
+                data.history.forEach(item => {
+                    list.innerHTML += `
+                        <div class="status-item">
+                            <span class="type ${item.type}">${item.type}</span>
+                            <span class="time">${item.time}</span>
+                            <p style="margin: 5px 0 0 0;">${item.message || 'No details provided.'}</p>
+                        </div>
+                    `;
+                });
+            });
+    </script>
+</body>
+</html>
