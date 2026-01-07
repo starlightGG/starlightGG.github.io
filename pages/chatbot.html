@@ -1530,13 +1530,15 @@ function addMessage(role, content, targetElement = chatBox) {
             renderCurrentChat();
         }
         
- // --- Send Message Function (The core execution loop) ---
+// --- Updated Send Message Function (Secure Cloudflare Version) ---
 async function sendMessage() {
            
     const userText = userInput.value.trim();
     if (!userText && !selectedFile) return; 
-    if (!GROQ_API_KEY) return;
-           
+    
+    // 💡 REMOVED: if (!GROQ_API_KEY) return; 
+    // The key is now handled securely by Cloudflare!
+
     const currentChatObject = allChatHistories[currentChatId];
     const currentHistory = currentChatObject.history; 
 
@@ -1551,10 +1553,10 @@ async function sendMessage() {
     let finalUserMessageContent;
     let fileToDisplay = selectedFile; 
 
-    // 💡 Constructing the Multimodal Content Array (Logic unchanged)
+    // 💡 Constructing the Multimodal Content Array
     if (fileToDisplay) {
         if (!CURRENT_MODEL.multimodal) {
-            alert("Cannot send image. Please select a Multimodal model (like Llama 4 Scout).");
+            alert("Cannot send image. Please select a Multimodal model.");
             clearSelectedFile(); 
             sendButton.disabled = false;
             userInput.disabled = false;
@@ -1583,10 +1585,52 @@ async function sendMessage() {
             return;
         }
     } else {
-        // Standard text-only message
         finalUserMessageContent = userText; 
     }
 
+    // 💡 UI Update: Add user message to screen and history
+    addMessage('user', finalUserMessageContent, chatBox);
+    currentHistory.push({ "role": "user", "content": finalUserMessageContent });
+    
+    if (isFirstMessage) {
+        updateChatTitle(currentChatId, userText || "Image Analysis");
+    }
+
+    clearSelectedFile();
+    scrollToBottom();
+
+    try {
+        // 💡 SECURE FETCH: We now call our OWN function path
+        const response = await fetch("/api/chat", {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                model: CURRENT_MODEL.id,
+                messages: currentHistory
+            })
+        });
+
+        if (!response.ok) throw new Error(`Server error: ${response.status}`);
+
+        const data = await response.json();
+        const aiMessage = data.choices[0].message;
+
+        addMessage('ai', aiMessage.content, chatBox);
+        currentHistory.push(aiMessage);
+        saveStateToLocalStorage();
+
+    } catch (error) {
+        console.error("Fetch error:", error);
+        addMessage('ai', `Connection Error: Make sure your Cloudflare Secret is set.`, chatBox);
+    } finally {
+        sendButton.disabled = false;
+        userInput.disabled = false;
+        fileUploadButton.disabled = false;
+        toggleModelSelectorLock();
+        userInput.focus();
+        scrollToBottom();
+    }
+}
     // 1. Add User Message (Appended directly to the chatBox)
     const displayContent = fileToDisplay ? `${userText} [Image: ${fileToDisplay.name}]` : userText;
     addMessage('user', displayContent);
