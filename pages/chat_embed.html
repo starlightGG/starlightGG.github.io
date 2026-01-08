@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StarlightGG | Elite Chat</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        :root {
+            --bg: #e0e5ec;
+            --blue: #6c5ce7;
+            --red: #ff4d4d;
+            --gold: #f1c40f;
+            --sh: 3px 3px 6px #bec8d4, -3px -3px 6px #ffffff;
+            --in: inset 2px 2px 4px #bec8d4, inset -2px -2px 4px #ffffff;
+        }
+
+        body, html { height: 100%; margin: 0; background: var(--bg); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; overflow: hidden; }
+        
+        /* Starlight Background Effect */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: radial-gradient(circle at 2px 2px, rgba(108, 92, 231, 0.05) 1px, transparent 0);
+            background-size: 40px 40px;
+            z-index: -1;
+        }
+
+        #app { display: flex; justify-content: center; align-items: center; height: 100vh; width: 100vw; padding: 10px; box-sizing: border-box; gap: 10px; position: relative; }
+
+        .brand-glow {
+            text-shadow: 0 0 10px rgba(108, 92, 231, 0.3);
+            letter-spacing: 1px;
+            background: linear-gradient(45deg, var(--blue), #a29bfe);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .card { background: var(--bg); border-radius: 12px; box-shadow: var(--sh); padding: 12px; display: flex; flex-direction: column; box-sizing: border-box; }
+        #online-sidebar { width: 120px; height: 90vh; display: none; font-size: 0.75em; }
+        #chat-container { width: 100%; max-width: 450px; height: 90vh; position: relative; display: flex; flex-direction: column; }
+        
+        #chat-box { flex-grow: 1; overflow-y: auto; margin: 8px 0; padding: 10px; border-radius: 10px; box-shadow: var(--in); display: flex; flex-direction: column; gap: 15px; scroll-behavior: smooth; }
+
+        input, textarea { width: 100%; border: none; padding: 10px; border-radius: 8px; background: var(--bg); box-shadow: var(--in); outline: none; box-sizing: border-box; font-size: 0.9em; }
+        textarea { resize: none; height: 42px; }
+
+        button { border: none; padding: 8px 12px; border-radius: 8px; background: var(--bg); box-shadow: var(--sh); color: var(--blue); font-weight: bold; cursor: pointer; transition: 0.2s; }
+        button:active { box-shadow: var(--in); transform: scale(0.98); }
+
+        /* TOAST NOTIFICATIONS */
+        #toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; pointer-events: none; }
+        .toast { background: white; padding: 12px 20px; border-radius: 50px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 10px; font-size: 0.85em; font-weight: bold; animation: slideIn 0.3s ease-out; border-left: 4px solid var(--blue); }
+        @keyframes slideIn { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        /* MODALS */
+        #modal-overlay { position: fixed; inset: 0; background: rgba(224, 229, 236, 0.8); backdrop-filter: blur(4px); z-index: 5000; display: none; justify-content: center; align-items: center; }
+
+        #login-screen { position: absolute; inset: 0; display: flex; justify-content: center; align-items: center; z-index: 1000; background: var(--bg); border-radius: 12px; }
+        
+        .msg { background: var(--bg); padding: 8px 12px; border-radius: 10px; box-shadow: var(--sh); max-width: 80%; align-self: flex-start; font-size: 0.85em; position: relative; }
+        .my-msg { align-self: flex-end; border-right: 4px solid var(--blue); }
+        .highlight { background: #cbdcf7 !important; box-shadow: 0 0 10px var(--blue); }
+
+        .msg-header { display: flex; justify-content: space-between; font-size: 0.75em; margin-bottom: 4px; font-weight: bold; opacity: 0.7; gap: 10px; }
+        
+        /* REACTION MENU */
+        .react-menu { 
+            position: absolute; 
+            bottom: 110%; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            background: var(--bg); 
+            box-shadow: var(--sh); 
+            border-radius: 25px; 
+            padding: 8px 14px; 
+            display: none; 
+            gap: 12px; 
+            z-index: 500; 
+            width: max-content;
+        }
+        .react-menu.show-below { bottom: auto; top: 110%; }
+
+        .react-trigger { cursor: pointer; color: var(--blue); margin-left: 8px; opacity: 0.4; transition: 0.2s; }
+        .msg:hover .react-trigger { opacity: 1; }
+
+        .react-bar { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; padding-top: 5px; border-top: 1px solid rgba(0,0,0,0.05); }
+        .react-pill { font-size: 0.65em; padding: 2px 5px; border-radius: 6px; box-shadow: 1px 1px 3px #bec8d4; cursor: pointer; background: var(--bg); }
+
+        #emoji-drawer { 
+            position: absolute; 
+            bottom: 110px; 
+            left: 10px; 
+            right: 10px; 
+            height: 250px; 
+            background: var(--bg); 
+            border-radius: 12px; 
+            box-shadow: var(--sh); 
+            z-index: 1000; 
+            display: none; 
+            padding: 15px; 
+            overflow-y: auto; 
+        }
+        .emoji-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-bottom: 10px; text-align: center; }
+        .emoji-item { cursor: pointer; font-size: 1.3em; transition: 0.1s; }
+        .emoji-item:hover { transform: scale(1.2); }
+
+        .hidden { display: none !important; }
+        .icon-btn { cursor: pointer; opacity: 0.5; font-size: 0.9em; margin-left: 6px; }
+        .admin-btn { color: var(--red) !important; }
+        .chat-img { max-width: 100%; border-radius: 8px; margin-top: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div id="toast-container"></div>
+
+<div id="modal-overlay">
+    <div id="modal-box" class="card" style="width: 280px; text-align: center;">
+        <h4 id="modal-title">Verification</h4>
+        <input type="password" id="modal-input" placeholder="...">
+        <div style="display:flex; gap:10px; margin-top:20px;">
+            <button onclick="closeModal()" style="flex:1">Cancel</button>
+            <button id="modal-confirm" style="flex:1">OK</button>
+        </div>
+    </div>
+</div>
+
+<div id="img-overlay" onclick="this.style.display='none'" style="position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:3000; display:none; justify-content:center; align-items:center;">
+    <img id="full-img" style="max-width:95%; max-height:95%; border-radius:10px;">
+</div>
+
+<div id="app">
+    <div id="online-sidebar" class="card">
+        <h5 style="text-align:center; margin: 0 0 10px 0; color: var(--blue);">Online</h5>
+        <div id="online-list" style="flex-grow:1; overflow-y:auto;"></div>
+        <button id="nuke-btn" class="hidden" onclick="handleNukeRequest()" style="margin-top:auto; font-size:0.7em; color:var(--red)">RESET UNIVERSE</button>
+    </div>
+
+    <div id="chat-container" class="card">
+        <div id="login-screen">
+            <div id="login-box" class="card" style="width:280px; text-align:center; padding:30px;">
+                <i class="fa-solid fa-star" style="font-size: 2.5em; color: var(--gold); margin-bottom: 15px;"></i>
+                <h3 class="brand-glow">StarlightGG</h3>
+                <input type="text" id="username" placeholder="Enter Nickname...">
+                <button onclick="login()" style="width:100%; margin-top:20px">Join Universe</button>
+            </div>
+        </div>
+
+        <div id="chat-screen" class="hidden" style="height:100%; display:flex; flex-direction:column;">
+            <div style="display:flex; justify-content: space-between; align-items: center; font-size:0.85em; padding-bottom: 8px; border-bottom: 1px solid rgba(0,0,0,0.05);">
+                <span><i id="user-icon" class="fa-solid fa-circle"></i> <b id="user-display"></b></span>
+                <span onclick="location.reload()" style="cursor:pointer; opacity: 0.4;"><i class="fa-solid fa-power-off"></i></span>
+            </div>
+            
+            <div id="chat-box"></div>
+            
+            <div id="emoji-drawer"><div id="emoji-list"></div></div>
+            
+            <div id="reply-bar" class="hidden" style="font-size:0.75em; padding:6px; background:var(--in); border-radius:8px; margin-bottom:6px;">
+                <i class="fa-solid fa-reply"></i> Replying... <span onclick="cancelReply()" style="float:right; cursor:pointer;">×</span>
+            </div>
+            
+            <textarea id="msg-input" placeholder="Aa" onkeydown="handleKey(event)"></textarea>
+            
+            <div style="display:flex; gap:6px; margin-top: 6px;">
+                <button onclick="toggleEmoji()"><i class="fa-regular fa-face-smile"></i></button>
+                <button onclick="document.getElementById('file-input').click()"><i class="fa-solid fa-camera"></i></button>
+                <input type="file" id="file-input" class="hidden" onchange="uploadImage(this)">
+                <button onclick="sendMessage()" id="send-btn" style="flex-grow:1">Send</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const BIN_ID = 'bb1dbfcd28a8f375cfd8'; 
+    const API_URL = `https://api.npoint.io/${BIN_ID}`;
+    const ADMIN_PASS = "1234"; 
+    
+    let currentUser = "", mySID = Math.random().toString(36).substring(2, 10), isAdmin = false;
+    let replyData = null, editingIdx = null, lastMsgCount = 0;
+    const reactEmojis = ["😂","❤️","🔥","👍","😮","💀"];
+
+    // THE BIG EMOJI LIST
+    const emojiGroups = {
+        "Smileys": ["😀","😃","😄","😁","😆","😅","😂","🤣","😊","😇","🙂","🙃","😉","😌","😍","🥰","😘","😋","😛","😜","😎","🤩","🥳","😏","😔","🥺","😢","😭","😤","😡","🤯","😳","🥵","🥶","😱","🤔","🤫","😬","🙄","😴"],
+        "Gestures": ["👋","👌","🖖","🤞","🤟","🤘","🤙","👍","👎","✊","👊","👏","🙌","🙏","💪"],
+        "Space & Magic": ["✨","🌟","⭐","💫","🔥","💥","⚡","🌈","🚀","🛸","🛰️","🪐","🌙","🌌","👽","🤖","👾","👑","💎","💯","🎉"]
+    };
+
+    function showToast(msg, color = "#6c5ce7") {
+        const t = document.createElement('div');
+        t.className = 'toast'; t.style.borderLeftColor = color; t.innerText = msg;
+        document.getElementById('toast-container').appendChild(t);
+        setTimeout(() => t.remove(), 3000);
+    }
+
+    function openModal(title, placeholder, type, callback) {
+        const m = document.getElementById('modal-overlay');
+        const input = document.getElementById('modal-input');
+        document.getElementById('modal-title').innerText = title;
+        input.placeholder = placeholder; input.type = type; input.value = "";
+        m.style.display = 'flex';
+        document.getElementById('modal-confirm').onclick = () => { callback(input.value); closeModal(); };
+    }
+    function closeModal() { document.getElementById('modal-overlay').style.display = 'none'; }
+
+    // Init Large Emoji Drawer
+    const eList = document.getElementById('emoji-list');
+    Object.keys(emojiGroups).forEach(group => {
+        const label = document.createElement('div');
+        label.style = "font-size: 0.7em; font-weight: bold; opacity: 0.5; margin: 10px 0 5px 0; text-align: left;";
+        label.innerText = group;
+        eList.appendChild(label);
+        const container = document.createElement('div');
+        container.className = "emoji-grid";
+        emojiGroups[group].forEach(e => {
+            const span = document.createElement('span'); span.className = 'emoji-item'; span.innerText = e;
+            span.onclick = () => { document.getElementById('msg-input').value += e; };
+            container.appendChild(span);
+        });
+        eList.appendChild(container);
+    });
+
+    async function login() {
+        let nameInput = document.getElementById('username').value.trim();
+        if (!nameInput) return showToast("Enter a nickname!", "#ff4d4d");
+        
+        const lowerName = nameInput.toLowerCase();
+        const isStaff = lowerName.includes("[admin]") || lowerName.includes("[owner]");
+
+        if (isStaff) {
+            openModal("Staff Verification", `Enter password for ${nameInput}`, "password", (pass) => {
+                if (pass === ADMIN_PASS) { isAdmin = true; completeLogin(nameInput); }
+                else { showToast("Unauthorized Tag!", "#ff4d4d"); }
+            });
+        } else { completeLogin(nameInput); }
+    }
+
+    function completeLogin(name) {
+        currentUser = name;
+        document.getElementById('login-screen').classList.add('hidden');
+        document.getElementById('chat-screen').classList.remove('hidden');
+        document.getElementById('online-sidebar').style.display = 'flex';
+        document.getElementById('user-display').innerText = currentUser;
+        if(isAdmin) {
+            document.getElementById('user-icon').className = "fa-solid fa-crown";
+            document.getElementById('user-icon').style.color = "gold";
+            document.getElementById('nuke-btn').classList.remove('hidden');
+        } else { document.getElementById('user-icon').style.color = "#2ecc71"; }
+        showToast(`Connected to StarlightGG Network`);
+        loadData(); setInterval(loadData, 800); setInterval(heartbeat, 2000);
+    }
+
+    async function loadData() {
+        try {
+            const res = await fetch(API_URL);
+            const data = await res.json();
+            const msgs = data.msgs || [];
+            
+            document.getElementById('chat-box').innerHTML = msgs.map((m, i) => {
+                const mine = m.sid === mySID;
+                let rs = "";
+                if(m.reacts) Object.keys(m.reacts).forEach(e => { 
+                    if (m.reacts[e].length > 0) rs += `<div class="react-pill" onclick="toggleReact(${i},'${e}')">${e} ${m.reacts[e].length}</div>`; 
+                });
+                return `
+                <div class="msg ${mine ? 'my-msg' : ''}" id="msg-${m.id}">
+                    <div class="react-menu" id="menu-${i}">
+                        ${reactEmojis.map(e => `<span style="cursor:pointer" onclick="toggleReact(${i},'${e}')">${e}</span>`).join('')}
+                    </div>
+                    <div class="msg-header">
+                        <span>${m.user}</span>
+                        <span>
+                            <i class="fa-solid fa-reply icon-btn" onclick="startReply(${i})"></i>
+                            <i class="fa-solid fa-face-smile icon-btn react-trigger" onclick="toggleReactMenu(${i})"></i>
+                            ${mine ? `<i class="fa-solid fa-pencil icon-btn" onclick="startEdit(${i})"></i>` : ''}
+                            ${(mine || isAdmin) ? `<i class="fa-solid fa-trash icon-btn ${isAdmin && !mine ? 'admin-btn' : ''}" onclick="deleteMsg(${i})"></i>` : ''}
+                        </span>
+                    </div>
+                    ${m.reply ? `<div style="font-size:0.7em; background:rgba(0,0,0,0.05); padding:4px; border-radius:4px; margin-bottom:4px; border-left:2px solid var(--blue); cursor:pointer;" onclick="jumpTo('${m.reply.id}')"><b>${m.reply.user}:</b> ${m.reply.text}</div>` : ''}
+                    ${m.text.startsWith('data:image') ? `<img src="${m.text}" class="chat-img" onclick="viewImg('${m.text}')">` : `<div>${m.text}</div>`}
+                    <div class="react-bar ${rs?'':'hidden'}">${rs}</div>
+                </div>`;
+            }).join('');
+
+            if(msgs.length !== lastMsgCount) { 
+                const box = document.getElementById('chat-box'); 
+                box.scrollTop = box.scrollHeight; 
+                lastMsgCount = msgs.length; 
+            }
+
+            let online = "";
+            for (let id in data.users) {
+                if (Date.now() - data.users[id].lastSeen < 10000) 
+                    online += `<div style="margin-bottom:5px;"><i class="fa-solid fa-circle" style="color:#2ecc71; font-size:0.6em;"></i> ${data.users[id].name}</div>`;
+            }
+            document.getElementById('online-list').innerHTML = online;
+        } catch (e) {}
+    }
+
+    function toggleReactMenu(idx) { 
+        const menu = document.getElementById(`menu-${idx}`);
+        const chatBox = document.getElementById('chat-box');
+        const isOpening = menu.style.display !== 'flex';
+        
+        document.querySelectorAll('.react-menu').forEach(el => { el.style.display = 'none'; el.classList.remove('show-below'); });
+        
+        if (isOpening) {
+            menu.style.display = 'flex';
+            menu.style.left = "50%"; menu.style.right = "auto"; menu.style.transform = "translateX(-50%)";
+
+            let rect = menu.getBoundingClientRect();
+            const containerRect = chatBox.getBoundingClientRect();
+
+            if (rect.top < containerRect.top) menu.classList.add('show-below');
+            
+            rect = menu.getBoundingClientRect();
+            if (rect.right > containerRect.right - 10) { menu.style.left = "auto"; menu.style.right = "0"; menu.style.transform = "translateX(0)"; }
+            else if (rect.left < containerRect.left + 10) { menu.style.left = "0"; menu.style.right = "auto"; menu.style.transform = "translateX(0)"; }
+        }
+    }
+
+    async function toggleReact(msgIdx, emoji) {
+        const res = await fetch(API_URL); let data = await res.json();
+        let m = data.msgs[msgIdx]; if(!m.reacts) m.reacts = {}; if(!m.reacts[emoji]) m.reacts[emoji] = [];
+        const uIdx = m.reacts[emoji].indexOf(mySID);
+        if(uIdx > -1) m.reacts[emoji].splice(uIdx, 1); else m.reacts[emoji].push(mySID);
+        await fetch(API_URL, { method: 'POST', body: JSON.stringify(data) });
+        loadData();
+    }
+
+    async function sendMessage(f = null) {
+        const input = document.getElementById('msg-input'); const text = f || input.value.trim(); if (!text) return;
+        const res = await fetch(API_URL); let data = await res.json(); if(!data.msgs) data.msgs = [];
+        
+        if (editingIdx !== null) { 
+            data.msgs[editingIdx].text = text; editingIdx = null; document.getElementById('send-btn').innerText = "Send";
+        } else {
+            const userTag = isAdmin ? "✨ " : "";
+            data.msgs.push({ id: Date.now().toString(), user: userTag + currentUser, text, sid: mySID, reply: replyData, reacts: {} });
+            if (data.msgs.length > 50) data.msgs.shift();
+        }
+        await fetch(API_URL, { method: 'POST', body: JSON.stringify(data) });
+        input.value = ""; cancelReply(); document.getElementById('emoji-drawer').style.display = 'none'; loadData();
+    }
+
+    function handleNukeRequest() {
+        openModal("Reset Universe?", "Type 'CONFIRM' to wipe chat", "text", (val) => {
+            if(val === "CONFIRM") nukeChat();
+            else showToast("Aborted", "#ff4d4d");
+        });
+    }
+
+    async function nukeChat() { 
+        try {
+            const res = await fetch(API_URL); const data = await res.json();
+            const freshData = { msgs: [], users: data.users || {} };
+            await fetch(API_URL, { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(freshData) 
+            });
+            lastMsgCount = 0; document.getElementById('chat-box').innerHTML = "";
+            showToast("UNIVERSE RESET", "#2ecc71");
+            await sendMessage("🚀 [SYSTEM]: The universe has been reset by Staff.");
+        } catch (e) { showToast("Nuke Failed", "#ff4d4d"); }
+    }
+
+    async function deleteMsg(idx) { 
+        const res = await fetch(API_URL); let data = await res.json();
+        data.msgs.splice(idx, 1);
+        await fetch(API_URL, { method: 'POST', body: JSON.stringify(data) });
+        showToast("Deleted"); loadData(); 
+    }
+
+    function handleKey(e){ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); sendMessage(); } }
+    function toggleEmoji(){ const d=document.getElementById('emoji-drawer'); d.style.display=d.style.display==='block'?'none':'block'; }
+    function cancelReply() { replyData = null; document.getElementById('reply-bar').classList.add('hidden'); }
+    function startReply(idx) { 
+        const m = document.querySelectorAll('.msg')[idx];
+        const user = m.querySelector('.msg-header span').innerText;
+        const text = m.querySelector('div:not(.msg-header):not(.react-menu)').innerText;
+        replyData = { id: m.id.replace('msg-',''), user: user, text: text.substring(0,20) };
+        document.getElementById('reply-bar').classList.remove('hidden');
+    }
+    function startEdit(idx) { 
+        fetch(API_URL).then(res=>res.json()).then(data => { 
+            document.getElementById('msg-input').value = data.msgs[idx].text; 
+            editingIdx = idx; document.getElementById('send-btn').innerText = "Update"; 
+        }); 
+    }
+    function viewImg(s){ document.getElementById('full-img').src=s; document.getElementById('img-overlay').style.display='flex'; }
+    function uploadImage(i) { if (i.files && i.files[0]) { const r = new FileReader(); r.onload = (e) => sendMessage(e.target.result); r.readAsDataURL(i.files[0]); } }
+    async function heartbeat() { 
+        try { 
+            const res = await fetch(API_URL); let data = await res.json(); 
+            if (!data.users) data.users = {}; data.users[mySID] = { name: currentUser, lastSeen: Date.now() }; 
+            await fetch(API_URL, { method: 'POST', body: JSON.stringify(data) }); 
+        } catch(e) {} 
+    }
+    function jumpTo(id) { 
+        const el = document.getElementById(`msg-${id}`); 
+        if(el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.classList.add('highlight'); setTimeout(() => el.classList.remove('highlight'), 1200); } 
+    }
+</script>
+</body>
+</html>
