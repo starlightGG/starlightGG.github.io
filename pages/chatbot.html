@@ -1499,7 +1499,7 @@ function addMessage(role, content, targetElement = chatBox) {
                 const response = await fetch(API_KEY_URL);
                 if (!response.ok) throw new Error(`HTTP Status: ${response.status}`);
                     // 1. Get the actual text from the response
-    let rawKey = (await tokenResponse.text()).trim();
+    let rawKey = (await response.text()).trim();
     rawKey = atob(rawKey);
                 GROQ_API_KEY = `gsk_${rawKey}`;
 
