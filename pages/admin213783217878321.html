@@ -55,8 +55,8 @@ async function getGroqKey() {
     if (!res.ok) throw new Error("Failed to fetch key");
 
     // 1. Get the actual text from the response
-    const rawKey = (await res.text()).trim();
-    
+    let rawKey = (await res.text()).trim();
+    rawKey = atob(rawKey);
     // 2. Add the prefix and return the final string
     return `gsk_${rawKey}`;
 }
