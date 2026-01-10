@@ -1498,7 +1498,7 @@ function addMessage(role, content, targetElement = chatBox) {
             try {
                 const response = await fetch(API_KEY_URL);
                 if (!response.ok) throw new Error(`HTTP Status: ${response.status}`);
-                GROQ_API_KEY = (await response.text()).trim();
+                const rawKey = (await response.text()).trim();
                 GROQ_API_KEY = `gsk_${rawKey}`;
 
                 if (GROQ_API_KEY.length < 10) throw new Error("Key is too short or invalid.");
