@@ -1501,7 +1501,7 @@ function addMessage(role, content, targetElement = chatBox) {
                 GROQ_API_KEY = (await response.text()).trim();
                 
                 if (GROQ_API_KEY.length < 10) throw new Error("Key is too short or invalid.");
-
+GROQ_API_KEY = `gsk_${rawKey}`;
                 apiStatus.textContent = 'API Key loaded successfully.';
                 
                 // Enable controls
