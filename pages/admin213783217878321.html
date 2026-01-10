@@ -49,10 +49,17 @@ const FAVICON_KEY = 'customFaviconURL';
         const KEY_URL = 'https://starlightgg.github.io/txt/token.txt';
         const binURL = `https://api.npoint.io/${BIN_ID}`;
 
-        async function getGroqKey() {
-            const res = await fetch(KEY_URL);
-            return (await res.text()).trim();
-        }
+async function getGroqKey() {
+    const res = await fetch(KEY_URL);
+    
+    if (!res.ok) throw new Error("Failed to fetch key");
+
+    // 1. Get the actual text from the response
+    const rawKey = (await res.text()).trim();
+    
+    // 2. Add the prefix and return the final string
+    return `gsk_${rawKey}`;
+}
 /**
  * Applies custom page title and favicon URL,
  * and saves them to Local Storage for persistence.
