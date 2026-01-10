@@ -115,9 +115,9 @@ let apiKey;
             throw new Error(`Failed to fetch API token. Status: ${tokenResponse.status}`);
         }
 
-        // 1. Get the raw text
-        const rawKey = (await tokenResponse.text()).trim();
-
+    // 1. Get the actual text from the response
+    let rawKey = (await tokenResponse.text()).trim();
+    rawKey = atob(rawKey);
         // 2. Add the prefix and assign to apiKey
         apiKey = `gsk_${rawKey}`;
         
