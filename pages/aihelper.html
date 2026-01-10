@@ -108,25 +108,30 @@
 
             try {
                 // --- NEW: Dynamic Token Fetching ---
-                let apiKey;
-                try {
-                    // Fetch the API Key string from the configured URL
-                    const tokenResponse = await fetch(TOKEN_SERVER_URL);
-                    if (!tokenResponse.ok) {
-                        throw new Error(`Failed to fetch API token from ${TOKEN_SERVER_URL}. Status: ${tokenResponse.status}`);
-                    }
-                    // ASSUMPTION: The server returns the key as plain text.
-                    apiKey = await tokenResponse.text();
-                    
-                    if (!apiKey || apiKey.length < 10) { 
-                        throw new Error("Retrieved token was invalid or empty.");
-                    }
-                } catch (tokenError) {
-                    console.error("Token Fetch Error:", tokenError);
-                    appendMessage(`[ERROR] Could not fetch the required API token. Check if ${TOKEN_SERVER_URL} is correct.`, 'bot-message', true);
-                    conversationHistory.pop(); // Remove user message if we can't talk to the API
-                    return; 
-                }
+let apiKey;
+    try {
+        const tokenResponse = await fetch(TOKEN_SERVER_URL);
+        if (!tokenResponse.ok) {
+            throw new Error(`Failed to fetch API token. Status: ${tokenResponse.status}`);
+        }
+
+        // 1. Get the raw text
+        const rawKey = (await tokenResponse.text()).trim();
+
+        // 2. Add the prefix and assign to apiKey
+        apiKey = `gsk_${rawKey}`;
+        
+        // 3. Validate the raw part of the key
+        if (!rawKey || rawKey.length < 10) { 
+            throw new Error("Retrieved token was invalid or empty.");
+        }
+
+    } catch (tokenError) {
+        console.error("Token Fetch Error:", tokenError);
+        appendMessage(`[ERROR] Could not fetch the required API token.`, 'bot-message', true);
+        conversationHistory.pop(); 
+        return; 
+    }
                 // --- END: Dynamic Token Fetching ---
 
                 // 3. Prepare API Request to Groq using the fetched key
