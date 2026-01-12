@@ -563,7 +563,25 @@
             transform: scale(0.98);
             background: var(--primary-dark);
         }
-        
+                /* --- LOADING SCREEN --- */
+        #loading-screen {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: var(--bg-color); z-index: 10000;
+            display: flex; justify-content: center; align-items: center;
+            flex-direction: column; /* Forces children to stack vertically */
+            transition: opacity 0.5s ease-out, visibility 0.5s;
+            gap: 20px;             /* Adds space between the circle and text */
+        }
+        #loading-screen.fade-out { opacity: 0; visibility: hidden; }
+        /* --- CLOAKING ALERT (External) --- */
+        #CloakingAlert {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-color); z-index: 20000;
+            display: flex; /* Hidden by default, toggle with JS */
+            flex-direction: column; justify-content: center; align-items: center;
+            color: var(--text-color); font-size: 1.2em; font-weight: bold;
+            font-family: var(--font-stack);
+        }
         .hidden { display: none !important; }
         .visible { display: flex !important; }
         
@@ -573,9 +591,37 @@
             border-top-color: var(--primary-color); border-radius: 50%;
             animation: spin 1s linear infinite;
         }
+/* Pulse Animation */
+.pulse {
+    animation: pulse-animation 1.5s infinite ease-in-out;
+    color: #ffffff;         /* Change to your preferred color */
+    font-family: sans-serif;
+    font-size: 1.1rem;
+    letter-spacing: 1px;
+}
+
+@keyframes pulse-animation {
+    0% {
+        opacity: 0.4;
+        transform: scale(0.98);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    100% {
+        opacity: 0.4;
+        transform: scale(0.98);
+    }
+}
     </style>
 </head>
 <body>
+    <!-- External Cloaking Alert Element -->
+    <div id="CloakingAlert">
+        <div class="loader-circle" style="margin-bottom: 20px;"></div>
+        <div>Cloaking Window...</div>
+    </div>
 
     <div id="root"></div>
 
@@ -753,6 +799,8 @@
         // --- MAIN APP COMPONENT ---
         const App = () => {
             // State
+                        const [isLoading, setIsLoading] = useState(true); // Loading State
+
             const [activeTab, setActiveTab] = useState('home');
             const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
             const [pattern, setPattern] = useState(localStorage.getItem('pattern') || 'lines');
@@ -809,6 +857,7 @@
                     // Default to Google if nothing saved
                     updateFavicon("https://google.com/favicon.ico");
                 }
+                setTimeout(() => setIsLoading(false), 1500);
 
                 const timer = setInterval(() => {
                     const now = new Date();
@@ -1277,6 +1326,12 @@
             const shouldShowFooter = activeTab !== 'chatbots' && activeTab !== 'settings' && (activeTab !== 'game-view' || footerVisible);
 
             return e(React.Fragment, null,
+// Loading Screen
+e('div', { id: 'loading-screen', className: isLoading ? '' : 'fade-out' },
+    e('div', { className: 'loader-circle' }),
+    // Added a div wrapper to ensure it breaks to a new line
+    e('div', { className: 'loading-text pulse' }, 'Loading Hub...')
+),
                 // Main Content Wrapper (Applies Pattern)
                 e('div', { id: 'main-menu', 'data-pattern': pattern, style: { display: iframeState.active ? 'none' : 'flex' } },
                     HomeContent,
