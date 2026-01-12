@@ -944,7 +944,7 @@
             const handleToggle = (key, currentState, setter) => {
 
                 const newState = !currentState;
-                                    if (key=="aboutBlankPopupState" && currentState == false){
+                                    if (key=="aboutBlankPopupState" && currentState == true){
                         showModal("This feature is recommended to be on so GoGuardian or any third party apps cannot see your screen!");
                   }
                 setter(newState);
