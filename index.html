@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <script id="cloning-script" src="js/cloner.js"></script>
-<link rel="icon" type="image/png" href="favicons/favicon.png">
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+      <script id="cloning-script" src="js/cloner.js"></script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>StarlightGG</title>
-    <meta name="keywords"
+    <link rel="icon" type="image/png" href="favicons/favicon.png">
+        <meta name="keywords"
     content="games, gamez, unblocked, unblocked games, tunnel rush, retrobowl, slope, run 3, cookie clicker, idle breakout, 2048, flappy bird, bloons td, duck life, learn to fly, the impossible quiz, free, no ads on starlightGG!" />
 <meta name="og:title" content="Starlight GG: Play Tunnel Rush, RetroBowl, and More!" />
 <meta name="og:description" content="Your source for 250+ free, unblocked games! Enjoy Tunnel Rush, RetroBowl, Slope, Run 3, Idle Breakout, 2048, and Bloons TD without any school restrictions or ads for free on starlightGG!" />
@@ -14,2741 +15,1299 @@
 <meta name="og:image" content="https://starlightgg.github.io/favicons/favicon.png" />
 <meta name="og:url" content="https://starlightgg.github.io/" />
 <meta name="og:type" content="website" />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
-    />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght300;500;700;900&display=swap"
-      rel="stylesheet"
-    />
-    <style>
-.absolutely-positioned-div {
-    /* 🔑 KEY TO NOT PUSHING OTHER ELEMENTS */
-    position: relative; 
-width: 80%;    
-    /* Display properties */
+    <!-- External Libraries -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://cdn.pubnub.com/sdk/javascript/pubnub.7.1.2.min.js"></script>
 
-    padding: 45px;
+    <style>
+        /* --- CORE VARIABLES --- */
+        :root {
+            /* Light Theme (Default) */
+            --bg-color: #e0e5ec;
+            --text-color: #333333;
+            --primary-color: #4c68ff;
+            --primary-light: #7c90ff;
+            --primary-dark: #3a50cc;
+            --secondary-bg: #e0e5ec;
+            --glass-color: rgba(255, 255, 255, 0.4);
+            --card-glass: rgba(255, 255, 255, 0.65);
+            --line-color: rgba(0, 0, 0, 0.07);
+            --star-color: #E5B500;
+            --toggle-size: 4rem;
+            --border-radius: 20px;
+            --font-stack: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+
+            /* Neumorphic Shadows (Light) */
+            --shadow-light-top: -6px -6px 12px #ffffff;
+            --shadow-light-bottom: 6px 6px 12px rgba(0, 0, 0, 0.15);
+            --shadow-inset-light: inset 2px 2px 5px rgba(0, 0, 0, 0.1), inset -2px -2px 5px #ffffff;
+            --card-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            
+            --highlight-light: #ffffff;
+            --shadow-dark: #a3b1c6;
+            --active-color: #3498db;
+        }
+
+        /* --- GLOBAL RESET & BOX SIZING --- */
+        * {
+            box-sizing: border-box;
+        }
+
+        /* Dark Theme */
+        [data-theme="dark"] {
+            --bg-color: #1e2023;
+            --text-color: #f0f0f0;
+            --primary-color: #6a7eff;
+            --secondary-bg: #1e2023;
+            --glass-color: rgba(30, 32, 35, 0.6);
+            --card-glass: rgba(40, 44, 52, 0.7);
+            --line-color: rgba(255, 255, 255, 0.08);
+            --star-color: #FFFACD;
+            
+            --shadow-light-top: -6px -6px 12px #34343e;
+            --shadow-light-bottom: 6px 6px 12px #101214;
+            --shadow-inset-light: inset 2px 2px 5px #101214, inset -2px -2px 5px #34343e;
+            --card-shadow: 0 10px 25px rgba(0,0,0,0.5);
+
+            --highlight-light: #34343e;
+            --shadow-dark: #101214;
+        }
+
+        /* --- GLOBAL STYLES --- */
+        body {
+            font-family: var(--font-stack);
+            /* Animated Background Gradient - Adjusted for less blue intensity */
+            background: linear-gradient(300deg, var(--bg-color) 0%, var(--bg-color) 35%, var(--primary-light) 50%, var(--bg-color) 65%, var(--bg-color) 100%);
+            background-size: 400% 400%;
+            animation: gradient-flow 60s ease infinite;
+            
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            transition: color 0.4s ease-in-out; 
+            overflow: hidden; /* App handles scroll */
+        }
+
+        /* --- ANIMATIONS --- */
+        @keyframes gradient-flow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        @keyframes moveLines {
+            0% { background-position: 0 0; }
+            100% { background-position: 100% 100%; }
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- LAYOUT & BACKGROUNDS --- */
+        #main-menu {
+            height: 100vh;
+            width: 100%; /* Changed from 100vw to prevent scrollbar overlap */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-y: auto;
+            overflow-x: hidden;
+            transition: background 0.3s;
+            position: relative;
+        }
+
+        /* Background Patterns (Overlay on top of gradient) - Added Animation */
+        #main-menu[data-pattern="lines"] {
+            background-image: linear-gradient(to right, var(--line-color) 1px, transparent 1px), linear-gradient(to bottom, var(--line-color) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: moveLines 10s linear infinite;
+        }
+        #main-menu[data-pattern="dots"] {
+            background-image: radial-gradient(var(--line-color) 3px, transparent 1px);
+            background-size: 40px 40px;
+            animation: moveLines 10s linear infinite;
+        }
+        #main-menu[data-pattern="stripes"] {
+            background-image: repeating-linear-gradient(45deg, var(--line-color) 0, var(--line-color) 1px, transparent 1px, transparent 30px);
+            animation: moveLines 10s linear infinite;
+        }
+#main-menu[data-pattern="stars"] {
+  /* I added many gradients with random % positions and varying sizes (0.5px to 2px) */
+  background-image: 
+    radial-gradient(circle at 15% 50%, var(--star-color) 0.5px, transparent 1px),
+    radial-gradient(circle at 80% 12%, var(--star-color) 1px, transparent 2px),
+    radial-gradient(circle at 55% 85%, var(--star-color) 0.5px, transparent 1px),
+    radial-gradient(circle at 40% 40%, var(--star-color) 1.5px, transparent 2px),
+    radial-gradient(circle at 90% 90%, var(--star-color) 0.5px, transparent 1px),
+    radial-gradient(circle at 10% 80%, var(--star-color) 1px, transparent 2px),
+    radial-gradient(circle at 50% 10%, var(--star-color) 0.5px, transparent 1px),
+    radial-gradient(circle at 95% 45%, var(--star-color) 1px, transparent 2px),
+    radial-gradient(circle at 25% 25%, var(--star-color) 1.5px, transparent 2.5px),
+    radial-gradient(circle at 65% 65%, var(--star-color) 0.5px, transparent 1px);
+    
+  /* Increased size to prevent obvious pattern repetition */
+  background-size: 300px 300px; 
+  animation: moveLines 25s linear infinite;
 }
 
-          /* --- Toggle Track (Recessed Look) --- */
+        /* --- DASHBOARD GRID SYSTEM --- */
+        .dashboard-container {
+            width: 100%;
+            max-width: 1000px;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            animation: fadeUp 0.6s ease-out;
+        }
+
+        .hero-section {
+            text-align: center;
+            margin-bottom: 50px;
+            padding: 20px;
+            background: var(--glass-color);
+            backdrop-filter: blur(10px);
+            border-radius: 30px;
+            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: var(--shadow-light-bottom);
+        }
+        .hero-section h2 {
+            font-size: 3em;
+            margin: 0 0 15px 0;
+            color: var(--primary-color);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        #quote-display {
+            font-size: 1.2em;
+            font-style: italic;
+            opacity: 0.8;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            width: 100%;
+        }
+
+        .dashboard-card {
+            background: var(--card-glass);
+            backdrop-filter: blur(15px);
+            border-radius: 25px;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: var(--card-shadow);
+            position: relative;
+            overflow: hidden;
+            height: 200px;
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            border-color: var(--primary-color);
+        }
+        
+        .dashboard-card i {
+            font-size: 3em;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+            transition: transform 0.3s;
+        }
+        .dashboard-card:hover i { transform: scale(1.2); }
+
+        .dashboard-card h3 { margin: 0; font-size: 1.5em; font-weight: 700; }
+        .dashboard-card p { opacity: 0.7; font-size: 0.9em; margin-top: 10px; }
+
+        /* Special Card for Surf Web */
+        .card-accent {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: white !important;
+        }
+        .card-accent i, .card-accent h3, .card-accent p { color: white !important; }
+
+        /* --- SUB-PAGE HEADERS --- */
+        .page-header {
+            width: 100%;
+            max-width: 1000px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--line-color);
+            animation: fadeUp 0.4s ease-out;
+        }
+        .back-btn {
+            background: var(--secondary-bg);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-weight: 600;
+            color: var(--text-color);
+            cursor: pointer;
+            box-shadow: var(--shadow-light-bottom), var(--shadow-light-top);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+        .back-btn:hover {
+            transform: translateX(-5px);
+            color: var(--primary-color);
+        }
+
+        /* --- COMPONENTS --- */
+        .menu-tab-content {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            padding: 20px;
+            box-sizing: border-box;
+            overflow-y: auto;
+        }
+        .menu-tab-content.active { display: flex; }
+
+        .menu-section-title {
+            font-size: 2em;
+            font-weight: 800;
+            color: var(--primary-color);
+            margin: 0;
+        }
+
+        .menu-buttons, .menu-buttons2 {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 40px;
+            width: 100%;
+            max-width: 800px;
+        }
+
+        /* Neumorphic Buttons */
+        .menu-buttons button, .menu-buttons2 button {
+            color: var(--text-color);
+            background-color: var(--secondary-bg);
+            border: none;
+            transition: all 0.25s ease-in-out;
+            box-shadow: var(--shadow-light-bottom), var(--shadow-light-top);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            border-radius: 15px;
+            cursor: pointer;
+            flex: 1 1 200px;
+        }
+        .menu-buttons button { padding: 25px; font-size: 1.2em; height: 80px; }
+        .menu-buttons2 button { padding: 15px; font-size: 1em; }
+        
+        .menu-buttons button:hover, .menu-buttons2 button:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-inset-light);
+            color: var(--primary-color);
+        }
+
+        /* --- BOTTOM BAR --- */
+        #bottom-bar {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            /* Fix: Centered alignment with flexbox and gap */
+            transform: translateX(-50%); /* Start centered */
+            display: flex;
+            justify-content: center; 
+            align-items: center;
+            gap: 30px; /* Explicit gap between elements */
+            
+            padding: 10px 40px;
+            /* Z-INDEX INCREASED to sit above Iframe (200) */
+            z-index: 300; 
+            border-radius: 50px;
+            backdrop-filter: blur(12px);
+            background-color: var(--glass-color);
+            box-shadow: var(--shadow-light-bottom);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            white-space: nowrap; 
+            min-width: 250px;
+        }
+        #footer-settings-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: none;
+            background: var(--secondary-bg);
+            box-shadow: var(--shadow-light-bottom), var(--shadow-light-top);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1.2em;
+            color: var(--text-color);
+        }
+
+        /* --- SETTINGS TOGGLES --- */
+        .settings-container { display: flex; flex-direction: column; gap: 20px; align-items: center; width: 100%; max-width: 600px; padding-bottom: 100px; }
+        
+        /* New Section Header Style */
+        .settings-group-title {
+            width: 100%;
+            text-align: left;
+            font-size: 1.3em;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-top: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--line-color);
+        }
+
+        .settings-item { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            width: 100%; 
+            padding: 20px;
+            background: var(--card-glass);
+            border-radius: 15px;
+            box-shadow: var(--shadow-light-bottom);
+        }
         .switch-container {
             width: var(--toggle-size);
             height: calc(var(--toggle-size) / 2);
-            border-radius: 9999px; 
-            transition: all 0.3s ease;
+            border-radius: 999px;
             background-color: var(--bg-color);
-            /* Inset shadow for recessed track appearance */
-            box-shadow: 
-                inset 5px 5px 10px var(--shadow-dark),
-                inset -5px -5px 10px var(--highlight-light);
-            border: none; /* Remove harsh borders */
+            box-shadow: inset 5px 5px 10px var(--shadow-dark), inset -5px -5px 10px var(--highlight-light);
+            cursor: pointer;
+            position: relative;
         }
-
-        /* --- Movable Thumb (Extruded Look) --- */
         .switch-thumb {
-            /* Adjusted size relative to the smaller toggle-size */
-            width: calc(var(--toggle-size) / 2 - 0.5rem); 
+            width: calc(var(--toggle-size) / 2 - 0.5rem);
             height: calc(var(--toggle-size) / 2 - 0.5rem);
-            border-radius: 9999px; 
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            background-color: var(--bg-color); 
-            border: none;
-            /* Extruded shadow for soft, floating effect */
-            box-shadow: 
-                -4px -4px 8px var(--highlight-light),
-                4px 4px 8px var(--shadow-dark);
-            color: #bdc3c7; /* Default icon color (light gray) */
-            padding: 0.25rem;
+            border-radius: 50%;
+            background-color: var(--bg-color);
+            box-shadow: -4px -4px 8px var(--highlight-light), 4px 4px 8px var(--shadow-dark);
+            position: absolute;
+            top: 0.25rem;
+            left: 0.25rem;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-
-        /* --- ON state styles (Active Blue) --- */
         .switch-on .switch-thumb {
-            /* Adjusted transform for smaller size */
-            transform: translateX(calc(var(--toggle-size) / 2 + 0.3rem)); 
+            transform: translateX(calc(var(--toggle-size) / 2));
             background-color: var(--active-color);
-            /* Active state glow/shadow */
-            box-shadow: 
-                0 0 10px var(--active-color), /* Soft blue glow, slightly smaller */
-                0 0 3px rgba(0, 0, 0, 0.5);
-            color: white; /* Active icon color */
-        }
-        .online-counter {
-          margin-top: 30px;
-            padding: 10px 15px;
-    background-color: var(--secondary-bg);
-    color: var(--text-color);
-            border-radius: 5px;
-            font-family: Arial, sans-serif;
-            font-size: 1.1em;
-            display: inline-block;
-                outline: 3px solid #a5b4fc; 
-
+            color: white;
         }
 
+        /* --- IFRAME & CHATBOT --- */
+        #iframe-container {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-color);
+            z-index: 200;
+        }
+        #iframe-nav {
+            position: absolute; top: 0; width: 100%;
+            padding: 15px 20px; 
+            display: flex; gap: 15px;
+            background: var(--glass-color);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            z-index: 10;
+            box-sizing: border-box;
+            align-items: center;
+        }
+        /* Style for buttons inside iframe nav */
+        #iframe-nav button {
+            background: var(--secondary-bg);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 12px;
+            font-weight: 600;
+            color: var(--text-color);
+            cursor: pointer;
+            box-shadow: var(--shadow-light-bottom), var(--shadow-light-top);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+            font-size: 0.9em;
+        }
+        #iframe-nav button:hover {
+            transform: translateY(-2px);
+            color: var(--primary-color);
+            box-shadow: var(--shadow-inset-light);
+        }
 
-/* Floating Info Button (?) */
-#info-btn {
-    position: fixed;
-    bottom: 2rem;
-    right: 2rem;
-    z-index: 1000;
-    width: 2rem; 
-    height: 2rem; 
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: url('data:image/x-icon;base64,AAACAAEAICAAAA4ADwCoEAAAFgAAACgAAAAgAAAAQAAAAAEAIAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAQAAAAEAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAEAAAABAAAAAQAAAAIAAAACAAAAAgAAAAIAAAABAAAAAQAAAAEAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAQAAAAEAAAABAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwAAAAUAAAAAAAAAAAAAAAEAAAABAAAAAQAAAAIAAAACAAAAAQAAAAIAAAABAAAAAQAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADAAAABQAAAAgAAAAIAAAACQAAAAYAAAAGAAAAAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAMAAAAMAAAAFQAAABUAAAAMAAAAAwAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAFAAAADgAAAB4AAAAuAAAALgAAAB4AAAAOAAAABQAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABwAAAA0AAAAdAAAAMAAAAEMAAABDAAAAMAAAAB0AAAANAAAABwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwAAAAMAAAAMAAAAE/pfYv+rREb/AAAARwAAAEcAAAA1AAAAIwAAABMAAAAMAAAAAwAAAAMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAKAAAACgAAABD6X2L/+l9i/6tERv+rREb/AAAAQgAAACwAAAAWAAAADQAAABAAAAANAAAACgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwAAABb6X2L/+l9i//pfYv/6X2L/q0RG/6tERv+rREb/q0RG/wAAAAoAAAAHAAAAFwAAABYAAAAWAAAAAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMAAAAMAAAAJQAAACUAAAAfAAAACfpfYv+rREb/AAAAPAAAADwAAAAjAAAACgAAAAkAAAAfAAAAJQAAACUAAAAMAAAAAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACatERv8AAAA3AAAANwAAAC4AAAAb+l9i/6tERv8AAABCAAAAQgAAAC4AAAAbq0RG/wAAAC4AAAA3AAAANwAAABwAAAAJAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQq0RG/wAAAEUAAABFAAAAPAAAADD6X2L/q0RG/wAAAEkAAABJAAAAPAAAADCrREb/AAAAPAAAAEUAAABFAAAAKQAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKtERv+rREb/AAAARQAAAEUAAAA8AAAAMPpfYv+rREb/AAAASQAAAEkAAAA8AAAAMKtERv+rREb/AAAARQAAAEUAAAApAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACrREb/q0RG/6tERv+rREb/q0RG/6tERv+rREb/+l9i/6tERv+rREb/q0RG/6tERv+rREb/q0RG/6tERv+rREb/AAAAOAAAABwAAAAJAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPpfYv/6X2L/+l9i//pfYv/6X2L/+l9i//pfYv/6X2L/+l9i//pfYv/6X2L/+l9i//pfYv/6X2L/+l9i//pfYv8AAAAmAAAADQAAAAMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPpfYv/6X2L/AAAAFgAAABYAAAAXAAAAB/pfYv+rREb/AAAAPAAAADwAAAAiAAAACvpfYv/6X2L/AAAAFgAAABYAAAAEAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPpfYv8AAAAKAAAADQAAABUAAAAV+l9i/6tERv8AAABCAAAAQgAAACwAAAAd+l9i/wAAABUAAAANAAAACgAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA+l9i/wAAAAMAAAADAAAADAAAABP6X2L/q0RG/wAAAEcAAABHAAAANQAAACP6X2L/AAAADAAAAAwAAAADAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHAAAADfpfYv+rREb/AAAAQwAAAEMAAAAwAAAAHQAAAA0AAAAHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA+l9i//pfYv/6X2L/+l9i/6tERv+rREb/q0RG/6tERv8AAAAOAAAABQAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPpfYv/6X2L/q0RG/6tERv8AAAAVAAAADAAAAAMAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPpfYv+rREb/AAAABgAAAAYAAAADAAAAAAAAAAAAAAAFAAAAAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//////////////////////////////////////////////////z////4f///4B////z///+89///vPf//zzz//4AAf/+AAH//zzz//+89///vPf///z////gH///+H////z///////////////////////////////////////8='), default; 
-    transition: background-color 0.2s, box-shadow 0.2s;
-    border: none;
-    border-radius: 9999px; 
-    background-color: #3949AB /* Requires defining CSS variables or replacing with colors */
-    color: white;
-    font-size: 1rem; 
-    font-weight: 700;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    outline: 3px solid #a5b4fc; 
-    
-}
-#info-btn:hover {
-    background-color: #97a1de;
-}
+        #my-iframe { width: 100%; height: 100%; border: none; padding-top: 70px; box-sizing: border-box; }
+        
+        #chatbot-iframe {
+            width: 100%;
+            /* Height is dynamic via inline style in React component */
+            border: none;
+            border-radius: 20px;
+            background: white;
+            box-shadow: var(--shadow-inset-light);
+            transition: height 0.3s ease;
+        }
 
+        /* --- MODAL --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            display: flex; justify-content: center; align-items: center;
+            opacity: 0; visibility: hidden; transition: all 0.3s;
+            z-index: 9999;
+            backdrop-filter: blur(5px);
+        }
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+        .modal-content {
+            background: var(--secondary-bg);
+            padding: 30px; border-radius: 25px;
+            width: 90%; max-width: 400px;
+            transform: scale(0.9); transition: transform 0.3s;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .modal-overlay.active .modal-content { transform: scale(1); }
 
-/* Modal/Overlay */
-#performance-modal {
-    position: fixed;
-    bottom: 4rem; 
-    right: 2rem;
-    z-index: 999;
-    pointer-events: none;
-    transition: opacity 0.3s ease-in-out; 
-    transform: translateY(10px);
-    opacity: 0;
-    width: 13rem; /* Fixed width */
-    height: 8rem; /* FIXED HEIGHT */
-    font-size: 0.9rem; 
-    cursor: url('data:image/x-icon;base64,AAACAAEAICAAAA4ADwCoEAAAFgAAACgAAAAgAAAAQAAAAAEAIAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAQAAAAEAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAEAAAABAAAAAQAAAAIAAAACAAAAAgAAAAIAAAABAAAAAQAAAAEAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAQAAAAEAAAABAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwAAAAUAAAAAAAAAAAAAAAEAAAABAAAAAQAAAAIAAAACAAAAAQAAAAIAAAABAAAAAQAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADAAAABQAAAAgAAAAIAAAACQAAAAYAAAAGAAAAAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAMAAAAMAAAAFQAAABUAAAAMAAAAAwAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAFAAAADgAAAB4AAAAuAAAALgAAAB4AAAAOAAAABQAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABwAAAA0AAAAdAAAAMAAAAEMAAABDAAAAMAAAAB0AAAANAAAABwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwAAAAMAAAAMAAAAE/pfYv+rREb/AAAARwAAAEcAAAA1AAAAIwAAABMAAAAMAAAAAwAAAAMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAKAAAACgAAABD6X2L/+l9i/6tERv+rREb/AAAAQgAAACwAAAAWAAAADQAAABAAAAANAAAACgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwAAABb6X2L/+l9i//pfYv/6X2L/q0RG/6tERv+rREb/q0RG/wAAAAoAAAAHAAAAFwAAABYAAAAWAAAAAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMAAAAMAAAAJQAAACUAAAAfAAAACfpfYv+rREb/AAAAPAAAADwAAAAjAAAACgAAAAkAAAAfAAAAJQAAACUAAAAMAAAAAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACatERv8AAAA3AAAANwAAAC4AAAAb+l9i/6tERv8AAABCAAAAQgAAAC4AAAAbq0RG/wAAAC4AAAA3AAAANwAAABwAAAAJAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQq0RG/wAAAEUAAABFAAAAPAAAADD6X2L/q0RG/wAAAEkAAABJAAAAPAAAADCrREb/AAAAPAAAAEUAAABFAAAAKQAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKtERv+rREb/AAAARQAAAEUAAAA8AAAAMPpfYv+rREb/AAAASQAAAEkAAAA8AAAAMKtERv+rREb/AAAARQAAAEUAAAApAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACrREb/q0RG/6tERv+rREb/q0RG/6tERv+rREb/+l9i/6tERv+rREb/q0RG/6tERv+rREb/q0RG/6tERv+rREb/AAAAOAAAABwAAAAJAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPpfYv/6X2L/+l9i//pfYv/6X2L/+l9i//pfYv/6X2L/+l9i//pfYv/6X2L/+l9i//pfYv/6X2L/+l9i//pfYv8AAAAmAAAADQAAAAMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPpfYv/6X2L/AAAAFgAAABYAAAAXAAAAB/pfYv+rREb/AAAAPAAAADwAAAAiAAAACvpfYv/6X2L/AAAAFgAAABYAAAAEAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPpfYv8AAAAKAAAADQAAABUAAAAV+l9i/6tERv8AAABCAAAAQgAAACwAAAAd+l9i/wAAABUAAAANAAAACgAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA+l9i/wAAAAMAAAADAAAADAAAABP6X2L/q0RG/wAAAEcAAABHAAAANQAAACP6X2L/AAAADAAAAAwAAAADAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHAAAADfpfYv+rREb/AAAAQwAAAEMAAAAwAAAAHQAAAA0AAAAHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA+l9i//pfYv/6X2L/+l9i/6tERv+rREb/q0RG/6tERv8AAAAOAAAABQAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPpfYv/6X2L/q0RG/6tERv8AAAAVAAAADAAAAAMAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPpfYv+rREb/AAAABgAAAAYAAAADAAAAAAAAAAAAAAAFAAAAAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//////////////////////////////////////////////////z////4f///4B////z///+89///vPf//zzz//4AAf/+AAH//zzz//+89///vPf///z////gH///+H////z///////////////////////////////////////8='),default; 
-
-    /* Base styling */
-    background-color: (--secondary-bg);
-    padding: 0.75rem; 
-    border-radius: 0.5rem;
-    box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.2);
-    border: 1px solid #e5e7eb;
-}
-.stat-line {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 0.8rem; 
-    margin-bottom: 0.2rem;
-}
-
-/* Color Utility Classes for JS */
-.text-good { color: #10b981; }
-.text-medium { color: #f59e0b; }
-.text-bad { color: #ef4444; }
-.text-default { color: #2563eb; }
-
-/* Mobile Adjustment Example */
-@media (max-width: 639px) {
-    #info-btn {
-        bottom: 1rem;
-        right: 1rem;
-    }
-    #performance-modal {
-        bottom: 3rem; 
-        right: 1rem;
-        width: 12rem; 
-        height: 8rem; 
-    }
-}
-  /* --- 1. MODAL OVERLAY (The Dark Background) --- */
-.modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    /* Semi-transparent black backdrop for dimming the background */
-    background-color: rgba(0, 0, 0, 0.7);
-    
-    /* Initially hidden with smooth transition */
-    visibility: hidden;
-    opacity: 0;
-    transition: opacity 0.3s ease, visibility 0.3s ease;
-    z-index: 100; /* High z-index to cover everything */
-    
-    /* Center the modal content using Flexbox */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-/* State when the modal is active (visible) */
-.modal-overlay.active {
-    visibility: visible;
-    opacity: 1;
-}
-
-/* --- 2. MODAL CONTENT (The Main Box) --- */
-.modal-content {
-    position: relative;
-    
-    /* Neumorphic styling (REPLACING bg-white, rounded-xl, shadow-2xl) */
-    background-color: var(--secondary-bg);
-    padding: 30px;
-    border-radius: var(--border-radius);
-    
-    /* Size & Animation (REPLACING w-full, max-w-md, p-6, m-4) */
-    max-width: 400px; 
-    width: 90%;
-    max-height: 90vh; 
-    overflow-y: auto; 
-    
-    transform: scale(0.9);
-    transition: transform 0.3s ease;
-}
-
-.modal-overlay.active .modal-content {
-    transform: scale(1);
-}
-
-/* --- 3. MODAL HEADER FIXES --- */
-/* The HTML uses inline divs for header, message, and footer. We target these specific sections. */
-
-/* Styling for the header div (REPLACING flex justify-between items-start border-b pb-3 mb-4) */
-.modal-content > div:nth-child(1) { 
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    border-bottom: 1px solid var(--line-color);
-    padding-bottom: 12px;
-    margin-bottom: 16px;
-}
-
-/* Styling for the h3 title (REPLACING text-xl font-bold text-gray-900) */
-#modal-title {
-    margin: 0;
-    font-size: 1.25em;
-    font-weight: bold;
-    color: var(--text-color);
-}
-
-/* --- 4. CLOSE (X) BUTTON FIX --- */
-/* This targets the button inside the header div */
-.modal-content > div:nth-child(1) button { 
-    background: transparent;
-    border: none;
-    line-height: 1; 
-    padding: 4px;
-    border-radius: 50%;
-    transition: color 0.2s ease, background-color 0.2s ease;
-}
-
-/* Styling for the SVG (REPLACING text-gray-400 hover:text-gray-600) */
-.modal-content > div:nth-child(1) button svg {
-    display: block;
-    width: 24px;
-    height: 24px;
-    color: var(--text-color);
-    transition: color 0.2s;
-}
-
-.modal-content > div:nth-child(1) button:hover svg {
-    color: var(--primary-color);
-}
-
-
-/* --- 5. MODAL BODY (Message) FIXES --- */
-/* Styling for the message div (REPLACING mb-6) */
-.modal-content > div:nth-child(2) {
-    margin-bottom: 24px;
-}
-
-/* Styling for the message paragraph (REPLACING text-gray-700 leading-relaxed) */
-#modal-message {
-    color: var(--text-color);
-    line-height: 1.6;
-    margin: 0;
-}
-
-
-/* --- 6. MODAL FOOTER & OK BUTTON FIXES --- */
-/* Styling for the footer div (REPLACING flex justify-end) */
-.modal-content > div:nth-child(3) {
-    display: flex;
-    justify-content: flex-end;
-}
-
-/* Styling for the OK Button (REPLACING bg-indigo-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-indigo-700) */
-.modal-content > div:nth-child(3) button {
-    /* Primary button Neumorphic style */
-    background-color: var(--primary-color);
-    color: white; 
-    padding: 10px 20px;
-    border-radius: var(--border-radius);
-    font-weight: 600;
-    border: 1px solid var(--primary-dark);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    
-    /* Animation and Shadow */
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15); 
-    transition: background-color 0.2s, box-shadow 0.2s, transform 0.2s;
-}
-
-.modal-content > div:nth-child(3) button:hover {
-    background-color: var(--primary-dark);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    transform: scale(0.98);
-}
-      /* ADD THIS to your main <style> tag */
-      .settings-item input[type="text"] {
-          padding: 10px 15px;
-          border-radius: var(--border-radius);
-          border: 1px solid var(--line-color);
-          background-color: var(--secondary-bg);
-          color: var(--text-color);
-          box-shadow: var(--shadow-inset-light);
-          font-size: 1em;
-          min-width: 200px;
-          font-family: var(--font-stack); /* Ensures font matches */
-          
-      }
-
-      .settings-item input[type="text"]::placeholder {
-          color: var(--text-color);
-          opacity: 0.6;
-      }
-
-      /* NEW: Hide/Show logic for custom options */
-      #custom-cloak-options {
-          display: none; /* Hidden by default */
-          width: 100%;
-
-          /* These match the .settings-container structure */
-          flex-direction: column;
-          gap: 1px;
-          align-items: center;
-      }
-
-      #custom-cloak-options.visible {
-          display: flex; /* This class will be added by JS to show it */
-      }
-
-      /* Fix the gap issue inside the wrapper */
-      #custom-cloak-options .settings-item {
-           gap: 15px;
-      }
-            /* NEW: Hide/Show logic for custom options */
-      #url-cloak-options {
-          display: none; /* Hidden by default */
-          width: 100%;
-
-          /* These match the .settings-container structure */
-          flex-direction: column;
-          gap: 1px;
-          align-items: center;
-      }
-
-      #url-cloak-options.visible {
-          display: flex; /* This class will be added by JS to show it */
-      }
-
-      /* Fix the gap issue inside the wrapper */
-      #url-cloak-options .settings-item {
-           gap: 15px;
-      }
-              /* --- Loading Screen Styles (Neumorphic) --- */
-              #loading-screen {
-                  position: fixed;
-                  top: 0;
-                  left: 0;
-                  width: 100%;
-                  height: 100%;
-                  background-color: var(--bg-color); /* Matches page background */
-                  z-index: 10000; /* Ensure it's on top of everything */
-                  display: flex;
-                  justify-content: center;
-                  align-items: center;
-                  opacity: 1;
-                  visibility: visible;
-                  transition: opacity 0.5s ease-out, visibility 0.5s ease-out;
-              }
-              #loading-screen.hidden {
-                  opacity: 0;
-                  visibility: hidden;
-                  pointer-events: none; /* Allows clicks on elements below it */
-              }
-              #cover {
-                  position: fixed;
-                  top: 0;
-                  left: 0;
-                  width: 100%;
-                  height: 100%;
-                  background-color: var(--bg-color); /* Matches page background */
-                  z-index: 10001; /* Ensure it's on top of everything */
-                  display: flex;
-                  justify-content: center;
-                  align-items: center;
-                  opacity: 1;
-                  visibility: visible;
-                  transition: opacity 0.5s ease-out, visibility 0.5s ease-out;
-              }
-                            .cloaker-container {
-                  display: flex;
-                  flex-direction: column;
-                  align-items: center;
-                  padding: 40px;
-                  border-radius: var(--border-radius);
-                  background-color: var(--secondary-bg);
-                  /* Soft Neumorphic Inset/Outset */
-                  box-shadow: var(--shadow-light-top), var(--shadow-light-bottom);
-              }
-
-              .cloaker-container p {
-                  font-size: 1.2em;
-                  font-weight: 500;
-                  color: var(--primary-color);
-              }
-              .loader-container {
-                  display: flex;
-                  flex-direction: column;
-                  align-items: center;
-                  gap: 20px;
-                  padding: 40px;
-                  border-radius: var(--border-radius);
-                  background-color: var(--secondary-bg);
-                  /* Soft Neumorphic Inset/Outset */
-                  box-shadow: var(--shadow-light-top), var(--shadow-light-bottom);
-              }
-
-              .loader-container p {
-                  font-size: 1.2em;
-                  font-weight: 500;
-                  color: var(--primary-color);
-              }
-
-              /* Loader Circle (Spinning Neumorphic Ring) */
-              .loader-circle {
-                  width: 60px;
-                  height: 60px;
-                  border-radius: 50%;
-                  /* Create the 'hollow' effect with the border */
-                  border: 5px solid var(--primary-light);
-                  border-top-color: var(--primary-color); /* The spinning part */
-                  animation: spin 1s linear infinite;
-                  /* Inset shadow to make it look embedded */
-                  box-shadow: var(--shadow-inset-light);
-              }
-
-              @keyframes spin {
-                  0% { transform: rotate(0deg); }
-                  100% { transform: rotate(360deg); }
-              }
-              /* --- MODERN NEUMORPHIC / GLASS MORPHISM VARIABLES --- */
-              :root {
-                            /* Neumorphic Color Palette (Dark Theme) */
-            --highlight-light: #95b1de;
-            --shadow-dark: #95b1de;
-                            --active-color: #3498db; /* Soft Blue for ON state */
+        /* --- PERFORMANCE MONITOR --- */
+        #info-btn {
+            position: fixed; bottom: 80px; right: 20px;
+            width: 30px; height: 30px; border-radius: 50%;
+            background: var(--primary-color); color: white;
+            display: flex; align-items: center; justify-content: center;
+            cursor: grab; z-index: 1000;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            font-size: 1rem;
+            font-weight: 700;
+            transition: background-color 0.2s, box-shadow 0.2s;
+            outline: 3px solid #a5b4fc; 
+            border: none;
+        }
+        #info-btn:hover { background-color: #97a1de; }
+        #performance-modal {
+            position: fixed; bottom: 140px; right: 20px;
+            width: 160px; background: var(--secondary-bg);
+            padding: 15px; border-radius: 15px;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+            font-size: 0.9em; z-index: 999;
+            opacity: 0; pointer-events: none; transition: opacity 0.3s;
+            border: 1px solid rgba(255,255,255,0.1);
             
-            /* --- REDUCED TOGGLE SIZE HERE --- */
-            --toggle-size: 5rem; 
-                  --bg-color: #e0e5ec; /* Light, soft background (Neumorphism base) */
-                  --text-color: #333333;
-                  --primary-color: #4c68ff; /* Vibrant blue */
-                  --primary-light: #7c90ff;
-                  --primary-dark: #3a50cc;
-                  --secondary-bg: #e0e5ec; /* Secondary background matches main background for soft UI */
-                  --border-radius: 12px;
-                  --font-stack: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-                  --glass-color: rgba(255, 255, 255, 0.4); /* Light Mode Glass */
-                  --line-color: rgba(0, 0, 0, 0.07); /* Subtle dark lines */
-                  /* --- MODIFIED: Added star color --- */
-                  --star-color: #E5B500;
+            /* UPDATED DISPLAY */
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        #performance-modal.visible { opacity: 1; pointer-events: auto; }
 
-                  /* Neumorphic Shadows (Light Mode) */
-                  --shadow-light-top: -6px -6px 12px #ffffff;
-                  --shadow-light-bottom: 6px 6px 12px rgba(0, 0, 0, 0.15);
-                  --shadow-inset-light: inset 2px 2px 5px rgba(0, 0, 0, 0.1), inset -2px -2px 5px #ffffff;
-              }
+        /* Performance Colors */
+        .text-good { color: #2ecc71; font-weight: bold; }
+        .text-medium { color: #f1c40f; font-weight: bold; }
+        .text-bad { color: #e74c3c; font-weight: bold; }
 
-              [data-theme="dark"] {
-                  --bg-color: #1e2023; /* Deep, muted dark background */
-                  --text-color: #f0f0f0;
-                  --primary-color: #6a7eff; /* Adjusted vibrant blue for dark mode */
-                  --secondary-bg: #1e2023;
-                  --glass-color: rgba(30, 32, 35, 0.6); /* Dark Mode Glass */
-                  --line-color: rgba(255, 255, 255, 0.08); /* Subtle light lines */
-                  /* --- MODIFIED: Added star color for dark mode --- */
-                  --star-color: #FFFACD; /* Lemon Chiffon */
-
-                  /* Neumorphic Shadows (Dark Mode) */
-                  --shadow-dark-top: -6px -6px 12px #34343e;
-                  --shadow-dark-bottom: 6px 6px 12px #101214;
-                  --shadow-inset-dark: inset 2px 2px 5px #101214, inset -2px -2px 5px #34343e;
-
-                  /* Override shadows to dark versions */
-                  --shadow-light-top: var(--shadow-dark-top);
-                  --shadow-light-bottom: var(--shadow-dark-bottom);
-                  --shadow-inset-light: var(--shadow-inset-dark);
-              }
-
-              /* 1. ANIMATED GRADIENT (AURORA) */
-              @keyframes aurora-motion {
-                  0% { background-position: 0% 0%; }
-                  50% { background-position: 100% 50%; }
-                  100% { background-position: 0% 0%; }
-              }
-
-              /* 2. LINE / GRID ANIMATION */
-              @keyframes moveLines {
-                  0% { background-position: 0 0; }
-                  100% { background-position: 100% 100%; } /* Moves the repeating background lines diagonally */
-              }
-
-              /* --- Global & Base Styles --- */
-              body {
-
-                  font-family: var(--font-stack);
-                  background-color: var(--bg-color);
-                  color: var(--text-color);
-                  margin: 0;
-                  padding: 0;
-/* --- 1. Apply Custom Cursor to the ENTIRE Page (Default) --- */
-            cursor: url('https://raw.githubusercontent.com/BeckBusch/Custom-Rainbow-Cursor-Extension/refs/heads/master/Pictures/cursors/arrows/light-darkblue.png'), default; /* Placeholder: Green Pointer */
-
-                  transition: background-color 0.4s ease-in-out, color 0.4s ease-in-out;
-              }
-
-        input[type="text"]:hover {
-            cursor: url('data:image/x-icon;base64,AAACAAEAICAAAA8AEACoEAAAFgAAACgAAAAgAAAAQAAAAAEAIAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD+/v4BAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD+/v4BAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/j14p/49eKf+PXin/j14p/8yCMf/MgjH/zIIx/wAAAP8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP8AAAD/AAAA/49eKf+PXin/zIIx/wAAAP8AAAD/AAAA/wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/AAAA/49eKf8AAAD/AAAA/wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/j14p/wAAAP8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP+PXin/AAAA/wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/49eKf8AAAD/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/j14p/wAAAP8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD+/v4BAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP+PXin/AAAA/wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/49eKf8AAAD/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/j14p/wAAAP8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP+PXin/AAAA/wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/49eKf8AAAD/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP8AAAD/j14p/wAAAP8AAAD/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP8AAAD/AAAA/49eKf+PXin/zIIx/wAAAP8AAAD/AAAA/wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/49eKf+PXin/j14p/49eKf/MgjH/zIIx/8yCMf8AAAD/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP7+/gEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/v7+AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD+/v4BAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA///////////////////////////////////////gD///4A///+AP///4P////H////x////8f////H////x////8f////H////x////8f///+D///+AP///gD///4A////////////////////////////////////////////8=');
+        /* --- TEXT INPUTS & BUTTONS --- */
+        input[type="text"] {
+            padding: 12px 15px; border-radius: 12px; border: 1px solid var(--line-color);
+            background: var(--secondary-bg); color: var(--text-color);
+            box-shadow: var(--shadow-inset-light);
+            outline: none;
+            width: 100%;
+            max-width: 300px;
+        }
+        select {
+             padding: 12px 15px; border-radius: 12px; border: 1px solid var(--line-color);
+            background: var(--secondary-bg); color: var(--text-color);
+            box-shadow: var(--shadow-light-bottom);
+            outline: none;
+            cursor: pointer;
         }
         
-        /* 3. Custom Cursor for Interactive Elements (Buttons, Selects, etc. - Your New Rule) */
-        button:hover,
-        input[type="submit"]:hover,
-        input[type="button"]:hover,
-        select:hover,
-        label:hover  {
-            cursor: url('https://raw.githubusercontent.com/BeckBusch/Custom-Rainbow-Cursor-Extension/refs/heads/master/Pictures/cursors/pointers/light-darkblue.png'), pointer; /* Placeholder: Blue Button Hand */
+        /* Apply/Fetch Button Styling */
+        .settings-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+            margin-top: 10px;
+        }
+        .settings-btn:hover {
+            transform: scale(0.98);
+            background: var(--primary-dark);
         }
         
-
-              /* --- Main Menu (Modified to hold all sections and be padded for the new tab bar) --- */
-              #main-menu {
-                  min-height: 100vh;
-                  display: flex;
-                  flex-direction: column;
-                  align-items: center;
-                  justify-content: center;
-                  text-align: center;
-                  padding-top: 50px; /* Space for the new top tabs */
-              }
-
-              /* --- NEW: Dynamic Background Pattern System --- */
-              #main-menu[data-pattern="lines"],
-              #main-menu[data-pattern="lines"][data-theme="dark"] {
-                  background-image:
-                      linear-gradient(to right, var(--line-color) 1px, transparent 1px),
-                      linear-gradient(to bottom, var(--line-color) 1px, transparent 1px),
-                      linear-gradient(45deg, var(--bg-color) 0%, var(--primary-light) 10%, transparent 50%, var(--bg-color) 100%),
-                      linear-gradient(-45deg, var(--bg-color) 0%, rgba(255, 165, 0, 0.2) 10%, transparent 50%, var(--bg-color) 100%);
-                  background-size:
-                      50px 50px, 50px 50px,
-                      400% 400%, 400% 400%;
-                  animation:
-                      moveLines 90s linear infinite,
-                      aurora-motion 30s ease infinite;
-              }
-
-              #main-menu[data-pattern="stripes"] {
-                   background-image:
-                      repeating-linear-gradient(45deg, var(--line-color) 0, var(--line-color) 1px, transparent 1px, transparent 30px),
-                      linear-gradient(45deg, var(--bg-color) 0%, var(--primary-light) 10%, transparent 50%, var(--bg-color) 100%),
-                      linear-gradient(-45deg, var(--bg-color) 0%, rgba(255, 165, 0, 0.2) 10%, transparent 50%, var(--bg-color) 100%);
-                  background-size:
-                      auto,
-                      400% 400%, 400% 400%;
-                   animation: aurora-motion 30s ease infinite;
-              }
-
-              #main-menu[data-pattern="dots"] {
-                  background-image:
-                      radial-gradient(var(--line-color) 3px, transparent 1px),
-                      linear-gradient(45deg, var(--bg-color) 0%, var(--primary-light) 10%, transparent 50%, var(--bg-color) 100%),
-                      linear-gradient(-45deg, var(--bg-color) 0%, rgba(255, 165, 0, 0.2) 10%, transparent 50%, var(--bg-color) 100%);
-                  background-size:
-                      40px 40px,
-                      400% 400%, 400% 400%;
-                  animation: aurora-motion 30s ease infinite;
-              }
-
-              /* --- MODIFIED: New cartoon star style --- */
-              #main-menu[data-pattern="stars"] {
-                   background-image:
-                      /* Small stars */
-                      radial-gradient(circle at 20px 80px, var(--star-color) 0.5px, transparent 0.5px),
-                      /* Medium stars */
-                      radial-gradient(circle at 50px 50px, var(--star-color) 1px, transparent 1px),
-                      /* Large stars */
-                      radial-gradient(circle at 90px 20px, var(--star-color) 1.5px, transparent 1.5px),
-                      /* Aurora layers */
-                      linear-gradient(45deg, var(--bg-color) 0%, var(--primary-light) 10%, transparent 50%, var(--bg-color) 100%),
-                      linear-gradient(-45deg, var(--bg-color) 0%, rgba(255, 165, 0, 0.2) 10%, transparent 50%, var(--bg-color) 100%);
-                  background-size:
-                      100px 100px, 100px 100px, 100px 100px, /* Each star layer has its own large canvas to look random */
-                      400% 400%, 400% 400%;
-                   animation: aurora-motion 30s ease infinite;
-              }
-
-              #main-menu[data-pattern="none"] {
-                  background-image:
-                      linear-gradient(45deg, var(--bg-color) 0%, var(--primary-light) 10%, transparent 50%, var(--bg-color) 100%),
-                      linear-gradient(-45deg, var(--bg-color) 0%, rgba(255, 165, 0, 0.2) 10%, transparent 50%, var(--bg-color) 100%);
-                  background-size:
-                      400% 400%, 400% 400%;
-                  animation: aurora-motion 30s ease infinite;
-              }
-
-              #main-menu h2 {
-                  font-size: 3.2em;
-                  font-weight: 900;
-                  color: var(--primary-color);
-                  margin-bottom: 10px;
-                  letter-spacing: -1px;
-                  transition: color 0.3s;
-                  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
-              }
-              #current-time {
-                  font-size: 1.3em;
-                  font-weight: 300;
-                  margin-bottom: 50px;
-                  opacity: 0.8;
-              }
-
-              /* New Styles for Tab Sections */
-              .menu-tab-content {
-                  display: none; /* Hide all tab content by default */
-                  flex-direction: column;
-                  align-items: center;
-                  justify-content: center;
-                  /* Allow content to take up the space */
-                  flex-grow: 1;
-                  width: 100%;
-              }
-              .menu-tab-content.active {
-                  display: flex; /* Show the active tab content */
-              }
-              .menu-section-title {
-                  font-size: 1.5em;
-                  font-weight: 700;
-                  color: var(--text-color);
-                  margin-bottom: 15px;
-                  padding: 5px 15px;
-                  border-bottom: 2px solid var(--primary-color);
-              }
-
-              .menu-buttons {
-                  display: flex;
-                  gap: 20px;
-                  flex-wrap: wrap;
-                  justify-content: center;
-              }
-
-
-
-      /* --- Tab Bar Styling (Floating Pod Look) --- */
-      #tab-bar {
-          position: fixed;
-          top: 15px; /* Move down to float */
-          left: 50%;
-          transform: translateX(-50%); /* Center it horizontally */
-          display: flex;
-          justify-content: center;
-          padding: 12px 15px; /* Reduced padding for compact look */
-          z-index: 100;
-
-          /* Pod Appearance */
-          border-radius: 50px; /* Highly rounded corners for pod/pill shape */
-          backdrop-filter: blur(12px); /* Slightly stronger blur */
-          -webkit-backdrop-filter: blur(12px);
-          background-color: var(--glass-color);
-          /* Neumorphic/Floating Shadow */
-          box-shadow: var(--shadow-light-bottom);
-          border: 1px solid rgba(255, 255, 255, 0.2); /* Subtle white border */
-      }
-      #tab-bar button {
-        background-color: transparent;
-        color: var(--text-color);
-          /* Adjust buttons inside the pod */
-          padding: 8px 18px; /* More compact buttons */
-          margin: 0 4px;
-          font-size: 1em;
-          font-weight: 600;
-          border-radius: 30px; /* Pill-shaped buttons */
-
-
-      }
-      #tab-bar button.active-tab {
-          /* Active button highlight inside the pod */
-          color: white;
-          background-color: var(--primary-color);
-          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Lifted appearance */
-          transform: none; /* Keep active button flat */
-          background-color: var(--primary-color);
-      }
-      /* ⭐ NEW DARK MODE OVERRIDE (For inactive buttons) ⭐ */
-      [data-theme="dark"] #tab-bar button {
-          color: var(--text-color); /* This will be a light color (#f0f0f0) in dark mode */
-      }
-
-      [data-theme="dark"] #tab-bar button:hover:not(.active-tab) {
-          /* Darker hover effect using a slightly brighter version of the dark background */
-          background-color: rgba(255, 255, 255, 0.15);
-      }
-      /* ⭐ NEW DARK MODE OVERRIDE (For active button) ⭐ */
-      [data-theme="dark"] #tab-bar button.active-tab {
-          /* The primary color (blue) is usually sufficient for the background in dark mode,
-             but we ensure the text color is still white for contrast. */
-          color: var(--bg-color); /* Uses the dark background color (#1e2023) to contrast white text */
-          background-color: var(--primary-light); /* Use the lighter primary shade for better visibility on dark glass */
-      }
-      #tab-bar button:hover:not(.active-tab) {
-          /* In Light Mode, this resolves to a subtle grey tint on hover */
-          background-color: rgba(0, 0, 0, 0.08);
-      }
-              /* --- Button Styling (Neumorphic) --- */
-              .menu-buttons button, #iframe-nav button {
-                  color: var(--text-color);
-                  background-color: var(--secondary-bg);
-                  border: none;
-                  transition: all 0.25s ease-in-out;
-                  box-shadow: var(--shadow-light-bottom), var(--shadow-light-top);
-                  font-weight: 500;
-                  display: flex;
-                  align-items: center;
-                  gap: 8px;
-              }
-              .menu-buttons button {
-                  padding: 20px 40px;
-                  margin: 0;
-                  border-radius: var(--border-radius);
-                  font-size: 1.1em;
-                  
-              }
-              .menu-buttons button:hover {
-                  transform: scale(0.98);
-                  background-color: var(--secondary-bg);
-                  box-shadow: var(--shadow-inset-light);
-                  color: var(--primary-color);
-              }
-              .menu-buttons2 {
-                
-                  display: flex;
-                  gap: 20px;
-                  flex-wrap: wrap;
-                  justify-content: center;
-                  
-              }
-              .menu-buttons2 button {
-                                  color: var(--text-color);
-                  background-color: var(--secondary-bg);
-                  border: none;
-                  transition: all 0.25s ease-in-out;
-                  box-shadow: var(--shadow-light-bottom), var(--shadow-light-top);
-                  font-weight: 500;
-                  
-                  display: flex;
-                  align-items: center;
-                  gap: 8px;
-                  padding: 10px 20px;
-                  margin: 0;
-                  border-radius: var(--border-radius);
-                  font-size: .8em;
-              }
-              .menu-buttons2 button:hover {
-                  transform: scale(0.98);
-                  background-color: var(--secondary-bg);
-                  box-shadow: var(--shadow-inset-light);
-                  color: var(--primary-color);
-              }
-              /* --- Iframe Navigation (Glassmorphism) --- */
-              #iframe-container { display: none; height: 100vh; }
-              #iframe-nav {
-                  position: fixed;
-                  top: 0;
-                  width: 100%;
-                  padding: 12px 20px;
-                  display: flex;
-                  justify-content: flex-start;
-                  gap: 15px;
-
-                  /* Glassmorphism for Nav */
-                  backdrop-filter: blur(8px);
-                  -webkit-backdrop-filter: blur(8px);
-                  background-color: var(--glass-color);
-                  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-
-                  z-index: 100;
-                  box-sizing: border-box;
-              }
-              #iframe-nav button {
-                  padding: 10px 18px;
-                  margin: 0;
-                  border-radius: 8px;
-                  font-size: 0.95em;
-                  box-shadow: none;
-                  background-color: var(--primary-color);
-                  color: white;
-                  transition: background-color 0.2s, transform 0.1s;
-              }
-              #iframe-nav button:hover {
-                  background-color: var(--primary-dark);
-                  transform: none;
-              }
-              #my-iframe {
-                  width: 100%;
-                  height: 100%;
-                  border: none;
-                  padding-top: 60px;
-                  box-sizing: border-box;
-                  background-color: var(--bg-color);
-              }
-#chatbot-iframe {
-      z-index: 1;
-
-  /* Use fixed positioning to anchor to the viewport */
-  position: fixed; 
-  
-  /* Set the top offset equal to the tab-bar's height */
-  top: 100px; /* <--- Set this value to the exact height of your tab-bar! */
-  
-  /* Calculate the height to be 100% of the viewport (100vh) minus the top space */
-  height: calc(100vh - 100px); 
-  
-  /* Anchor to the sides to ensure full width */
-  left: 0;
-  right: 0;
-  width: 100%;
-  
-  /* General styling from your original code */
-  border: none;
-  box-sizing: border-box;
-  background-color: var(--bg-color);
-}
-              /* --- Top Controls (Glassmorphism & Compact) --- */
-              .top-controls {
-                  position: fixed;
-                  top: 15px;
-                  right: 20px;
-                  z-index: 102; /* Higher z-index than tab bar */
-                  display: flex;
-                  align-items: center;
-                  gap: 12px;
-              }
-
-              /* Apply Glassmorphism to ALL controls */
-              .top-controls > * {
-                  height: 44px;
-                  font-size: 0.95em;
-                  border-radius: var(--border-radius);
-                  color: var(--text-color);
-                  border: 1px solid rgba(255, 255, 255, 0.3);
-                  transition: all 0.2s ease-in-out;
-                  padding: 0 10px;
-                  box-sizing: border-box;
-
-                  /* Glassmorphism Effect */
-                  backdrop-filter: blur(10px);
-                  -webkit-backdrop-filter: blur(10px);
-                  background-color: var(--glass-color);
-                  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-              }
-
-              /* Dark mode border fix */
-              [data-theme="dark"] .top-controls > * {
-                  border: 1px solid rgba(0, 0, 0, 0.3);
-              }
-
-              /* --- Individual Control Overrides --- */
-
-
-              /* Theme Toggle (Round Button) */
-              #theme-toggle {
-                  height: 44px;
-                  width: 44px;
-                  padding: 0;
-                  border-radius: 50%;
-                  display: flex;
-                  align-items: center;
-                  justify-content: center;
-                  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-              }
-              #theme-toggle .fas {
-                  color: var(--primary-color);
-                  font-size: 1.2em;
-              }
-              #theme-toggle:hover {
-                  transform: scale(0.95);
-                  background-color: var(--glass-color);
-              }
-
-              /* --- NEW: Settings Tab Styles --- */
-              .settings-container {
-                  display: flex;
-                  flex-direction: column;
-                  gap: 25px;
-                  align-items: center;
-                  margin-top: 20px;
-              }
-              .settings-item {
-                  display: flex;
-                  align-items: center;
-                  gap: 15px;
-                  font-size: 1.1em;
-              }
-              .settings-item label {
-                  font-weight: 500;
-              }
-              .settings-item select {
-                  padding: 10px 15px;
-                  border-radius: var(--border-radius);
-                  border: 1px solid var(--line-color);
-                  background-color: var(--secondary-bg);
-                  color: var(--text-color);
-                  box-shadow: var(--shadow-inset-light);
-                  font-size: 1em;
-                  min-width: 200px;
-              }
-
-
-              /* --- NEW: Invisible Overlay Styles --- */
-              #offscreen-overlay {
-                  position: fixed;
-                  top: 0;
-                  left: 0;
-                  width: 100%;
-                  height: 100%;
-                  background-color: white; /* Completely white screen when off-focus and blur is OFF */
-                  z-index: 9999;
-                  display: none;
-                  justify-content: center;
-                  align-items: center;
-                  /* Text removed to keep it secret */
-                
-                  cursor: none;
-                /* --- MODIFIED CSS FOR FADE EFFECT --- */
-                opacity: 1; 
-                transition: opacity ${FADE_DURATION_CSS} ease-in-out; 
-            }
-            /* The 'hidden' class controls the opacity for the fade */
-            #offscreen-overlay.hidden {
-                opacity: 0; 
-                pointer-events: none;
-            }
-      #quote-display {
-          font-size: 1.2em;
-          font-weight: 300;
-          font-style: italic;
-          margin-top: 20px;
-          opacity: 0.7;
-          transition: opacity 0.5s ease-in-out;
-          min-height: 30px; /* Prevents page jump when quote length changes */
-          max-width: 80%;
-      }
-      /* --- New Floating Pod Style for Bottom Bar --- */
-      #bottom-bar {
-          position: fixed;
-          /* Move it up slightly from the absolute bottom */
-          bottom: 20px;
-          left: 50%; /* Center horizontally */
-          transform: translateX(-50%); /* Center it precisely */
-
-          /* Make the bar fit its content, not the full width */
-          width: auto;
-          min-width: 250px; /* Ensure it's wide enough for content */
-
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 10px 25px; /* Increased padding for the pod look */
-          z-index: 99;
-
-          /* Pod Appearance */
-          border-radius: 50px; /* Highly rounded corners for pod/pill shape */
-          backdrop-filter: blur(12px); /* Stronger blur for glass effect */
-          -webkit-backdrop-filter: blur(12px);
-          background-color: var(--glass-color);
-          /* Floating Shadow (using your light mode neumorphic shadow) */
-          box-shadow: var(--shadow-light-bottom);
-          border: 1px solid rgba(255, 255, 255, 0.2); /* Subtle white border */
-          transition: all 0.3s ease-in-out;
-      }
-      /* Style for the Settings Button in the footer */
-      #footer-settings-btn {
-          /* Base styles */
-          color: var(--text-color);
-          background-color: var(--secondary-bg);
-          border: none;
-          transition: all 0.25s ease-in-out;
-          box-shadow: var(--shadow-light-bottom), var(--shadow-light-top);
-
-          /* ⭐ ENSURE PERFECT CIRCLE SHAPE ⭐ */
-          width: 45px;
-          height: 45px;
-          padding: 0; /* Important: Remove any default button padding */
-          border-radius: 50%; /* Makes the shape round */
-
-          /* Center the emoji content */
-          font-size: 1.5em;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-      }
-
-      #footer-settings-btn:hover {
-          transform: scale(0.95);
-          box-shadow: var(--shadow-inset-light);
-          color: var(--primary-color);
-      }
-      .sticky-on-scroll {
-    position: fixed;
-    top: 0; /* Example: sticks to the top edge of the screen */
-    left: 0; /* Example: sticks to the left edge of the screen */
-    width: 100%; /* Example: spans the full width of the screen */
-    z-index: 100; /* Ensures it stays above other page content */
-}
-
-    </style>  </head>
-  <body>
-      <!-- 3. Modal HTML Structure (from modal_structure.html) -->
-    <!-- It's best to place this right before the closing </body> tag -->
-    <div id="custom-modal" class="modal-overlay" class"sticky-on-scroll" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-        <div class="modal-content bg-white rounded-xl shadow-2xl w-full max-w-md p-6 m-4" 
-             role="document">
-            
-            <!-- Modal Header -->
-            <div class="flex justify-between items-start border-b pb-3 mb-4">
-                <h3 id="modal-title" class="text-xl font-bold text-gray-900">Notification</h3>
-                <button 
-                    onclick="closeModal()" 
-                    class="text-gray-400 hover:text-gray-600 transition"
-                    aria-label="Close modal"
-                >
-                    <!-- Close icon (X) -->
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </button>
-            </div>
-
-            <!-- Modal Body (Message) -->
-            <div class="mb-6">
-                <p id="modal-message" class="text-gray-700 leading-relaxed">
-                    Default message.
-                </p>
-            </div>
-
-            <!-- Modal Footer (Action Button) -->
-            <div class="flex justify-end">
-                <button 
-                    onclick="closeModal()" 
-                    class="bg-indigo-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-indigo-700 transition duration-150"
-                >
-                    OK
-                </button>
-            </div>
-        </div>
-    </div>
-    <div id="cover" class"sticky-on-scroll">
-      <div class="cloaker-container">
-                      <div class="loader-circle"></div>
-
-        <p>Cloaking window...<p>
-                      <noscript>
-    <p>Please Enable Javascript!</p><a href="https://www.enable-javascript.com/">For more info, click here</a> 
-  </noscript>
-      </div>
-    </div>
-
-    <div id="loading-screen" class"sticky-on-scroll">
-      <div class="loader-container">
-        <div class="loader-circle"></div>
-        <p>Loading Games Hub...</p>
-      </div>
-    </div>
-    <div id="offscreen-overlay"></div>
-
-    <div id="content-wrapper" >
-      <div id="bottom-bar">
-        <div id="footer-time"></div>
+        .hidden { display: none !important; }
+        .visible { display: flex !important; }
         
-        <button
-          id="footer-settings-btn"
-          onclick="  backToMain(); setTimeout(() => {showTab('settings', this); },1);"
-        >
-          ⚙️
-        </button>
-      </div>
+        .loader-container { padding: 20px; }
+        .loader-circle {
+            width: 50px; height: 50px; border: 5px solid var(--primary-light);
+            border-top-color: var(--primary-color); border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+    </style>
+</head>
+<body>
 
-
-      
-      <div id="tab-bar" class"sticky-on-scroll">
-        <button
-          id="tab-home"
-          class="active-tab"
-          onclick="showTab('home', this)"
-        >
-          🏠 Home
-        </button>
-        <button id="tab-embed" onclick="showTab('embed', this)">
-          🎮 Games
-        </button>
-        <button id="tab-links" onclick="showTab('links', this)">
-          🛠️ Utilities  
-        </button>
-        <button id="tab-links" onclick="showTab('chatbots', this)">
-          🧠 Chatbots  
-        </button>
-        <button id="tab-links" onclick="showTab('settings', this)">
-          ⚙ Settings
-        </button>
-      </div>
-
-      <div id="main-menu" data-pattern="lines">
-                <div class="absolutely-positioned-div"></div>
-
-        <div id="home-content" class="menu-tab-content active">
-          <h2>Welcome to Starlight Games!</h2>
-          <div id="quote-display"></div>
-          <div class="menu-buttons" style="margin-top: 30px;">
-            <button
-                onclick="showModal('WIP, this version will be 10x better');// surfweb()"
-            >
-              🚀 Surf Web Freely (REVAMPING)
-            </button>
-
-          </div>
-        <div class="online-counter">
-          <span id="online-users-label">Active Users: </span>
-          <span id="online-users-count">Loading...</span>
-        </div>
-        </div>
-
-        <div id="embed-content" class="menu-tab-content">
-                    <div class="menu-section-title">🔗 Main link</div>
-          <div class="menu-buttons">
-                          <button
-              onclick="GGgames2()"
-            >
-              🕹️ Load StarlightGG Hub 2.0 (Recommended)
-            </button>
-            
-            
-              <button
-              onclick="GGgames()"
-            >
-              🕹️ Load StarlightGG Hub
-            </button>
-          </div>
-
-          <div style="margin-top: 30px;" class="menu-section-title">🔗 Third party Links</div>
-          <div class="menu-buttons">
-            <button
-              onclick="showIframe('https://amhooman.github.io/website/games/index.html')"
-            >
-              🕹️ Load Slash Flash Hub
-            </button>
-            <button
-              onclick="showIframe('https://unblockedgames1024.gitlab.io/')"
-            >
-              🕹️ Load Unblocked 66 
-            </button>
-            <button
-              onclick="showIframe('https://unicycle-hero.gitlab.io/category/new.html')"
-            >
-              🕹️ Load Gitlab hub 
-            </button>
-            <button
-              onclick="showIframe('https://unblocked-gamesforschool.github.io/')"
-            >
-              🕹️ Load Github games (gitlab basically)
-            </button>
-
-          </div>
-        </div>
-
-        <div id="chatbots-content" class="menu-tab-content">
-   <iframe id="chatbot-iframe"src="" frameborder="0"></iframe>
-
-        </div>
-
-        <div id="links-content" class="menu-tab-content">
-          <div class="menu-section-title">🌐 Miscellaneous</div>
-          <div class="menu-buttons">
-            <button
-              onclick=" window.open('pages/chat.html'); "
-            >
-            🗨️ Chat with friends/community
-            </button>
-            <button
-              onclick="openPlaylist()"
-            >
-            🎵 My playlist
-            </button>
-
-                        <button
-              onclick="showIframe('https://starlightgg.github.io/pages/diagnostic') "
-            >
-            📊 Diagnostic Tester
-            </button>
-
-            </div>
-                      <div style="margin-top: 30px;"  class="menu-section-title">ℹ️ Information</div>
-
-           <div class ="menu-buttons">        
-
-            <button
-              onclick=" window.location.href = '/pages/terms.html'; "
-            >
-            📝 View full terms
-            </button>
-                         <button
-              onclick="showIframe('https://starlightgg.github.io/pages/events') "
-            >
-            🗓 Events/releases planned
-            </button>
-                         <button
-              onclick=" window.open('pages/aihelper.html'); "
-            >
-            🤖 Starlight GG helper (Navigation)
-            </button>
-                         </button>
-
-                        <button
-              onclick="showIframe('https://starlightgg.github.io/pages/status') "
-            >
-            🛜 Status
-            </button>
-
-          </div>
-        </div>
-        <div id="settings-content" class="menu-tab-content">
-          <div class="menu-section-title">⚙️ Page Settings</div>
-
-          <div class="settings-container">
-
-            <div class="settings-item">
-              <label for="cloak-dropdown">Cloak Type:</label>
-              <select
-                id="cloak-dropdown"
-                onchange="applyCloak()"
-                title="Disguise Tab"
-              >
-                <option value="Home">🎓 Select Preset...</option>
-                <option value="Clever | Portal">Clever | Portal</option>
-                <option value="StarlightGG">StarlightGG (Default)</option>
-                <option value="Khan Academy">Khan Academy</option>
-                <option value="Outlook Mail">Outlook Mail</option>
-                <option value="Calculator">Calculator</option>
-                <option value="Activate Learning Digital Platform - Home">
-                  Activate Learning
-                </option>
-
-                <option
-                  value="Gallopade: Educational Products, Social Studies Curriculum, Reading, Common Core"
-                >
-                  Gallopade
-                </option>
-                <option
-                  value="Classes | IL Classroom"
-                >
-                  IL Classroom
-                </option>
-                 <option
-                  value="Student Home - Zearn"
-                >
-                  Zearn
-                </option>
-                <option value="Home | iCivics">iCivics</option>
-                <option
-                  value="Pear Assessment"
-                >
-                  Pear Assessment
-                </option>
-                <option
-                  value="My Drive - Google Drive"
-                >
-                  Google Drive
-                </option>
-                <option
-                  value="Google Docs"
-                >
-                  Google Docs
-                </option>
-                <option
-                  value="Google Slides"
-                >
-                  Google Slides
-                </option>
-                <option value="Home">Google Classroom</option>
-                <option value="Google">Google</option>
-                <option value="Google Classroom - Google Search">Fake Google search</option>
-
-                <option value="custom">Custom Cloak...</option>
-                <option value="url-cloak">URL Cloak...</option>
-              </select>
-            </div>
-            <div class="settings-item">
-              <label for="pattern-select">Background Pattern:</label>
-              <select id="pattern-select" onchange="applyPattern()">
-                <option value="lines">Lines (Default)</option>
-                <option value="stripes">Stripes</option>
-                <option value="dots">Dots</option>
-                <option value="stars">Stars</option>
-                <option value="none">None</option>
-              </select>
-
-            </div>
-<div class="settings-item">
-    <label for="theme-toggle-switch">Theme:</label>
-
-    <div id="theme-toggle-switch" 
-         class="switch-container flex items-center cursor-pointer p-1" 
-         onclick="toggleTheme()"> 
-        
-        <div id="switch-thumb-theme" class="switch-thumb flex items-center justify-center">
-            
-            <svg id="switch-icon-theme" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path id="theme-icon-path" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-            </svg>
-        </div>
-    </div>
-    
-    <span id="theme-status" class="status-text">Light Mode</span>     
-</div>
-            <div class="settings-item">
-
-    
-
-    <label for="stats-toggle-switch">Show stats:</label>
-
-
-
-    <div id="stats-toggle-switch" 
-
-         class="switch-container flex items-center cursor-pointer p-1" 
-
-         onclick="toggleStats()"> 
-
-        
-
-        <div id="switch-thumb-stats" class="switch-thumb flex items-center justify-center">
-
-            
-
-            <svg id="switch-icon-stats" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
-
-            </svg>
-
-        </div>
-
-    </div>
-
-
-</div> 
-            <div class="menu-buttons2" style="margin-bottom: 25px;">
-                    <button onclick="          showModal(`ADVISORY NOTES:\nTHE OWNER TAKES NO RESPONSIBILITY FOR YOUR ACTIONS!\n\nIf the games or anything running in the website gets blocked from studentkeeper, spam Homepage until it loads.\n\nIf you are having trouble with navigation tools please switch to utilities tab and select 'Starlight GG helper' to help with navigating\n\nIf your browser gets navigated away from the website, I suggest closing out the website that came from here.\n\nVersion: 2.2.0`);">Website Instructions</button>
-</div>
-            <div id="custom-cloak-options">
-              <div
-                class="menu-section-title"
-                style="border-bottom: 1px solid var(--line-color); border-top: none; font-size: 1.2em;"
-              >
-                Custom Cloak
-              </div>
-
-              <div class="settings-item">
-                <label for="custom-title-input">Custom Title:</label>
-                <input
-                  type="text"
-                  id="custom-title-input"
-                  placeholder="Enter new tab title"
-                />
-              </div>
-              <div class="settings-item">
-                <label for="custom-favicon-input">Custom Favicon:</label>
-                <input
-                  type="text"
-                  id="custom-favicon-input"
-                  placeholder="Enter favicon URL (e.g., https://google.com/favicon.ico)"
-                />
-              </div>
-              <div class="settings-item">
-                <label for="custom-url-input">Custom Redirect link:</label>
-                <input
-                  type="text"
-                  id="custom-url-input"
-                  placeholder="Enter redirect URL (e.g., https://google.com/)"
-                />
-              </div>
-              <div class="menu-buttons" style="margin-top: 25px;">
-                <button onclick="runCustomCloak()">Apply Custom Cloak</button>
-              </div>
-
-          </div>
-
-              <div id="url-cloak-options" class="cloak-option-group">
-                   <h3>Cloak from URL</h3>
-                                 <div class="settings-item">
-
-                <input type="text" id="url-cloak-input" placeholder="Enter URL (e.g., https://google.com)" />
-                                </div>
-
-                  <div class="menu-buttons" style="margin-top: 25px;">
-
-                <button onclick="runUrlCloak()">Fetch & Apply URL Cloak</button>
-                </div>
-              </div>
-            </div>
-<div style="margin-top: 15px;" class="menu-section-title">⚙️ Page Security</div>
-
-<div class="settings-item">
-
-    <label for="blur-toggle-switch">Redirect:</label>
-
-    <div id="blur-toggle-switch" 
-          class="switch-container flex items-center cursor-pointer p-1" 
-          onclick="toggleRedirect()"> 
-        
-        <div id="switch-thumb-redirect" class="switch-thumb flex items-center justify-center">
-            
-            <svg id="switch-icon-redirect" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
-            </svg>
-        </div>
-    </div>
-</div>
-
-<div style="margin-top: 15px;" id="overlay-option-container" class="settings-item" style="display: none;">
-    
-    <label for="overlay-toggle-switch">Overlay:</label>
-
-    <div id="overlay-toggle-switch" 
-          class="switch-container flex items-center cursor-pointer p-1" 
-          onclick="toggleOverlay()"> 
-        
-        <div id="switch-thumb-overlay" class="switch-thumb flex items-center justify-center">
-            
-            <svg id="switch-icon-overlay" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-            </svg>
-        </div>
-    </div>
-</div>
-                  <div class="menu-buttons2">
-                    <button onclick="        showModal(`Redirect on: redirects to google when tab unfocused/switched. \nRedirect off: covers screen white until you click screen then click 'E' (If you click 'SpaceBar' on the webpage, the webpage redirects to google)`);
-">Redirect Info</button>
-                  </div>
-                    <div  class="settings-item">
-        <label for="about-blank-toggle-switch">About:Blank Popup:</label>
-
-    <div id="about-blank-toggle-switch"
-         class="switch-container flex items-center cursor-pointer p-1"
-         onclick="toggleAboutBlankPopup()">
-        
-        <div id="switch-thumb-about-blank" class="switch-thumb flex items-center justify-center">
-            
-            <svg id="switch-icon-about-blank" 
-                 xmlns="http://www.w3.org/2000/svg" 
-                 class="h-6 w-6" 
-                 fill="none" 
-                 viewBox="0 0 24 24" 
-                 stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
-            </svg>
-        </div>
-    </div>
-</div>
-<div style="margin-top: 15px;" class="settings-item">
-    
-    <label for="protection-toggle-switch">Close tab prevention:</label>
-
-    <div id="protection-toggle-switch" 
-         class="switch-container flex items-center cursor-pointer p-1" 
-         onclick="toggleTabProtection()"> 
-        
-        <div id="switch-thumb-protection" class="switch-thumb flex items-center justify-center">
-            
-            <svg id="switch-icon-protection" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
-            </svg>
-        </div>
-    </div>
-</div>
-
-        </div>
-        
-        <div class="absolutely-positioned-div"></div>
-
-      </div>
-      <div id="iframe-container">
-        <nav id="iframe-nav">
-          <button onclick="goToHomepage()">🏠 Homepage</button>
-
-          <button onclick="openIframeInNewWindow()">
-            ↗️ New Window (Cloaked)
-          </button>
-          <button onclick="toggleFullscreen()">📺 Fullscreen</button>
-          <button
-            id="footer-toggle"
-            onclick="toggleFooter()"
-            data-footer-enabled="true"
-          >
-            Hide Footer
-          </button>
-          <button onclick="backToMain()">⬅️ Back to Main Menu</button>
-        </nav>
-        <iframe id="my-iframe" allowfullscreen  sandbox="allow-scripts allow-top-navigation allow-forms allow-same-origin allow-pointer-lock allow-modals allow-orientation-lock allow-presentation"></iframe>
-      </div>
-
-      <div class="top-controls">
-
-        <!-- Performance Monitor Modal -->
-<div id="performance-modal">
-    <h3>Performance Stats</h3>
-    <div class="space-y-1">
-        <div class="stat-line">
-            <span>FPS:</span>
-            <span id="fps-value" class="stat-value text-default">--</span>
-        </div>
-        <div class="stat-line">
-            <span>Ping (ms):</span>
-            <span id="ping-value" class="stat-value text-default">--</span>
-        </div>
-    </div>
-    <p class="text-xs text-center" style="font-size: 0.75rem; color: #9ca3af; margin-top: 0.75rem;">Ping updates every 1s.</p>
-</div>
-
-<!-- Floating Info Button (?) -->
-<button id="info-btn">
-    <span>?</span>
-</button>
-      </div>
-    </div>
+    <div id="root"></div>
 
     <script>
-
-// --- QUOTE ROTATOR SCRIPT (FETCH FROM TXT) ---
-
-const quoteDisplay = document.getElementById('quote-display');
-const quoteFilePath = 'txt/quotes.txt'; // <-- Set your text file path here
-
-let quotes = []; // This array will be populated by the fetch request
-let usedQuoteIndices = [];
-
-// Function to fetch the quotes from the text file
-async function loadQuotes() {
-    try {
-        const response = await fetch(quoteFilePath);
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const text = await response.text();
-        
-        // Split the text into an array, one item per line, and filter out empty lines
-        quotes = text.split('\n').map(quote => quote.trim()).filter(quote => quote.length > 0);
-        
-        console.log(`Successfully loaded ${quotes.length} quotes.`);
-
-        // Once loaded, start the display routine
-        updateQuote();
-        setInterval(updateQuote, 5000); // 5000 milliseconds = 5 seconds
-
-    } catch (error) {
-        console.error('Failed to load quotes:', error);
-        if (quoteDisplay) {
-            quoteDisplay.textContent = "Error: Failed to load quotes file. (Check console)";
-        }
-    }
-}
-let disclamers = true;
-function GGgames() {
-  showIframe('https://starlightgg.github.io/pages/gamesearch.html'); 
-  if (disclamers){
-  showModal('If there are any games that are broken, please contact owner so he can fix it');
-  disclamers=false;
-  }
-}
-let disclamers2 = true;
-function GGgames2() {
-  showIframe('https://starlightgg.github.io/lunaar-lite/'); 
-  if (disclamers2){
-  showModal('Most these games might be broken, help the owner out by telling them whats broken.');
-  disclamers2=false;
-  }
-}
-function updateQuote() {
-    // Only proceed if quotes have been loaded and the display element exists
-    if (quoteDisplay && quotes.length > 0) {
-        // Fade out the current quote
-        quoteDisplay.style.opacity = 0;
-
-        // After the fade-out, change the text and fade in
-        setTimeout(() => {
-            // Check if we've shown all the quotes. If so, reset the list.
-            if (usedQuoteIndices.length === quotes.length) {
-                usedQuoteIndices = [];
-                console.log("All quotes shown. Resetting list.");
-            }
-
-            let newQuoteIndex;
-            // This loop ensures the new quote has not been shown before in this cycle
-            do {
-                newQuoteIndex = Math.floor(Math.random() * quotes.length);
-            } while (usedQuoteIndices.includes(newQuoteIndex));
-
-            // Add the new index to our list of used quotes
-            usedQuoteIndices.push(newQuoteIndex);
-
-            // Update the text content with the new random quote, adding the quotation marks
-            quoteDisplay.textContent = `"${quotes[newQuoteIndex]}"`;
-
-            // Fade the new quote in
-            quoteDisplay.style.opacity = 0.7;
-        }, 500); // This delay should match the CSS transition time
-    }
-}
-
-// Start the process by loading the quotes
-loadQuotes();
-
-          // --- BASIC ELEMENTS ---
-          const root = document.documentElement;
-          const iframeEl = document.getElementById('my-iframe');
-          const mainMenu = document.getElementById('main-menu');
-          const iframeContainer = document.getElementById('iframe-container');
-          const blurToggleBtn = document.getElementById('blur-toggle');
-          const overlay = document.getElementById('offscreen-overlay');
-          const contentWrapper = document.getElementById('content-wrapper');
-          let currentHomepage = '';
-
-          // --- CLOAK DATA ---
-const FAVICONS = {
-    "Home | iCivics": {
-        favicon: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y+mAAAAV1BMVEVHcEz/ZAD/ZwD/WwD/WwD/YAD/ZAD/WwD/WwD/WwD/WwD/WwD/WwD/WwD/ZgD/WwD/WwD/WwD/aAD/gAD/kQD/kAD/kQD/kQD/kQD/ZQD/kQD/jQD/bwAvM226AAAAHHRSTlMACCEwRhgPhrjT4e6tdjyd+/9a///yfrli/53evbsBzAAAAOVJREFUeAGtkgUSwlAMRL+71u3+18QSHDrWheqbbpQcIcq4EIJL+o2U0MY672yI6ZPx7EoFFavVG0sWCeDAXpmr7zLy6Wnrp7JCpjK6OZMNhvYNQgGmPidKVMq+XhXAmGpgmKPMpV4LAsgM5HDPkMX4bAWkU+KzVZ91FMjgQwDbrv8FwfYCh5+2zFxhNz4SGqbEFCVYSqlzd/kUS1m6fjU5ymcT2gtdbk1Y+q7bsAnYvvlCu3VcxvVybbF9mBJSUAuNfyt1A9zOMLLPYc/bts1vw95fExC9LZi7zoP/Xs0kEpfkAJ0B2VoUsYiyizsAAAAASUVORK5CYII=",
-        link: "https://www.icivics.org"
-    },
-
-    "Clever | Portal": {
-        favicon: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQi3ptQJ9ibYtsUiQ1yNX5abVZvtmG9fwqjNpUqzO6N8qbrYgM:https://resources.finalsite.net/images/f_auto,q_auto/v1689877141/mooreschoolscom/emadd6nvplrnh1vsswjf/Clever-Logo.jpg&s",
-        link: "https://clever.com"
-    },
-
-    "Home": {
-        favicon: "https://ssl.gstatic.com/classroom/favicon.ico",
-        link: "https://classroom.google.com/h"
-    },
-
-    "Khan Academy": {
-        favicon: "https://www.khanacademy.org/favicon.ico",
-        link: "https://www.khanacademy.org"
-    },
-
-    "Google Docs": {
-        favicon: "https://ssl.gstatic.com/docs/doclist/images/mediatype/icon_1_document_x16.png",
-        link: "https://docs.google.com"
-    },
-
-    "Outlook Mail": {
-        favicon: "https://outlook.live.com/owa/favicon.ico",
-        link: "https://outlook.live.com"
-    },
-
-    "Calculator": {
-        favicon: "https://www.calculator.net/favicon.ico",
-        link: "https://www.calculator.net"
-    },
-
-    "Google": {
-        favicon: "https://google.com/favicon.ico",
-        link: "https://google.com"
-    },
-
-    "Google Classroom - Google Search": {
-        favicon: "https://google.com/favicon.ico",
-        link: "https://www.google.com/search?q=google+classroom"
-    },
-
-    "StarlightGG": {
-        favicon: "https://starlightgg.github.io/favicons/favicon.png",
-        link: "https://google.com"
-    },
-
-    "Activate Learning Digital Platform - Home": {
-        favicon: "https://activatelearning.com/wp-content/uploads/2023/05/favicon.png",
-        link: "https://activatelearning.com"
-    },
-
-    "Gallopade: Educational Products, Social Studies Curriculum, Reading, Common Core": {
-        favicon: "https://gallopade.com/favicon.ico",
-        link: "https://gallopade.com"
-    },
-
-    "Classes | IL Classroom": {
-        favicon: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y+mAAAAV1BMVEVHcEwAAHwAAH0AAHwAAHwAAHwAAHwAAH0AAHwAAHwAAHwAAHwAAHoaGoMoKIYAAHZGR5fv8vv///+oqs6Mjr78///3+f5ucKzU1uk4OI/j5vPCxN+fosqdJ3hnAAAADHRSTlMAN4bC6//oX+wj1USkbhSpAAABF0lEQVR4AYTSBwKEIAwEQCxrjQY5g/X/7zwi1+vaHQsEzC1JmuVAkaWJeU1Z4JaqfKK6wVOa+m4t3tI+22etASIg7u+JX25AXR+A++5RG7USZAd3Yh7FT4x7tM0VeHYiSzeIW0F3LELfAd6c810/iBxIIdAkJgWo39aJr8i0LB0rpyZDUGamC/I0e1m3PmhmimAYT5Yj8uiciLiNgdwA4N25FRGtiouIA2cRbw+kXWGcV0uK+RPq6QomqBUm+4ikmJn0/bPzvh6fTbUIdEcsXlsUG5QYU2iFxB/lm+mhK9VT4f0wMdhug1tPHaG8DRlDh4wBULjS8jWfBzu2tf47TVR/2M+pqSmr85CSACxRo2QHNmA0IWcHAAp4HJXYNfpWAAAAAElFTkSuQmCC",
-        link: "https://ilclassroom.com"
-    },
-
-    "Student Home - Zearn": {
-        favicon: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y+mAAAAYFBMVEVHcExFvdM6utGKxq8/u9I8utFIvtM8utFFvNM+u9JJvdNAu9Jnxdg/u9E9utFIvtQ/u9E8utFxydolutn1z0D+0Cr1z0H1zj/1z0L1z0H1z0H1zj/1z0H31GD1z0H10EovluFDAAAAIHRSTlMA2P8Vrf8v9EuXcci5auP/XGR9wLmh4v9CW5Vod9EfI0NLlVAAAACgSURBVHgBddDFAcRADATBRTMzO/8ojyTzXH9rUeKUVFKLPxllrXUEzrXfPIy+/RVglaQ+1lD91GCNSENxLk5cm34jvKhnP6lvlvMf7zyVHJhh5HzXdS+Yi2eFIjPAPLYQmGMpCUyDx+yVVIisqilkTUt1wCq2HtjANgKb2CZgXcvNc1VV9TAMJ2wfNbvp9tmyK8B1x/5hlThaur4fT/Ek3sqLEwwJ2FthAAAAAElFTkSuQmCC",
-        link: "https://zearn.org"
-    },
-
-    "Pear Assessment": {
-        favicon: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y+mAAAAY1BMVEVHcEwrOkIsO0I0QkMoN0InNkIiMUEnNUImNUEqOEIwPkI0QkMzQEMxP0IyQEMxP0PI21fL3lfQ5FjO4Vi4ylR2hUphcEVNXEKer1CnuVFqekbU6FmAlTmvwVNbaUdATkQAF0B9mIX1AAAAEHRSTlMApyf621LnZv7HHJjFfLc+PB2r8AAAALxJREFUKJHFkEkWgzAMQwljAg+I7cxhuv8pC3RHwrbV9luS7aL4q/qpHothyqGRVWGxVTXk4GCXZTHiJVVYY6v5rXPumDhb37zGe1PnWbdFgLh1WdiuICWsbY41FuUptE0GcgUXBMVTxjTJW6RZarxtBOdIYm0MXdtoFYDMs7W7UkEFFYj085obKocgHSaw3FGCPFbUIe7ls7R2JMHzYyOXfrDnHgEQo+d9emjJjVPKGZ6EfpcSbSvyf/+dPiDkDIV9PRLKAAAAAElFTkSuQmCC",
-        link: "https://app.edulastic.com/home/assignments"
-    },
-
-    "My Drive - Google Drive": {
-        favicon: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAYAAAByDd+UAAAB+klEQVR4AWJwL/ChKx68ForXW7SJN1iswYb5GyxaqGqhycrgR+rTAKzUA2hoURwG8Cn3bL/wbNuIz7Y5p9kOY57NMBvZs23bPtt/dW7b4VR94ep3v6OHaJvFJSoaZldQROB+hDJValcFPBj20vB82AsEAYCVyTT1uUykaWitGAQIB1oy22WoKOhKQMCCMKa0dLypYN9dTs7HcMvg5YCAHQKAzLmwpwpYGbORBHH2LAfMY4G4JdmOaJkvBQnsMQ+DHAl5MTSeqjaMASaarvZ00SB8UATCyp1OVzMWgfBDiwLhY7J2+Nn5LScyVCkUfkoI3nLqWivAcB7j52HYSISMEJz9WIwEyyE/AAtEBJLbRLoNiBxigIcVgDO08AwFwnkpwfx4Sx1aSFrmLwAvRDz+BBtaFB6Gg9txA9sEg6d9NLNO+/5HvFz0sXXardmy567d4CFW4F5V1BuXiUgVNBa5jpdEBdz2vTRy2/cyxMtduyFpTjtMotobD1D75Yvs3LjopYDwh9v/5CNWrtsOSjGc/8bFqP/mHtRx7zyVodP7tisgZMeffB8SO6xfLYeIlllvTSkM2jH34UraQeB5VkvexoeWWsttR7bEaPu9Cz95IEZbAVw8wm461+7uuXrp4Q0L6LxxS/NKQQ+t2HpYKEKQPMhXkpkNqoYwXTEA+kphQitc/vYAAAAASUVORK5CYII=",
-        link: "https://drive.google.com"
-    },
-
-    "Google Slides": {
-        favicon: "https://starlightgg.github.io/favicons/faviconV2.png",
-        link: "https://slides.google.com"
-    }
-};
-
-
-          // --- UTILITY FUNCTIONS ---
-          function toggleContentVisibility(show) {
-              // When showing, set wrapper opacity to 1 and hide the overlay.
-              if (show) {
-                  contentWrapper.style.opacity = '1';
-                  contentWrapper.style.pointerEvents = 'auto';
-                  overlay.style.display = 'none';
-              }
-              // When hiding, set wrapper opacity to 0 and show the overlay.
-              else {
-                  contentWrapper.style.opacity = '0';
-                  contentWrapper.style.pointerEvents = 'none';
-                  overlay.style.display = 'flex';
-              }
-          }
-let notfirstmessage = true;
-let footersetter = false;
-
-// --- NEW TAB SWITCHING LOGIC ---
-function showTab(tabId, clickedButton) {
-    // 1. Hide all tab content sections
-    document.querySelectorAll('.menu-tab-content').forEach(content => {
-        content.classList.remove('active');
-    });
-
-    // 2. Deactivate all tab buttons
-    document.querySelectorAll('#tab-bar button').forEach(button => {
-        button.classList.remove('active-tab');
-    });
-
-    // 3. Show the target tab content and activate the button
-    document.getElementById(tabId + '-content').classList.add('active');
-    clickedButton.classList.add('active-tab');
-const chatbotIframe = document.getElementById('chatbot-iframe');
-    // **4. Execute something specific if the selected tab is 'chatbot'**
-    
-    if (tabId === 'chatbots') {
-      if(footersetter == false){
-      footersetter = true;
-                if (footerToggleButton && footerToggleButton.getAttribute('data-footer-enabled') === 'false') {
-                   toggleFooter();
-                }
-                                   toggleFooter();
-
-      }
-        // --- ADD YOUR CHATBOT-SPECIFIC CODE HERE ---
-chatbotIframe.src = "https://starlightgg.github.io/pages/chatbot";
-chatbotIframe.style.display='block';
-      const localStorageKey2 = 'chatbotadvisoryShown_v2_2_0';        
-
-if (localStorage.getItem(localStorageKey2) === null) {
-  showModal('If you are using AI and it isnt getting recent resources, use either chatgpt or compound for web search, ask it to search web for [keyword]. Also, Llama 4 scout can view images. ');
-        showModal("Please always wait patiently when loading chatbot");
-        localStorage.setItem(localStorageKey2, 'true');
-
-}
-}else{
-if (footersetter == true) {
-  
-  toggleFooter();
-  
-  footersetter = false;
-
-}
-      chatbotIframe.src = "about:blank";
-            chatbotIframe.style.display='none';
-
-
-    }
-}
-function hideiframe(){
-  const chatbotIframe = document.getElementById('chatbot-iframe');
-
-              chatbotIframe.style.display='none';
-
-}
-hideiframe();
-      // --- JAVASCRIPT UPDATES ---
-
-      function updateTime() {
-          const now = new Date();
-          const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-          const dateString = now.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' });
-
-          // ⭐ TARGET NEW FOOTER ELEMENT
-          const timeElement = document.getElementById('footer-time');
-          if (timeElement) {
-              timeElement.textContent = `${dateString} | ${timeString}`;
-          }
-      }
-      updateTime();
-      setInterval(updateTime, 1000);
-      const tabBar = document.getElementById('tab-bar');
-      const bottomBar = document.getElementById('bottom-bar');
-
-          function backToMain() {
-              iframeContainer.style.display = 'none'; mainMenu.style.display = 'flex'; iframeEl.src = 'about:blank';
-              // When going back to main, ensure the Home tab is visible
-              showTab('home', document.getElementById('tab-home'));
-              tabBar.style.display = 'flex';
-               bottomBar.style.display = 'flex';
-
-          }
-          function goToHomepage() { iframeEl.src = currentHomepage; }
-          function toggleFullscreen() {
-              if (!document.fullscreenElement) iframeEl.requestFullscreen().catch(err => console.error(err)); else document.exitFullscreen();
-          }
-      // MODIFIED Helper function for the "Apply Custom Cloak" button
-      function runCustomCloak() {
-          const title = document.getElementById('custom-title-input').value;
-          const url = document.getElementById('custom-favicon-input').value;
-          const redirect = document.getElementById('custom-url-input').value;
-
-          if (!title && !url) {
-              showModal("Please enter a title or favicon URL!");
-              return;
-          }
-            if (redirect) {
-                      localStorage.setItem('LINKTAB_KEY', redirect);
-              showModal(`Custom settings applied!\nTitle: ${title}\nRedirect URL: ${redirect}`);
-
-
-            } else {
-        localStorage.setItem('LINKTAB_KEY', 'https://google.com/');
-showModal(`Custom settings applied!\nTitle: ${title}\nRedirect URL: https://google.com/`);
-
-            }
-          applyCustomCloak(title, url);
-          // Keep the preset dropdown on "Custom"
-          document.getElementById('cloak-dropdown').value = "custom";
-      }
-      function surfweb() {
-        const localStorageKey3 = 'surfwebadvisoryShown_v2_2_0';
-        if (localStorage.getItem(localStorageKey3) === null) {
-        showModal('You probably shit your pants just now since it works.');showModal('When you are trying to google something, use start.duckduckgo.com as an alternative to google since google search is broken. When you are using duckduckgo, use the textbox in the duckduckgo site'); showModal('List of services that dont work: (may not list all, please contact owner if you find one):\nNow.gg\nGoogle (any services that relate to google)\nRoblox\nYoutube\nChatGPT'); showModal('Since I paid for this surf web domain, please do not use too much websites as I am paying for this');
-          localStorage.setItem(localStorageKey3, 'true');
-        }
-        showIframe('https://auth.teaching.za.com/indev'); 
-        
-      }
-          // UPDATED FUNCTION: Open Iframe Content in New Window (with Cloak)
-          function openIframeInNewWindow() {
-              if (!iframeEl.src || iframeEl.src === 'about:blank') {
-                  alert('Please load a game first! Also, HOW DID YOU GET THIS MESSAGE?!?!?!?!?');
-                  return;
-              }
-
-              const title = document.title;
-              const faviconURL = document.querySelector('link[rel="icon"], link[rel="shortcut icon"]')?.href || '';
-
-              // Template for the new window content (using a nested iframe to display the game)
-              const htmlContent = `
-                  <!DOCTYPE html>
-                  <html>
-                  <head>
-                      <meta charset="UTF-8">
-                      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                      <title>${title}</title>
-                      ${faviconURL ? `<link rel="icon" href="${faviconURL}">` : ''}
-                      <style>
-                          body { margin: 0; padding: 0; overflow: hidden; background-color: #fff; }
-                          iframe { width: 100vw; height: 100vh; border: none; margin: 0; padding: 0; }
-                      </style>
-                  </head>
-                  <body>
-                      <iframe src="${iframeEl.src}"></iframe>
-                  </body>
-                  </html>
-              `;
-
-              const newWindow = window.open('about:blank', '_blank');
-              if (newWindow) {
-                  newWindow.document.write(htmlContent);
-                  newWindow.document.close();
-              } else {
-                  alert("Pop-up blocked! Please allow pop-ups for this site.");
-              }
-          }
-
-
-          // NEW: Function to apply background pattern
-          function applyPattern() {
-              const patternSelect = document.getElementById('pattern-select');
-              const selectedPattern = patternSelect.value;
-              mainMenu.setAttribute('data-pattern', selectedPattern);
-              localStorage.setItem('selectedPattern', selectedPattern);
-          }
-
-          // Check for saved theme and pattern on load
-          document.addEventListener('DOMContentLoaded', () => {
-
-
-              const savedPattern = localStorage.getItem('selectedPattern') || 'lines';
-              document.getElementById('pattern-select').value = savedPattern;
-              applyPattern(); // Apply the saved or default pattern
-          });
-
-      // Store references to the new elements
-      const footerToggleButton = document.getElementById('footer-toggle');
-
-      function toggleFooter() {
-          const isEnabled = footerToggleButton.getAttribute('data-footer-enabled') === 'true';
-
-          if (isEnabled) {
-              // Disable: Hide the footer
-              bottomBar.style.display = 'none';
-              footerToggleButton.textContent = 'Show Footer';
-              footerToggleButton.setAttribute('data-footer-enabled', 'false');
-          } else {
-              // Enable: Show the footer
-              bottomBar.style.display = 'flex'; // Footer is a flex container
-              footerToggleButton.textContent = 'Hide Footer';
-              footerToggleButton.setAttribute('data-footer-enabled', 'true');
-          }
-      }
-          function showIframe(url) {
-              currentHomepage = url; mainMenu.style.display = 'none'; iframeContainer.style.display = 'block'; iframeEl.src = url;
-              tabBar.style.display = 'none';
-
-
-            toggleFooter();
-             toggleFooter();
-          }
-      function refreshIframe() {
-// 1. Get the current source URL.
-// 1. Get the current URL that the iframe is *actually* displaying.
-    // NOTE: This will only work if the content is SAME-ORIGIN! 
-    // If it's cross-origin, you must use iframe.src (the original attribute value).
-    let currentPath;
-    try {
-        currentPath = iframeEl.contentWindow.location.href;
-    } catch (e) {
-        // Fallback for cross-origin or security restriction: use the attribute value.
-        currentPath = iframeEl.src; 
-    }
-
-    // 2. Create a new timestamp to use as a unique query parameter.
-    const uniqueTimestamp = new Date().getTime();
-    
-    // 3. Construct the new, unique URL with a cache-buster.
-    // Check if the URL already has query parameters (with '?') or not.
-    const separator = currentPath.includes('?') ? '&' : '?';
-    const newSrc = currentPath + separator + '_refresh=' + uniqueTimestamp;
-
-    // 4. Set the new unique source, forcing a fresh load.
-    iframeEl.src = newSrc;
-    
-    console.log('Iframe refresh triggered with cache-buster:', newSrc);}
-    </script>
-    <script>
- 
-      </script>
-      <script>
-      // --- Constants for Local Storage Keys ---
-const TITLE_KEY = 'customPageTitle';
-const FAVICON_KEY = 'customFaviconURL';
-
-      // MODIFIED function for the dropdown
-      function applyCloak() {
-          const dropdown = document.getElementById('cloak-dropdown');
-          const selected = dropdown.value;
-          const customOptionsDiv = document.getElementById('custom-cloak-options');
-
-          const urlCloakOptionsDiv = document.getElementById('url-cloak-options');
-
-          if (selected === "custom") {
-              // Show the custom input fields
-              customOptionsDiv.classList.add('visible');
-               urlCloakOptionsDiv.classList.remove('visible');
-
-          } else if (selected === "url-cloak") { // <<< ADD THIS BLOCK
-          
-             // Show the URL input fields
-             urlCloakOptionsDiv.classList.add('visible');
-             customOptionsDiv.classList.remove('visible'); // Hide standard custom inputs
-          } else if (selected) {
-// A preset was chosen
-customOptionsDiv.classList.remove('visible');
-urlCloakOptionsDiv.classList.remove('visible');
-
-// Apply the preset cloak
-document.title = selected;
-
-const preset = FAVICONS[selected];
-const faviconURL = preset.favicon;
-const linkURL = preset.link;
-
-// Update favicon
-let faviconEl = document.getElementById("dynamic-favicon");
-if (!faviconEl) {
-    faviconEl = document.createElement("link");
-    faviconEl.rel = "icon";
-    faviconEl.id = "dynamic-favicon";
-    document.head.appendChild(faviconEl);
-}
-faviconEl.href = faviconURL;
-
-// Clear custom inputs
-document.getElementById('custom-title-input').value = "";
-document.getElementById('custom-favicon-input').value = "";
-document.getElementById('url-cloak-input').value = "";
-document.getElementById('custom-url-input').value = "";
-
-// Store values
-localStorage.setItem(TITLE_KEY, selected);
-localStorage.setItem(FAVICON_KEY, faviconURL);
-localStorage.setItem('LINKTAB_KEY', linkURL);
-
-          } else {
-
-              // Hide custom options
-              customOptionsDiv.classList.remove('visible');
-                           urlCloakOptionsDiv.classList.remove('visible'); // Hide standard custom inputs
-
-          }
-      }
-
-/**
- * Applies custom page title and favicon URL,
- * and saves them to Local Storage for persistence.
- * @param {string} customTitle - The new document title.
- * @param {string} faviconURL - The URL for the new favicon.
- */
-function applyCustomCloak(customTitle, faviconURL) {
-    if (customTitle) {
-        document.title = customTitle;
-        // 🔑 FIXED: Use the constant TITLE_KEY for saving
-        localStorage.setItem(TITLE_KEY, customTitle);
-    }
-    
-    if (faviconURL) {
-        // 🔑 FIXED: Use the constant FAVICON_KEY for saving
-        localStorage.setItem(FAVICON_KEY, faviconURL);
-        
-        let faviconEl = document.getElementById("dynamic-favicon");
-        if (!faviconEl) {
-            faviconEl = document.createElement("link");
-            faviconEl.rel = "icon";
-            faviconEl.id = "dynamic-favicon";
-            document.head.appendChild(faviconEl);
-        }
-        faviconEl.href = faviconURL;
-    }
-}
-
-/**
- * Retrieves saved title and favicon from Local Storage and applies them.
- * If no cloak is saved, the current default title/favicon remain unchanged.
- */
-function applyStoredCloak() {
-
-    // 1. Retrieve the stored data using the correct constants
-    const storedTitle = localStorage.getItem(TITLE_KEY);
-    const storedFavicon = localStorage.getItem(FAVICON_KEY);
-
-
-    // CRITICAL IMPROVEMENT: Only apply the cloak if a title or favicon was saved.
-    if (storedTitle || storedFavicon) {
-         // 2. Apply the retrieved data
-        applyCustomCloak(storedTitle, storedFavicon);
-    } else {
-              applyCustomCloak('Google', 'https://www.google.com/favicon.ico');
-
-    }
-    
-    
-}
-
-// 🔑 Call the function to apply the stored cloak when the page loads
-
-// NEW/CORRECTED Helper Function: Uses Google's Favicon Service (Safe & Reliable)
-function getGoogleFaviconUrl(targetUrl) {
-    if (!targetUrl) return "";
-    
-    // Attempt to extract the domain name safely
-    let domain;
-    try {
-        const url = new URL(targetUrl.startsWith('http') ? targetUrl : `https://${targetUrl}`);
-        domain = url.hostname;
-    } catch (e) {
-        // Fallback for invalid URLs, though the service needs a domain
-        domain = targetUrl; 
-    }
-    
-    // This is the public, CORS-friendly Google service URL
-    return `https://www.google.com/s2/favicons?domain=${domain}&sz=32`;
-
-}
-      // --- Loading Screen Logic ---
-      function hideLoadingScreen() {
-          const loadingScreen = document.getElementById('loading-screen');
-          if (loadingScreen) {
-              loadingScreen.classList.add('hidden');
-          }
-      }
-// Function to fetch and apply title and favicon from a given URL
-async function applyUrlCloak(targetUrl) {
-    if (!targetUrl) return;
-
-    // Use a proxy/search tool to safely fetch metadata for the target URL
-    // In a real browser environment, you'd use a CORS-enabled proxy or server-side logic
-    // We will use the search tool to simulate fetching the relevant data (title/favicon)
-    
-    try {
-        // Query 1: Get the website title
-        const titleResult = await google.search({ 
-            queries: [`site title of ${targetUrl}`] 
-        });
-        
-        // Query 2: Get a public favicon URL (often involves searching for the site's logo/icon)
-        const faviconResult = await google.search({
-            queries: [`favicon URL for ${targetUrl}`]
-        });
-
-        let newTitle = "Cloaked Site";
-        let newFaviconURL = "";
-
-        // Attempt to parse and clean the title
-        if (titleResult && titleResult.result) {
-            // Simple attempt to extract a clean title from the search snippet
-            // (This step is highly dependent on search result format and is illustrative)
-            newTitle = titleResult.result.split('\n')[0].trim(); 
-        }
-
-        // Attempt to parse and clean the favicon URL
-        if (faviconResult && faviconResult.result) {
-            // Search result often provides a direct link or a relevant image.
-            // For reliable results, a dedicated favicon API would be better, but we try a search link.
-            // We'll use the search snippet as a placeholder.
-            const urlMatch = faviconResult.result.match(/(https?:\/\/[^\s]+?\.ico|https?:\/\/[^\s]+?\.png)/i);
-            if (urlMatch) {
-                newFaviconURL = urlMatch[0];
-            }
-        }
-        
-        // --- Apply the fetched data using the existing function ---
-        applyCustomCloak(newTitle, newFaviconURL);
-        localStorage.setItem(TITLE_KEY, newTitle);
-        localStorage.setItem(FAVICON_KEY, newFaviconURL);
-        localStorage.setItem('LINKTAB_KEY', url);
-
-        // Notify the user
-        await showModal(`Successfully applied cloak from URL: ${targetUrl}\nTitle: ${newTitle}\nFavicon URL: ${newFaviconURL || 'Not Found'}`);
-
-    } catch (error) {
-        console.error("Error fetching URL cloak data:", error);
-        showModal("Failed to fetch data for URL cloaking. Please check the URL.");
-    }
-}
-/** Function to extract the <title> content from a string of HTML */
-function extractTitle(html) {
-    // Robust regex to find the title tag content
-    const match = html.match(/<title\b[^>]*>([^<]*?)<\/title>/i);
-    return match ? match[1].trim() : 'Title Not Found (Proxy Error)';
-}
-/** Helper to Fetch Title using CodeTabs Proxy (No longer uses external span) */
-async function fetchTitleWithProxy(urlInput) {
-    const encodedUrl = encodeURIComponent(urlInput);
-    const proxyUrl = `https://api.codetabs.com/v1/proxy/?quest=${encodedUrl}`;
-
-    try {
-        const response = await fetch(proxyUrl);
-        
-        if (!response.ok) {
-            throw new Error(`Proxy failed with status: ${response.status}`);
-        }
-        
-        const htmlContent = await response.text();
-        const title = extractTitle(htmlContent);
-
-        return title; 
-    } catch (error) {
-        console.error('Proxy Error:', error);
-        
-        const errorMsg = error.message.includes('Failed to fetch')
-                             ? 'Network/Firewall Blocked Proxy. Set Title Manually.'
-                             : `Error: Could not retrieve title.`;
-        
-        return errorMsg; 
-    }
-}
-      
-async function runUrlCloak() { // MUST be async now
-    const urlInput = document.getElementById('url-cloak-input'); 
-    const url = urlInput ? urlInput.value.trim() : "";
-
-    // Clear manual title input if it exists (since we are fetching automatically now)
-    const manualTitleInput = document.getElementById('url-title-input');
-    if (manualTitleInput) manualTitleInput.value = ""; 
-
-    if (!url) {
-        showModal("Please enter a URL!");
-        return;
-    }
-
-    // --- Part 1: Favicon Retrieval (Always works) ---
-    const faviconUrl = getGoogleFaviconUrl(url); 
-    applyCustomCloak("Fetching...", faviconUrl); // Set temporary title
-
-    // --- Part 2: Title Retrieval (Using the proxy) ---
-    const fetchedTitle = await fetchTitleWithProxy(url);
-
-// Check if the title fetching failed due to network blocks
-    if (fetchedTitle.includes('Blocked') || fetchedTitle.includes('Error')) {
-              localStorage.setItem('LINKTAB_KEY', 'https://google.com');
-
-        applyCustomCloak('Google', 'https://www.google.com/favicon.ico');
-
-        showModal(`Title fetch failed: ${fetchedTitle}\nYour network likely blocks the public proxy service. Please use the 'Custom' option to set the title manually.`);
-        return;
-    }
-
-    // --- Part 3: Final Application ---
-    applyCustomCloak(fetchedTitle, faviconUrl);
-
-    // Keep the dropdown on "URL Cloak"
-    document.getElementById('cloak-dropdown').value = "url-cloak";
-            localStorage.setItem('LINKTAB_KEY', url);
-
-    showModal(`URL Cloak Applied!\nTitle: ${fetchedTitle}\nFavicon fetched for: ${url} \n(If the title is messed up, please go to custom and put the correct custom title, leave favicon URL blank also.)`);
-}
-      // --- REPLACE YOUR OLD LOADING SCREEN LOGIC WITH THIS ---
-
-      // --- Loading Screen Logic ---
-      function hideLoadingScreen() {
-          const loadingScreen = document.getElementById('loading-screen');
-          if (loadingScreen) {
-              loadingScreen.classList.add('hidden');
-          }
-      }
-      // Wait for the entire page to load (including images/resources)
-      window.addEventListener('load', () => {
-          // Hide the loading screen after a small delay
-          setTimeout(hideLoadingScreen, 500);
-
-      });
-window.addEventListener('DOMContentLoaded', () => {
-    // Call the function directly when the basic HTML structure is ready
-          setTimeout(applyStoredCloak, 600);
-});
-
-        // Get references to the modal elements
-        const modal = document.getElementById('custom-modal');
-        const modalMessage = document.getElementById('modal-message');
-
-        // Global queue holds message and the Promise resolver function for that message
-        const modalQueue = [];
-        // State variable to prevent overlapping modals
-        let isModalOpen = false;
-        // The resolve function for the currently displayed modal's promise
-        let currentResolver = null; 
-        
-        /**
-         * Public function to queue or show a modal with a specified message.
-         * Returns a Promise that resolves when the user dismisses the modal.
-         * @param {string} Mssg The message to display inside the modal.
-         * @returns {Promise<void>} A promise that resolves upon dismissal.
-         */
-        function showModal(Mssg) {
-            return new Promise(resolve => {
-                // 1. Add the new message and its resolver to the end of the queue
-                modalQueue.push({ Mssg, resolve });
-                console.log(`Message queued: "${Mssg.substring(0, 15)}...". Queue size: ${modalQueue.length}`);
-
-                // 2. Try to process the queue immediately
-                processQueue();
-            });
-        }
-        
-        /**
-         * Processes the next message in the queue and displays the modal if it's currently closed.
-         */
-        function processQueue() {
-            if (modalQueue.length > 0 && !isModalOpen) {
-                isModalOpen = true;
-
-                // Get the oldest message and its resolver from the front of the queue
-                const nextItem = modalQueue.shift();
-                
-                // Store the resolver so closeModal can use it
-                currentResolver = nextItem.resolve; 
-
-                // --- FIX: Replace \n with <br> and use innerHTML ---
-                // We use innerHTML to allow the <br> tags to render correctly.
-                const htmlMessage = nextItem.Mssg.replace(/\n/g, '<br>');
-
-                // 1. Update the message content using innerHTML
-                modalMessage.innerHTML = htmlMessage;
-
-                // 2. Make the modal visible and activate the transition
-                modal.classList.add('active');
-                
-                // 3. Set focus to the close button for accessibility
-                modal.querySelector('button').focus();
-            }
-        }
-        
-        /**
-         * Hides the current modal, resolves the waiting promise, and triggers the next one in the queue.
-         */
-        function closeModal() {
-            // Check if a modal is actually open
-            if (!isModalOpen) return;
+        const e = React.createElement;
+        const { useState, useEffect, useRef } = React;
+
+        // --- NEW PRESETS DATA (Custom Names vs Stealth Titles) ---
+        const PRESETS = [
+            { name: "iCivics", title: "Home | iCivics", favicon: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y+mAAAAV1BMVEVHcEz/ZAD/ZwD/WwD/WwD/YAD/ZAD/WwD/WwD/WwD/WwD/WwD/WwD/WwD/ZgD/WwD/WwD/WwD/aAD/gAD/kQD/kAD/kQD/kQD/kQD/ZQD/kQD/jQD/bwAvM226AAAAHHRSTlMACCEwRhgPhrjT4e6tdjyd+/9a///yfrli/53evbsBzAAAAOVJREFUeAGtkgUSwlAMRL+71u3+18QSHDrWheqbbpQcIcq4EIJL+o2U0MY672yI6ZPx7EoFFavVG0sWCeDAXpmr7zLy6Wnrp7JCpjK6OZMNhvYNQgGmPidKVMq+XhXAmGpgmKPMpV4LAsgM5HDPkMX4bAWkU+KzVZ91FMjgQwDbrv8FwfYCh5+2zFxhNz4SGqbEFCVYSqlzd/kUS1m6fjU5ymcT2gtdbk1Y+q7bsAnYvvlCu3VcxvVybbF9mBJSUAuNfyt1A9zOMLLPYc/bts1vw95fExC9LZi7zoP/Xs0kEpfkAJ0B2VoUsYiyizsAAAAASUVORK5CYII=", link: "https://www.icivics.org" },
+            { name: "Clever", title: "Clever | Portal", favicon: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQi3ptQJ9ibYtsUiQ1yNX5abVZvtmG9fwqjNpUqzO6N8qbrYgM:https://resources.finalsite.net/images/f_auto,q_auto/v1689877141/mooreschoolscom/emadd6nvplrnh1vsswjf/Clever-Logo.jpg&s", link: "https://clever.com" },
+            { name: "Google Classroom", title: "Home", favicon: "https://ssl.gstatic.com/classroom/favicon.ico", link: "https://classroom.google.com/h" },
+            { name: "Khan Academy", title: "Khan Academy", favicon: "https://www.khanacademy.org/favicon.ico", link: "https://www.khanacademy.org" },
+            { name: "Google Docs", title: "Google Docs", favicon: "https://ssl.gstatic.com/docs/doclist/images/mediatype/icon_1_document_x16.png", link: "https://docs.google.com" },
+            { name: "Outlook", title: "Outlook Mail", favicon: "https://outlook.live.com/owa/favicon.ico", link: "https://outlook.live.com" },
+            { name: "Calculator", title: "Calculator", favicon: "https://www.calculator.net/favicon.ico", link: "https://www.calculator.net" },
+            { name: "Google", title: "Google", favicon: "https://google.com/favicon.ico", link: "https://google.com" },
+            { name: "Google Search", title: "Google Classroom - Google Search", favicon: "https://google.com/favicon.ico", link: "https://www.google.com/search?q=google+classroom" },
+            { name: "StarlightGG (Default)", title: "StarlightGG", favicon: "https://starlightgg.github.io/favicons/favicon.png", link: "https://google.com" },
+            { name: "Activate Learning", title: "Activate Learning Digital Platform - Home", favicon: "https://activatelearning.com/wp-content/uploads/2023/05/favicon.png", link: "https://activatelearning.com" },
+            { name: "Gallopade", title: "Gallopade: Educational Products, Social Studies Curriculum, Reading, Common Core", favicon: "https://gallopade.com/favicon.ico", link: "https://gallopade.com" },
+            { name: "IL Classroom", title: "Classes | IL Classroom", favicon: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y+mAAAAV1BMVEVHcEwAAHwAAH0AAHwAAHwAAHwAAH0AAHwAAHwAAHwAAHwAAHwAAHoaGoMoKIYAAHZGR5fv8vv///+oqs6Mjr78///3+f5ucKzU1uk4OI/j5vPCxN+fosqdJ3hnAAAADHRSTlMAN4bC6//oX+wj1USkbhSpAAABF0lEQVR4AYTSBwKEIAwEQCxrjQY5g/X/7zwi1+vaHQsEzC1JmuVAkaWJeU1Z4JaqfKK6wVOa+m4t3tI+22etASIg7u+JX25AXR+A++5RG7USZAd3Yh7FT4x7tM0VeHYiSzeIW0F3LELfAd6c810/iBxIIdAkJgWo39aJr8i0LB0rpyZDUGamC/I0e1m3PmhmimAYT5Yj8uiciLiNgdwA4N25FRGtiouIA2cRbw+kXWGcV0uK+RPq6QomqBUm+4ikmJn0/bPzvh6fTbUIdEcsXlsUG5QYU2iFxB/lm+mhK9VT4f0wMdhug1tPHaG8DRlDh4wBULjS8jWfBzu2tf47TVR/2M+pqSmr85CSACxRo2QHNmA0IWcHAAp4HJXYNfpWAAAAAElFTkSuQmCC", link: "https://ilclassroom.com" },
+            { name: "Zearn", title: "Student Home - Zearn", favicon: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y+mAAAAYFBMVEVHcExFvdM6utGKxq8/u9I8utFIvtM8utFFvNM+u9JJvdNAu9Jnxdg/u9E9utFIvtQ/u9E8utFxydolutn1z0D+0Cr1z0H1zj/1z0H31GD1z0H10EovluFDAAAAIHRSTlMA2P8Vrf8v9EuXcci5auP/XGR9wLmh4v9CW5Vod9EfI0NLlVAAAACgSURBVHgBddDFAcRADATBRTMzO/8ojyTzXH9rUeKUVFKLPxllrXUEzrXfPIy+/RVglaQ+1lD91GCNSENxLk5cm34jvKhnP6lvlvMf7zyVHJhh5HzXdS+Yi2eFIjPAPLYQmGMpCUyDx+yVVIisqilkTUt1wCq2HtjANgKb2CZgXcvNc1VV9TAMJ2wfNbvp9tmyK8B1x/5hlThaur4fT/Ek3sqLEwwJ2FthAAAAAElFTkSuQmCC", link: "https://zearn.org" },
+            { name: "Pear Assessment", title: "Pear Assessment", favicon: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y+mAAAAY1BMVEVHcEwrOkIsO0I0QkMoN0InNkIiMUEnNUImNUEqOEIwPkI0QkMzQEMxP0IyQEMxP0PI21fL3lfQ5FjO4Vi4ylR2hUphcEVNXEKer1CnuVFqekbU6FmAlTmvwVNbaUdATkQAF0B9mIX1AAAAEHRSTlMApyf621LnZv7HHJjFfLc+PB2r8AAAALxJREFUKJHFkEkWgzAMQwljAg+I7cxhuv8pC3RHwrbV9luS7aL4q/qpHothyqGRVWGxVTXk4GCXZTHiJVVYY6v5rXPumDhb37zGe1PnWbdFgLh1WdiuICWsbY41FuUptE0GcgUXBMVTxjTJW6RZarxtBOdIYm0MXdtoFYDMs7W7UkEFFYj085obKocgHSaw3FGCPFbUIe7ls7R2JMHzYyOXfrDnHgEQo+d9emjJjVPKGZ6EfpcSbSvyf/+dPiDkDIV9PRLKAAAAAElFTkSuQmCC", link: "https://app.edulastic.com/home/assignments" },
+            { name: "Google Drive", title: "My Drive - Google Drive", favicon: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAYAAAByDd+UAAAB+klEQVR4AWJwL/ChKx68ForXW7SJN1iswYb5GyxaqGqhycrgR+rTAKzUA2hoURwG8Cn3bL/wbNuIz7Y5p9kOY57NMBvZs23bPtt/dW7b4VR94ep3v6OHaJvFJSoaZldQROB+hDJValcFPBj20vB82AsEAYCVyTT1uUykaWitGAQIB1oy22WoKOhKQMCCMKa0dLypYN9dTs7HcMvg5YCAHQKAzLmwpwpYGbORBHH2LAfMY4G4JdmOaJkvBQnsMQ+DHAl5MTSeqjaMASaarvZ00SB8UATCyp1OVzMWgfBDiwLhY7J2+Nn5LScyVCkUfkoI3nLqWivAcB7j52HYSISMEJz9WIwEyyE/AAtEBJLbRLoNiBxigIcVgDO08AwFwnkpwfx4Sx1aSFrmLwAvRDz+BBtaFB6Gg9txA9sEg6d9NLNO+/5HvFz0sXXardmy567d4CFW4F5V1BuXiUgVNBa5jpdEBdz2vTRy2/cyxMtduyFpTjtMotobD1D75Yvs3LjopYDwh9v/5CNWrtsOSjGc/8bFqP/mHtRx7zyVodP7tisgZMeffB8SO6xfLYeIlllvTSkM2jH34UraQeB5VkvexoeWWsttR7bEaPu9Cz95IEZbAVw8wm461+7uuXrp4Q0L6LxxS/NKQQ+t2HpYKEKQPMhXkpkNqoYwXTEA+kphQitc/vYAAAAASUVORK5CYII=", link: "https://drive.google.com" },
+            { name: "Google Slides", title: "Google Slides", favicon: "https://starlightgg.github.io/favicons/faviconV2.png", link: "https://slides.google.com" }
+        ];
+
+        // --- MODAL COMPONENT ---
+        const Modal = ({ message, isActive, onClose }) => {
+            return e('div', { id: 'custom-modal', className: `modal-overlay ${isActive ? 'active' : ''}`, onClick: (ev) => { if(ev.target.id === 'custom-modal') onClose(); } },
+                e('div', { className: 'modal-content' },
+                    e('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: '15px' } },
+                        e('h3', { id: 'modal-title' }, 'Notification'),
+                        e('button', { onClick: onClose, style: { background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '1.2em' } }, '✖')
+                    ),
+                    e('p', { id: 'modal-message', dangerouslySetInnerHTML: { __html: message } }),
+                    e('div', { style: { display: 'flex', justifyContent: 'flex-end', marginTop: '20px' } },
+                        e('button', { onClick: onClose, style: { background: 'var(--primary-color)', color: 'white', padding: '8px 16px', borderRadius: '8px', border: 'none', cursor: 'pointer' } }, 'OK')
+                    )
+                )
+            );
+        };
+
+        // --- PERFORMANCE MONITOR (Draggable) ---
+        const PerformanceMonitor = ({ visible }) => {
+            const [fps, setFps] = useState(0);
+            const [ping, setPing] = useState(0);
+            const [isOpen, setIsOpen] = useState(false);
+            const [pos, setPos] = useState({ bottom: 80, right: 20 });
             
-            // 1. Hide the modal visually
-            modal.classList.remove('active');
-
-            // 2. Set state to closed
-            isModalOpen = false;
-            
-            // 3. Resolve the promise for the modal that was just closed
-            if (currentResolver) {
-                currentResolver();
-                currentResolver = null; // Clear the resolver
-            }
-            
-            // 4. Wait slightly for the CSS transition to complete (0.3s) before processing the next one
-            setTimeout(() => {
-                // Try to process the next message in the queue
-                processQueue();
-            }, 300); // 300ms matches the CSS transition duration
-        }
-        
-        // --- YOUR SPECIFIC USE CASE (Fixed) ---
-        /**
-         * This function demonstrates how to correctly pause the script.
-         * It must be async, and must use 'await' before showModal.
-         */
-        async function openPlaylist() {
-                            const localStorageKey5 = 'playlistadvisoryShown_v2_2_0';        
-if (localStorage.getItem(localStorageKey5) === null) {
-
-            // 1. The script PAUSES here until the user dismisses the modal.
-            await showModal("If you judge my music or play it out loud to the class, I will punch you, slice you, grate you, burn you, put you in the oven, feed you to dogs, hang you, cut you, choke you, kick you, whip you, and dump you out.");
-
-        localStorage.setItem(localStorageKey5, 'true');
-
-}
-            // 2. This line only runs AFTER the user closes the modal.
-            showIframe('https://starlightgg.github.io/pages/playlist');
-        }
-
-
-
-
-        // Event Listeners for closing the modal (these still call closeModal)
-        modal.addEventListener('click', (event) => {
-            if (event.target === modal) {
-                closeModal();
-            }
-        });
-
-        document.addEventListener('keydown', (event) => {
-            if (event.key === 'Escape' && modal.classList.contains('active')) {
-                closeModal();
-            }
-        });
-        
-    </script>
-<script>
-// Wrap the entire script execution in DOMContentLoaded to ensure all HTML elements
-// are loaded and available before the script attempts to find them.
-document.addEventListener('DOMContentLoaded', () => {
-
-    const infoBtn = document.getElementById('info-btn');
-    const modal = document.getElementById('performance-modal');
-    const fpsValue = document.getElementById('fps-value');
-    const pingValue = document.getElementById('ping-value');
-
-    // CRITICAL: Check if the required elements were found. If they are missing, the script will not run.
-    if (!infoBtn || !modal || !fpsValue || !pingValue) {
-        console.error("Performance Monitor Error: One or more required HTML elements (info-btn, performance-modal, fps-value, ping-value) are missing from the page. The script cannot initialize.");
-        return; 
-    }
-
-    let isModalVisible = false;
-
-    // Helper function to update the color class
-    function updateColorClass(element, newClass) {
-        const colorClasses = ['text-good', 'text-medium', 'text-bad', 'text-default'];
-        colorClasses.forEach(c => element.classList.remove(c));
-        element.classList.add(newClass);
-    }
-
-    // --- 1. Reusable Draggable Logic ---
-    function makeDraggable(element, clickCallback, followerElement) {
-        let isDragging = false;
-        let dragOffsetX = 0;
-        let dragOffsetY = 0;
-        let moved = false; // Tracks if a significant move actually occurred
-        const VERTICAL_GAP = 16; // Fixed gap value (16px = 1rem) for vertical separation
-        
-        // Element to block mouse events over iframes during drag
-        let dragOverlay = null; 
-
-        // Function to create and add the full-screen overlay
-        function addDragOverlay() {
-            dragOverlay = document.createElement('div');
-            dragOverlay.style.position = 'fixed';
-            dragOverlay.style.top = '0';
-            dragOverlay.style.left = '0';
-            dragOverlay.style.width = '100vw';
-            dragOverlay.style.height = '100vh';
-            dragOverlay.style.zIndex = '9999'; // Very high z-index to cover everything
-            dragOverlay.style.cursor = "url('data:image/x-icon;base64,AAACAAEAICAAAA4ADwCoEAAAFgAAACgAAAAgAAAAQAAAAAEAIAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAQAAAAEAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAEAAAABAAAAAQAAAAIAAAACAAAAAgAAAAIAAAABAAAAAQAAAAEAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAQAAAAEAAAABAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwAAAAUAAAAAAAAAAAAAAAEAAAABAAAAAQAAAAIAAAACAAAAAQAAAAIAAAABAAAAAQAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADAAAABQAAAAgAAAAIAAAACQAAAAYAAAAGAAAAAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAMAAAAMAAAAFQAAABUAAAAMAAAAAwAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAFAAAADgAAAB4AAAAuAAAALgAAAB4AAAAOAAAABQAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABwAAAA0AAAAdAAAAMAAAAEMAAABDAAAAMAAAAB0AAAANAAAABwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwAAAAMAAAAMAAAAE/pfYv+rREb/AAAARwAAAEcAAAA1AAAAIwAAABMAAAAMAAAAAwAAAAMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAKAAAACgAAABD6X2L/+l9i/6tERv+rREb/AAAAQgAAACwAAAAWAAAADQAAABAAAAANAAAACgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwAAABb6X2L/+l9i//pfYv/6X2L/q0RG/6tERv+rREb/q0RG/wAAAAoAAAAHAAAAFwAAABYAAAAWAAAAAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMAAAAMAAAAJQAAACUAAAAfAAAACfpfYv+rREb/AAAAPAAAADwAAAAjAAAACgAAAAkAAAAfAAAAJQAAACUAAAAMAAAAAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACatERv8AAAA3AAAANwAAAC4AAAAb+l9i/6tERv8AAABCAAAAQgAAAC4AAAAbq0RG/wAAAC4AAAA3AAAANwAAABwAAAAJAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQq0RG/wAAAEUAAABFAAAAPAAAADD6X2L/q0RG/wAAAEkAAABJAAAAPAAAADCrREb/AAAAPAAAAEUAAABFAAAAKQAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKtERv+rREb/AAAARQAAAEUAAAA8AAAAMPpfYv+rREb/AAAASQAAAEkAAAA8AAAAMKtERv+rREb/AAAARQAAAEUAAAApAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACrREb/q0RG/6tERv+rREb/q0RG/6tERv+rREb/+l9i/6tERv+rREb/q0RG/6tERv+rREb/q0RG/6tERv+rREb/AAAAOAAAABwAAAAJAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPpfYv/6X2L/+l9i//pfYv/6X2L/+l9i//pfYv/6X2L/+l9i//pfYv/6X2L/+l9i//pfYv/6X2L/+l9i//pfYv8AAAAmAAAADQAAAAMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPpfYv/6X2L/AAAAFgAAABYAAAAXAAAAB/pfYv+rREb/AAAAPAAAADwAAAAiAAAACvpfYv/6X2L/AAAAFgAAABYAAAAEAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPpfYv8AAAAKAAAADQAAABUAAAAV+l9i/6tERv8AAABCAAAAQgAAACwAAAAd+l9i/wAAABUAAAANAAAACgAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA+l9i/wAAAAMAAAADAAAADAAAABP6X2L/q0RG/wAAAEcAAABHAAAANQAAACP6X2L/AAAADAAAAAwAAAADAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHAAAADfpfYv+rREb/AAAAQwAAAEMAAAAwAAAAHQAAAA0AAAAHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA+l9i//pfYv/6X2L/+l9i/6tERv+rREb/q0RG/6tERv8AAAAOAAAABQAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPpfYv/6X2L/q0RG/6tERv8AAAAVAAAADAAAAAMAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPpfYv+rREb/AAAABgAAAAYAAAADAAAAAAAAAAAAAAAFAAAAAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//////////////////////////////////////////////////z////4f///4B////z///+89///vPf//zzz//4AAf/+AAH//zzz//+89///vPf///z////gH///+H////z///////////////////////////////////////8='),default"; // Show the move cursor while dragging
-            dragOverlay.style.backgroundColor = 'transparent';
-            document.body.appendChild(dragOverlay);
-        }
-
-        // Function to remove the overlay
-        function removeDragOverlay() {
-            if (dragOverlay) {
-                document.body.removeChild(dragOverlay);
-                dragOverlay = null;
-            }
-        }
-
-        function startDrag(e) {
-            e.preventDefault();
-            moved = false;
-            
-            // Add the overlay at the start of the drag to handle iframes
-            addDragOverlay();
-
-            // Aggressively ensure elements are set to fixed position and convert 
-            // the current visual position (from CSS like bottom/right) to explicit top/left coordinates.
-
-            // 1. Configure the main draggable element (infoBtn)
-            element.style.position = 'fixed'; 
-            const rect = element.getBoundingClientRect();
-            element.style.right = ''; // Clear original CSS positioning
-            element.style.bottom = '';
-            element.style.top = rect.top + 'px';
-            element.style.left = rect.left + 'px';
-            
-            // 2. Configure the follower element (modal) if visible
-            if (followerElement && isModalVisible) {
-                followerElement.style.position = 'fixed'; 
-                const followerRect = followerElement.getBoundingClientRect();
-                followerElement.style.right = ''; // Clear original CSS positioning
-                followerElement.style.bottom = '';
-                followerElement.style.top = followerRect.top + 'px';
-                followerElement.style.left = followerRect.left + 'px';
-            }
-
-            // Calculate offset based on the now-fixed position
-            dragOffsetX = e.clientX - element.getBoundingClientRect().left;
-            dragOffsetY = e.clientY - element.getBoundingClientRect().top;
-
-            isDragging = true;
-            
-            // Attach mouse events to the document so they can't be lost easily
-            document.addEventListener('mouseup', endDrag);
-            document.addEventListener('mousemove', handleDrag);
-        }
-
-        function handleDrag(e) {
-            e.preventDefault();
-            if (!isDragging) return;
-
-            // Detect movement to prevent accidental clicks
-            // Threshold of 5px to distinguish a click from a drag
-            if (Math.abs(e.movementX) > 5 || Math.abs(e.movementY) > 5) {
-                moved = true;
-            }
-
-            let newLeft = e.clientX - dragOffsetX;
-            let newTop = e.clientY - dragOffsetY;
-
-            // Boundary checks for the main element (Button)
-            if (newLeft < 0) newLeft = 0;
-            if (newTop < 0) newTop = 0;
-            if (newLeft + element.offsetWidth > window.innerWidth) newLeft = window.innerWidth - element.offsetWidth;
-            if (newTop + element.offsetHeight > window.innerHeight) newTop = window.innerHeight - element.offsetHeight;
-
-            element.style.top = newTop + "px";
-            element.style.left = newLeft + "px";
-
-            // Update the follower element's position (the modal)
-            if (followerElement && isModalVisible) {
-                const B_width = element.offsetWidth;
-                const M_width = followerElement.offsetWidth;
-                const M_height = followerElement.offsetHeight;
-
-                // Initial Modal position: Above and right-aligned with the button
-                let M_top = newTop - M_height - VERTICAL_GAP;
-                let M_left = newLeft + B_width - M_width;
-
-                // *** NEW: Boundary checks for the follower modal during drag ***
-                if (M_top < 0) M_top = 0; // Prevent top overflow
-                if (M_left < 0) M_left = 0; // Prevent left overflow
-                if (M_left + M_width > window.innerWidth) M_left = window.innerWidth - M_width; // Prevent right overflow
-                if (M_top + M_height > window.innerHeight) M_top = window.innerHeight - M_height; // Prevent bottom overflow
-
-                followerElement.style.top = M_top + "px";
-                followerElement.style.left = M_left + "px";
-            }
-        }
-
-        function endDrag() {
-            isDragging = false;
-            removeDragOverlay(); // Remove the overlay at the end of the drag
-            document.removeEventListener('mouseup', endDrag);
-            document.removeEventListener('mousemove', handleDrag);
-
-            // CRITICAL FIX: Trigger the click action only if no movement occurred.
-            if (!moved && clickCallback) {
-                clickCallback();
-            }
-        }
-
-        // Attach the mouse down handler
-        element.onmousedown = startDrag;
-    }
-
-    // --- 2. Modal Toggle Callback ---
-    const toggleModal = () => {
-        isModalVisible = !isModalVisible;
-        if (isModalVisible) {
-            // Show modal
-            modal.style.opacity = '1';
-            modal.style.transform = 'translateY(0)'; 
-            modal.style.pointerEvents = 'auto';
-            
-            // Reposition modal relative to the button when opened
-            const B_rect = infoBtn.getBoundingClientRect();
-            const M_width = modal.offsetWidth;
-            const M_height = modal.offsetHeight;
-            const B_width = infoBtn.offsetWidth;
-            const VERTICAL_GAP = 16;
-            
-            // Calculate initial position (Above and right-aligned)
-            let M_top = B_rect.top - M_height - VERTICAL_GAP;
-            let M_left = B_rect.left + B_width - M_width;
-
-            // *** NEW: Boundary checks for the modal when first opened (Click/Tap) ***
-            if (M_top < 0) M_top = 0; // Prevent top overflow
-            if (M_left < 0) M_left = 0; // Prevent left overflow
-            if (M_left + M_width > window.innerWidth) M_left = window.innerWidth - M_width; // Prevent right overflow
-            if (M_top + M_height > window.innerHeight) M_top = window.innerHeight - M_height; // Prevent bottom overflow
-
-            modal.style.top = M_top + 'px';
-            modal.style.left = M_left + 'px';
-            
-            measurePing();
-        } else {
-            // Hide modal
-            modal.style.opacity = '0';
-            modal.style.transform = 'translateY(10px)';
-            modal.style.pointerEvents = 'none';
-        }
-    };
-
-    // --- 3. Apply Draggable Logic ---
-
-    // Make the Floating Info Button draggable and set its click action, 
-    // with the modal as its follower element.
-    makeDraggable(infoBtn, toggleModal, modal);
-
-    // --- 4. FPS Calculation Logic (Unchanged) ---
-
-    let lastFrameTime = performance.now();
-    let frameCount = 0;
-    const fpsInterval = 250; // Update FPS every 0.25 seconds (more responsive)
-    let fpsTimer = 0;
-
-    function updateFPS(currentTime) {
-        if (!fpsTimer) fpsTimer = currentTime;
-        frameCount++;
-
-        if (currentTime >= fpsTimer + fpsInterval) {
-            const timeElapsed = currentTime - fpsTimer;
-            const currentFPS = (frameCount / timeElapsed) * 1000;
-
-            if (isModalVisible) {
-                fpsValue.textContent = Math.round(currentFPS);
-
-                let colorClass = 'text-bad';
-                if (currentFPS > 55) {
-                    colorClass = 'text-good';
-                } else if (currentFPS > 30) {
-                    colorClass = 'text-medium';
-                }
-                updateColorClass(fpsValue, colorClass);
-            }
-            fpsTimer = currentTime;
-            frameCount = 0;
-        }
-        requestAnimationFrame(updateFPS);
-    }
-
-    // Start the FPS loop
-    requestAnimationFrame(updateFPS);
-
-
-    // --- 5. Ping (Latency) Measurement Logic (Unchanged) ---
-
-    const PING_URL = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
-    const PING_INTERVAL_MS = 1000; // Check ping every 1 second (more responsive)
-
-    async function measurePing() {
-        if (!isModalVisible) return;
-
-        pingValue.textContent = '...'; 
-        updateColorClass(pingValue, 'text-default');
-
-        try {
-            const startTime = performance.now();
-            // Using a well-known CDN resource to measure general network latency
-            await fetch(PING_URL, {
-                method: 'GET',
-                mode: 'cors',
-                cache: 'reload'
-            });
-
-            const endTime = performance.now();
-            const latency = Math.round(endTime - startTime);
-
-            pingValue.textContent = latency;
-
-            let colorClass = 'text-bad';
-            if (latency < 100) {
-                colorClass = 'text-good';
-            } else if (latency < 250) {
-                colorClass = 'text-medium';
-            }
-            updateColorClass(pingValue, colorClass);
-
-        } catch (error) {
-            console.error("Ping error:", error);
-            pingValue.textContent = 'Error';
-            updateColorClass(pingValue, 'text-bad');
-        }
-    }
-
-    // Periodically check ping
-    setInterval(measurePing, PING_INTERVAL_MS);
-}); // End of DOMContentLoaded
-</script>
-
-
-    <script src="https://cdn.pubnub.com/sdk/javascript/pubnub.7.1.2.min.js"></script> 
-
-    <script type="text/javascript">
-            window.addEventListener('load', () => {
-setTimeout(async () => {
-    // 🔗 THE URLS PROVIDING YOUR KEYS
-    const PUB_KEY_URL = 'https:///starlightgg.github.io/txt/pub.txt'; 
-    const SUB_KEY_URL = 'https:///starlightgg.github.io/txt/sub.txt';
-
-    try {
-        // 1. Fetch both keys simultaneously
-        const [pubResponse, subResponse] = await Promise.all([
-            fetch(PUB_KEY_URL),
-            fetch(SUB_KEY_URL)
-        ]);
-
-        // Extract the text content (and trim whitespace/newlines)
-        const YOUR_PUB_KEY = (await pubResponse.text()).trim();
-        const YOUR_SUB_KEY = (await subResponse.text()).trim();
-
-        // 2. Initialize PubNub with the fetched keys
-        const randomString = () => Math.random().toString(36).slice(2);
-
-        const pubnub = new PubNub({
-            publishKey: YOUR_PUB_KEY,
-            subscribeKey: YOUR_SUB_KEY,
-            uuid: randomString(),
-            pageUnload: true,
-            heartbeatInterval: 20
-        });
-
-        const CHANNEL_NAME = 'counter';
-
-        // 3. Add Listeners
-        pubnub.addListener({
-            status: (statusEvent) => {
-                if (statusEvent.category === 'PNConnectedCategory') {
-                    console.log("Connected to PubNub with remote keys.");
-                }
+            // FPS Loop
+            useEffect(() => {
+                let frameCount = 0;
+                let lastTime = performance.now();
+                const loop = () => {
+                    frameCount++;
+                    const now = performance.now();
+                    if (now - lastTime >= 1000) {
+                        setFps(frameCount);
+                        frameCount = 0;
+                        lastTime = now;
+                    }
+                    requestAnimationFrame(loop);
+                };
+                loop();
+            }, []);
+
+            // Ping Loop
+            useEffect(() => {
+                const interval = setInterval(async () => {
+                    const start = performance.now();
+                    try {
+                        await fetch('https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js', { method: 'HEAD', mode: 'no-cors' });
+                        setPing(Math.round(performance.now() - start));
+                    } catch { setPing('Err'); }
+                }, 2000);
+                return () => clearInterval(interval);
+            }, [isOpen]);
+
+            // Helper for Color
+            const getColor = (val) => {
+                if (val >= 50) return 'text-good';
+                if (val >= 30) return 'text-medium';
+                return 'text-bad';
+            };
+
+            // Drag Logic
+            const handleMouseDown = (e) => {
+                e.preventDefault();
+                const startX = e.clientX;
+                const startY = e.clientY;
+                const startRight = pos.right;
+                const startBottom = pos.bottom;
+                let isDragging = false;
+
+                // Create Overlay for Iframe Dragging
+                const overlay = document.createElement('div');
+                overlay.id = 'drag-overlay';
+                overlay.style.position = 'fixed';
+                overlay.style.top = '0';
+                overlay.style.left = '0';
+                overlay.style.width = '100%';
+                overlay.style.height = '100%';
+                overlay.style.zIndex = '99999';
+                overlay.style.cursor = 'grabbing';
+                document.body.appendChild(overlay);
+
+                const onMouseMove = (moveEvent) => {
+                    isDragging = true;
+                    const deltaX = startX - moveEvent.clientX;
+                    const deltaY = startY - moveEvent.clientY;
+                    setPos({
+                        right: startRight + deltaX,
+                        bottom: startBottom + deltaY
+                    });
+                };
+
+                const onMouseUp = () => {
+                    document.removeEventListener('mousemove', onMouseMove);
+                    document.removeEventListener('mouseup', onMouseUp);
+                    // Remove Overlay
+                    const ov = document.getElementById('drag-overlay');
+                    if(ov) ov.remove();
+
+                    if (!isDragging) setIsOpen(!isOpen);
+                };
+
+                document.addEventListener('mousemove', onMouseMove);
+                document.addEventListener('mouseup', onMouseUp);
+            };
+
+            if (!visible) return null;
+
+            return e(React.Fragment, null,
+                e('div', { 
+                    id: 'performance-modal', 
+                    className: isOpen ? 'visible' : '', 
+                    style: { bottom: `${pos.bottom + 60}px`, right: `${pos.right}px` } 
+                }, 
+                    e('div', null, 'FPS: ', e('span', { className: getColor(fps) }, fps)),
+                    e('div', null, 'Ping: ', e('span', null, `${ping}ms`)) // Newline via Flex Column
+                ),
+                e('div', { 
+                    id: 'info-btn', 
+                    onMouseDown: handleMouseDown,
+                    style: { bottom: `${pos.bottom}px`, right: `${pos.right}px` }
+                }, '?')
+            );
+        };
+
+        // --- DASHBOARD CARD COMPONENT ---
+        const DashboardCard = ({ icon, title, desc, onClick, accent }) => {
+            return e('div', { 
+                className: `dashboard-card ${accent ? 'card-accent' : ''}`, 
+                onClick: onClick 
             },
-            presence: (presenceEvent) => {
-                updateCounterDisplay(presenceEvent.occupancy);
-            }
-        });
+                e('i', { className: icon }),
+                e('h3', null, title),
+                e('p', null, desc)
+            );
+        };
 
-        // 4. Helper Functions
-        function updateCounterDisplay(count) {
-            const counterElement = document.getElementById('online-users-count');
-            if (counterElement) {
-                counterElement.innerHTML = count > 0 ? count : 1;
-            }
-        }
+        // --- SUB-PAGE HEADER (WITH CHILDREN SUPPORT) ---
+        const PageHeader = ({ title, onBack, children }) => {
+            return e('div', { className: 'page-header' },
+                e('button', { className: 'back-btn', onClick: onBack }, 
+                    e('i', { className: 'fas fa-arrow-left' }), 'Home'
+                ),
+                e('div', { className: 'menu-section-title' }, title),
+                e('div', { style: { display: 'flex', gap: '10px' } }, children) // Changed from 'actions' prop to 'children' or generic container
+            );
+        };
 
-        function checkOccupancy() {
-            pubnub.hereNow({
-                channels: [CHANNEL_NAME]
-            }, function (status, response) {
-                if (response?.channels?.[CHANNEL_NAME]) {
-                    updateCounterDisplay(response.channels[CHANNEL_NAME].occupancy);
+        // --- MAIN APP COMPONENT ---
+        const App = () => {
+            // State
+            const [activeTab, setActiveTab] = useState('home');
+            const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
+            const [pattern, setPattern] = useState(localStorage.getItem('pattern') || 'lines');
+            const [modalState, setModalState] = useState({ isActive: false, message: '' });
+            const [time, setTime] = useState('');
+            const [onlineCount, setOnlineCount] = useState('Loading...');
+            
+            // Settings States
+            const [footerVisible, setFooterVisible] = useState(() => localStorage.getItem('footerVisible') !== 'false');
+            const [tabProtection, setTabProtection] = useState(() => localStorage.getItem('tabProtectionState') === 'true');
+            const [redirectEnabled, setRedirectEnabled] = useState(() => localStorage.getItem('redirectToggleState') === 'true');
+            const [overlayEnabled, setOverlayEnabled] = useState(() => localStorage.getItem('overlayToggleState') === 'true');
+            const [aboutBlankEnabled, setAboutBlankEnabled] = useState(() => localStorage.getItem('aboutBlankPopupState') === 'true');
+            const [statsEnabled, setStatsEnabled] = useState(() => localStorage.getItem('statsToggleState') === 'true');
+
+            // Cloak Mode State
+            const [cloakMode, setCloakMode] = useState(''); // '' | 'custom' | 'url'
+
+            const [iframeState, setIframeState] = useState({ active: false, src: '' });
+            const [quote, setQuote] = useState('Loading quote...');
+
+            // Helpers
+            const showModal = (msg) => setModalState({ isActive: true, message: msg });
+            const closeModal = () => setModalState({ ...modalState, isActive: false });
+            
+            const updateFavicon = (url) => {
+                let link = document.querySelector("link[rel~='icon']");
+                if (!link) {
+                    link = document.createElement('link');
+                    link.rel = 'icon';
+                    document.getElementsByTagName('head')[0].appendChild(link);
                 }
-            });
-        }
+                link.href = url;
+            };
 
-        // 5. Subscribe and Initial Load
-        pubnub.subscribe({
-            channels: [CHANNEL_NAME],
-            withPresence: true
-        });
+            // INITIAL LOAD (Cloak & Quote)
+            useEffect(() => {
+                document.documentElement.setAttribute('data-theme', theme);
+                
+                // RESTORE CLOAK FROM STORAGE
+                const storedTitle = localStorage.getItem('customPageTitle');
+                const storedFavicon = localStorage.getItem('customFaviconURL');
+                
+                if (storedTitle) {
+                    document.title = storedTitle;
+                } else {
+                    // Default to Google if nothing saved
+                    document.title = "Google";
+                }
 
-        checkOccupancy();
-        setInterval(checkOccupancy, 5000);
+                if (storedFavicon) {
+                    updateFavicon(storedFavicon);
+                } else {
+                    // Default to Google if nothing saved
+                    updateFavicon("https://google.com/favicon.ico");
+                }
 
-    } catch (error) {
-        console.error("Critical Error: Could not retrieve PubNub keys from the URLs.", error);
-    }
-}, 3750);
-});
+                const timer = setInterval(() => {
+                    const now = new Date();
+                    setTime(`${now.toLocaleDateString([], {weekday:'short'})} | ${now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}`);
+                }, 1000);
 
+                // Quote
+                fetch('txt/quotes.txt').then(r => r.text()).then(t => {
+                    const lines = t.split('\n').filter(l => l.trim());
+                    setQuote(lines[Math.floor(Math.random() * lines.length)]);
+                }).catch(() => setQuote('Welcome to StarlightGG'));
+
+                return () => clearInterval(timer);
+            }, []);
+
+            useEffect(() => {
+                document.documentElement.setAttribute('data-theme', theme);
+                localStorage.setItem('theme', theme);
+            }, [theme]);
+
+            // Save footer state whenever it changes
+            useEffect(() => {
+                localStorage.setItem('footerVisible', footerVisible.toString());
+            }, [footerVisible]);
+
+            // Chatbot Advisory Check
+            useEffect(() => {
+                if (activeTab === 'chatbots') {
+                    const key = 'chatbot_advisory_shown';
+                    if (!localStorage.getItem(key)) {
+                        showModal("If you are using AI and it isnt getting recent resources, use either chatgpt or compound for web search.<br><br>Please always wait patiently when loading chatbot.");
+                        localStorage.setItem(key, 'true');
+                    }
+                }
+            }, [activeTab]);
+
+            // PubNub
+            useEffect(() => {
+                const fetchKeysAndInit = async () => {
+                    if (!window.PubNub) return; // Safety check
+                    try {
+                        const [pubRes, subRes] = await Promise.all([
+                            fetch('https://starlightgg.github.io/txt/pub.txt'),
+                            fetch('https://starlightgg.github.io/txt/sub.txt')
+                        ]);
+                        const pubKey = (await pubRes.text()).trim();
+                        const subKey = (await subRes.text()).trim();
+
+                        const pubnub = new PubNub({
+                            publishKey: pubKey,
+                            subscribeKey: subKey,
+                            uuid: "user-" + Math.random()
+                        });
+                        pubnub.subscribe({ channels: ['counter'], withPresence: true });
+                        
+                        const updateCount = () => {
+                             pubnub.hereNow({ channels: ['counter'], includeState: true }, (status, response) => {
+                                 if(response && response.channels && response.channels.counter) {
+                                     setOnlineCount(response.channels.counter.occupancy);
+                                 }
+                             });
+                        };
+                        
+                        pubnub.addListener({
+                            presence: (p) => {
+                                if(p.occupancy) setOnlineCount(p.occupancy);
+                                else updateCount();
+                            }
+                        });
+                        
+                        updateCount(); 
+                        const interval = setInterval(updateCount, 10000); 
+                        return () => clearInterval(interval);
+
+                    } catch (e) {
+                        console.error("PubNub Init Failed", e);
+                        setOnlineCount('Offline');
+                    }
+                };
+                setTimeout(fetchKeysAndInit, 1000);
+            }, []);
+
+            // --- TOGGLE HANDLERS (Update State & LocalStorage) ---
+            const handleToggle = (key, currentState, setter) => {
+                const newState = !currentState;
+                setter(newState);
+                localStorage.setItem(key, newState.toString());
+            };
+
+            const toggleTheme = () => setTheme(prev => prev === 'light' ? 'dark' : 'light');
+            
+            const openGame = (url) => {
+                setIframeState({ active: true, src: url });
+                setActiveTab('game-view');
+            };
+            
+            // Modified Exit Game: Only hides Iframe, DOES NOT force footerVisible state
+            const exitGame = () => {
+                setIframeState({ active: false, src: '' });
+                setActiveTab('home');
+                // Ensure footer is visible when returning to home, even if hidden in game/chat
+                setFooterVisible(true); 
+            };
+
+            // URL Cloak Logic
+            const handleUrlCloak = async () => {
+                const urlInput = document.getElementById('url-cloak-input').value;
+                if (!urlInput) return showModal("Please enter a URL!");
+                
+                const targetUrl = urlInput.startsWith('http') ? urlInput : `https://${urlInput}`;
+
+                showModal("Fetching cloak data... (This may take a moment)");
+                
+                try {
+                    // 1. Get Favicon (Google Service)
+                    let domain;
+                    try {
+                        const u = new URL(targetUrl);
+                        domain = u.hostname;
+                    } catch { domain = targetUrl; }
+                    const favicon = `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
+
+                    // 2. Fetch Title using Proxy
+                    const proxyUrl = `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(targetUrl)}`;
+                    const response = await fetch(proxyUrl);
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    
+                    const htmlText = await response.text();
+                    const titleMatch = htmlText.match(/<title\b[^>]*>([^<]*?)<\/title>/i);
+                    const fetchedTitle = titleMatch ? titleMatch[1].trim() : domain;
+
+                    // 3. Apply
+                    document.title = fetchedTitle;
+                    updateFavicon(favicon);
+                    
+                    // 4. Save
+                    localStorage.setItem('customPageTitle', fetchedTitle);
+                    localStorage.setItem('customFaviconURL', favicon);
+                    localStorage.setItem('LINKTAB_KEY', targetUrl);
+                    
+                    showModal(`Cloaked successfully!\nTitle: ${fetchedTitle}`);
+                } catch (error) {
+                    console.error(error);
+                    // Fallback to domain if proxy fails
+                    let domain;
+                    try {
+                        const u = new URL(targetUrl);
+                        domain = u.hostname;
+                    } catch { domain = targetUrl; }
+                    
+                    document.title = domain;
+                    const favicon = `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
+                    updateFavicon(favicon);
+                    
+                    localStorage.setItem('customPageTitle', domain);
+                    localStorage.setItem('customFaviconURL', favicon);
+                    localStorage.setItem('LINKTAB_KEY', targetUrl);
+
+                    showModal(`Could not fetch full title (Proxy Blocked?).\nCloaked as domain: ${domain}`);
+                }
+            };
+
+            const applyCloak = (e) => {
+                const val = e.target.value;
+                
+                if (val === 'custom') {
+                    setCloakMode('custom');
+                } else if (val === 'url-cloak') {
+                    setCloakMode('url');
+                } else if (val === 'custom-apply') {
+                    // Manual Custom Apply
+                    const customTitle = document.getElementById('custom-title-input').value;
+                    const customFavicon = document.getElementById('custom-favicon-input').value;
+                    if (customTitle) {
+                        document.title = customTitle;
+                        localStorage.setItem('customPageTitle', customTitle);
+                    }
+                    if (customFavicon) {
+                        updateFavicon(customFavicon);
+                        localStorage.setItem('customFaviconURL', customFavicon);
+                    }
+                    showModal("Custom cloak applied!");
+                } else {
+                    // Preset Selected - HIDE inputs
+                    setCloakMode(''); 
+                    
+                    // Find preset by Name
+                    const preset = PRESETS.find(p => p.name === val);
+                    
+                    if(preset) {
+                        const { title, favicon, link } = preset;
+                        document.title = title;
+                        updateFavicon(favicon);
+                        localStorage.setItem('customPageTitle', title);
+                        localStorage.setItem('customFaviconURL', favicon);
+                        localStorage.setItem('LINKTAB_KEY', link);
+                    }
+                }
+            };
+
+            const openNewWindow = () => {
+                 if (!iframeState.active || !iframeState.src) return showModal("No game loaded!");
+                 const win = window.open('about:blank', '_blank');
+                 if (!win) return showModal("Popups are blocked! Please allow popups for this site.");
+                 
+                 const title = document.title;
+                 const favicon = localStorage.getItem('customFaviconURL') || document.querySelector("link[rel*='icon']")?.href;
+                 
+                 win.document.write(`
+                    <html><head><title>${title}</title>
+                    ${favicon ? `<link rel="icon" href="${favicon}">` : ''}
+                    <style>body{margin:0;overflow:hidden;}iframe{width:100vw;height:100vh;border:none;}</style>
+                    </head><body><iframe src="${iframeState.src}"></iframe></body></html>
+                 `);
+                 win.document.close();
+            };
+            
+            const reloadGame = () => {
+                 if(iframeState.src) {
+                     // Add timestamp to force reload
+                     const url = iframeState.src.split('?')[0];
+                     const newSrc = `${url}?t=${Date.now()}`;
+                     setIframeState({ ...iframeState, src: newSrc });
+                 }
+            };
+
+            const renderSwitch = (id, isOn, onClick) => 
+                e('div', { id: id, className: `switch-container ${isOn ? 'switch-on' : ''}`, onClick: onClick },
+                    e('div', { className: 'switch-thumb' })
+                );
+
+            // --- TAB CONTENTS ---
+            
+            // 1. HOME (DASHBOARD)
+            const HomeContent = e('div', { id: 'home-content', className: `menu-tab-content ${activeTab === 'home' ? 'active' : ''}` },
+                e('div', { className: 'dashboard-container' },
+                    e('div', { className: 'hero-section' },
+                        e('h2', null, 'Welcome to StarlightGG'),
+                        e('div', { id: 'quote-display' }, `"${quote}"`),
+                        e('div', { style: { marginTop: '15px', fontWeight: '600', color: 'var(--primary-color)' } }, 
+                            `Active Users: ${onlineCount}`
+                        )
+                    ),
+                    e('div', { className: 'card-grid' },
+                        e(DashboardCard, { 
+                            icon: 'fas fa-gamepad', 
+                            title: 'Games', 
+                            desc: 'Play 250+ unblocked games',
+                            onClick: () => setActiveTab('embed')
+                        }),
+                        e(DashboardCard, { 
+                            icon: 'fas fa-tools', 
+                            title: 'Utilities', 
+                            desc: 'Proxies, Chats, Diagnostics',
+                            onClick: () => setActiveTab('links')
+                        }),
+                        e(DashboardCard, { 
+                            icon: 'fas fa-brain', 
+                            title: 'Chatbots', 
+                            desc: 'AI Helpers & Assistants',
+                            onClick: () => setActiveTab('chatbots')
+                        }),
+                        e(DashboardCard, { 
+                            icon: 'fas fa-cog', 
+                            title: 'Settings', 
+                            desc: 'Themes, Cloaking, Privacy',
+                            onClick: () => setActiveTab('settings')
+                        }),
+                         e(DashboardCard, { 
+                            icon: 'fas fa-rocket', 
+                            title: 'Surf Web', 
+                            desc: 'Browse the internet freely',
+                            accent: true,
+                            onClick: () => showModal("Sorry for the inconvenience, but this is still a work in progress. Check back soon! \nStatus: 55% Done")//openGame('https://auth.teaching.za.com/indev')
+                        })
+                    )
+                )
+            );
+
+            // 2. GAMES (Embeds)
+            const EmbedContent = e('div', { id: 'embed-content', className: `menu-tab-content ${activeTab === 'embed' ? 'active' : ''}` },
+                e(PageHeader, { title: 'Games Hub', onBack: () => setActiveTab('home') }),
+                e('div', { className: 'menu-buttons' },
+                    e('button', { onClick: () => openGame('https://starlightgg.github.io/pages/gamesearch.html') }, 
+                        e('i', { className: 'fas fa-gamepad' }), 'StarlightGG Hub'
+                    ),
+                    e('button', { onClick: () => openGame('https://starlightgg.github.io/lunaar-lite/') }, 
+                        e('i', { className: 'fas fa-gamepad' }), 'Lunaar Lite'
+                    ),
+                    e('button', { onClick: () => openGame('https://unblockedgames1024.gitlab.io/') }, 
+                        e('i', { className: 'fas fa-unlock' }), 'Unblocked 66'
+                    ),
+                    e('button', { onClick: () => openGame('https://unicycle-hero.gitlab.io/category/new.html') }, 
+                        e('i', { className: 'fab fa-gitlab' }), 'Gitlab Hub'
+                    )
+                )
+            );
+
+            // 3. UTILITIES
+            const LinksContent = e('div', { id: 'links-content', className: `menu-tab-content ${activeTab === 'links' ? 'active' : ''}` },
+                e(PageHeader, { title: 'Utilities', onBack: () => setActiveTab('home') }),
+                e('div', { className: 'menu-buttons' },
+                    e('button', { onClick: () => window.open('pages/chat.html') }, 
+                        e('i', { className: 'fas fa-comments' }), 'Chat'
+                    ),
+                    e('button', { onClick: () => openGame('pages/playlist.html') }, 
+                         e('i', { className: 'fas fa-music' }), 'Playlist'
+                    ),
+                    e('button', { onClick: () => openGame('pages/diagnostic') }, 
+                         e('i', { className: 'fas fa-chart-bar' }), 'Diagnostics'
+                    ),
+                    e('button', { onClick: () => window.location.href = '/pages/terms.html' }, 
+                         e('i', { className: 'fas fa-file-contract' }), 'Terms'
+                    ),
+                    e('button', { onClick: () => openGame('https://starlightgg.github.io/pages/events') }, 
+                         e('i', { className: 'fas fa-calendar-alt' }), 'Events'
+                    ),
+                    e('button', { onClick: () => window.open('pages/aihelper.html') }, 
+                         e('i', { className: 'fas fa-robot' }), 'AI Helper'
+                    ),
+                     e('button', { onClick: () => openGame('https://starlightgg.github.io/pages/status') }, 
+                         e('i', { className: 'fas fa-wifi' }), 'Status'
+                    )
+                )
+            );
+
+            // 4. CHATBOTS (Iframe Logic)
+            const ChatbotsContent = e('div', { id: 'chatbots-content', className: `menu-tab-content ${activeTab === 'chatbots' ? 'active' : ''}` },
+                e(PageHeader, { title: 'AI Chatbots', onBack: () => setActiveTab('home') }),
+                // Content wrapper for sizing - Fixed with flex: 1
+                e('div', { style: { 
+                    width: '100%', 
+                    flex: 1, 
+                    display: 'flex',
+                    flexDirection: 'column',
+                    borderRadius: '20px', 
+                    overflow: 'hidden',
+                    marginTop: '10px' // minimal spacing from header
+                } },
+                    e('iframe', { 
+                        id: 'chatbot-iframe', 
+                        src: activeTab === 'chatbots' ? 'https://starlightgg.github.io/pages/chatbot' : 'about:blank',
+                    })
+                )
+            );
+
+            // 5. SETTINGS (Strict ID Preservation)
+            const SettingsContent = e('div', { id: 'settings-content', className: `menu-tab-content ${activeTab === 'settings' ? 'active' : ''}` },
+                e(PageHeader, { title: 'Page Settings', onBack: () => setActiveTab('home') }),
+                
+                e('div', { className: 'settings-container' },
+                    
+                    // --- CLOAKING SECTION ---
+                    e('div', { className: 'settings-group-title' }, 'Cloaking'),
+                    e('div', { className: 'settings-item' },
+                        e('label', { htmlFor: 'cloak-dropdown' }, 'Cloak Type:'),
+                        e('select', { id: 'cloak-dropdown', onChange: applyCloak },
+                            e('option', { value: '' }, 'Select Preset...'),
+                            PRESETS.map(p => e('option', { value: p.name, key: p.name }, p.name)), 
+                            e('option', { value: 'custom' }, 'Custom...'),
+                            e('option', { value: 'url-cloak' }, 'URL Cloak...')
+                        )
+                    ),
+
+                    // Custom Cloak Inputs (Controlled by React State)
+                    e('div', { id: 'custom-cloak-options', className: 'settings-item', style: { display: cloakMode === 'custom' ? 'flex' : 'none', flexDirection: 'column' } }, 
+                        e('input', { id: 'custom-title-input', type: 'text', placeholder: 'Title' }),
+                        e('input', { id: 'custom-favicon-input', type: 'text', placeholder: 'Favicon URL' }),
+                        e('button', { className: 'settings-btn', onClick: () => applyCloak({target:{value:'custom-apply'}}) }, 'Apply')
+                    ),
+                    
+                    // URL Cloak Inputs (Controlled by React State)
+                    e('div', { id: 'url-cloak-options', className: 'settings-item', style: { display: cloakMode === 'url' ? 'flex' : 'none', flexDirection: 'column' } },
+                         e('input', { id: 'url-cloak-input', type: 'text', placeholder: 'https://example.com' }),
+                         e('button', { className: 'settings-btn', onClick: handleUrlCloak }, 'Fetch & Apply')
+                    ),
+
+                    // --- STYLING SECTION ---
+                    e('div', { className: 'settings-group-title' }, 'Styling'),
+                    e('div', { className: 'settings-item' },
+                        e('label', null, 'Theme:'),
+                        renderSwitch('theme-toggle-switch', theme === 'dark', toggleTheme)
+                    ),
+                    
+                    e('div', { className: 'settings-item' },
+                        e('label', null, 'Background:'),
+                        e('select', { id: 'pattern-select', value: pattern, onChange: (e) => setPattern(e.target.value) },
+                            e('option', { value: 'lines' }, 'Lines'),
+                            e('option', { value: 'dots' }, 'Dots'),
+                            e('option', { value: 'stars' }, 'Stars'),
+                            e('option', { value: 'stripes' }, 'Stripes'),
+                            e('option', { value: 'none' }, 'None')
+                        )
+                    ),
+                    
+                    // --- GAMEPLAY SECTION ---
+                    e('div', { className: 'settings-group-title' }, 'Gameplay'),
+                    e('div', { className: 'settings-item' },
+                        e('label', null, 'Show Stats:'),
+                        renderSwitch('stats-toggle-switch', statsEnabled, () => handleToggle('statsToggleState', statsEnabled, setStatsEnabled))
+                    ),
+
+                    // --- SECURITY SECTION ---
+                    e('div', { className: 'settings-group-title' }, 'Security & Privacy'),
+                    
+                    // Redirect Toggle with Info
+                    e('div', { className: 'settings-item' },
+                        e('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
+                            e('label', null, 'Redirect:'),
+                            e('i', { 
+                                className: 'fas fa-question-circle', 
+                                style: { cursor: 'pointer', opacity: 0.7 },
+                                onClick: () => showModal("When enabled, switching tabs will instantly redirect this page to a decoy URL (Google) to hide your activity. If not enabled, the overlay can hide page if state is on, when you go off page, the screen is white, you can click 'E' to show page or 'SpaceBar' to redirect to an decoy page")
+                            })
+                        ),
+                        renderSwitch('blur-toggle-switch', redirectEnabled, () => handleToggle('redirectToggleState', redirectEnabled, setRedirectEnabled))
+                    ),
+
+                    // Overlay Toggle (Missing in previous version)
+                    e('div', { 
+                        className: 'settings-item', 
+                        style: { display: redirectEnabled ? 'none' : 'flex' } // Added line
+                    },
+                        e('label', null, 'Overlay:'),
+                        renderSwitch('overlay-toggle-switch', overlayEnabled, () => handleToggle('overlayToggleState', overlayEnabled, setOverlayEnabled))
+                    ),
+
+                    // About:Blank Toggle (Missing in previous version)
+                    e('div', { className: 'settings-item' },
+                        e('label', null, 'About:Blank Popup:'),
+                        renderSwitch('about-blank-toggle-switch', aboutBlankEnabled, () => handleToggle('aboutBlankPopupState', aboutBlankEnabled, setAboutBlankEnabled))
+                    ),
+
+                    // Tab Protection Toggle (Missing in previous version)
+                    e('div', { className: 'settings-item' },
+                        e('label', null, 'Tab Protection:'),
+                        renderSwitch('protection-toggle-switch', tabProtection, () => handleToggle('tabProtectionState', tabProtection, setTabProtection))
+                    )
+                )
+            );
+
+            // --- IFRAME OVERLAY (Game View) ---
+            const IframeOverlay = e('div', { id: 'iframe-container', style: { display: iframeState.active ? 'block' : 'none' } },
+                e('nav', { id: 'iframe-nav' },
+                    e('button', { onClick: exitGame }, '🏠 Home'),
+                     e('button', { onClick: reloadGame }, '🔄 Reload'),
+                    e('button', { onClick: openNewWindow }, '↗️ Popout'),
+                    e('button', { onClick: () => document.getElementById('my-iframe').requestFullscreen() }, '📺 Fullscreen'),
+                    e('button', { 
+                        id: 'footer-toggle', 
+                        onClick: () => {
+                            const newFooterState = !footerVisible;
+                            setFooterVisible(newFooterState);
+                            // We do NOT save temporary toggle state to localStorage here if we want it to be transient,
+                            // BUT user asked for "remember preference". So we update state, which triggers useEffect save.
+                        } 
+                    }, footerVisible ? 'Hide Footer' : 'Show Footer')
+                ),
+                e('iframe', { id: 'my-iframe', src: iframeState.src, allowFullScreen: true })
+            );
+
+            // FOOTER DISPLAY LOGIC:
+            // 1. Always hide in Chatbots AND Settings.
+            // 2. In Game View, respect footerVisible toggle.
+            // 3. Everywhere else (Home, etc), show it.
+            const shouldShowFooter = activeTab !== 'chatbots' && activeTab !== 'settings' && (activeTab !== 'game-view' || footerVisible);
+
+            return e(React.Fragment, null,
+                // Main Content Wrapper (Applies Pattern)
+                e('div', { id: 'main-menu', 'data-pattern': pattern, style: { display: iframeState.active ? 'none' : 'flex' } },
+                    HomeContent,
+                    EmbedContent,
+                    LinksContent,
+                    ChatbotsContent,
+                    SettingsContent
+                ),
+
+                // Overlays
+                IframeOverlay,
+                e(Modal, { message: modalState.message, isActive: modalState.isActive, onClose: closeModal }),
+                e(PerformanceMonitor, { visible: statsEnabled }),
+
+                // Footer
+                e('div', { id: 'bottom-bar', style: { 
+                    display: 'flex', 
+                    // Move footer down if in game view but visible, or keep centered normally
+                    transform: shouldShowFooter 
+                        ? 'translateX(-50%) translateY(0)' 
+                        : 'translateX(-50%) translateY(200%)' 
+                } },
+                    e('div', { id: 'footer-time' }, time),
+                    e('button', { id: 'footer-settings-btn', onClick: () => setActiveTab('settings') }, '⚙️')
+                )
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(e(App));
     </script>
     <script src="js/settings.js"></script>
-
-  </body>
+</body>
 </html>
