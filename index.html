@@ -942,7 +942,11 @@
 
             // --- TOGGLE HANDLERS (Update State & LocalStorage) ---
             const handleToggle = (key, currentState, setter) => {
+
                 const newState = !currentState;
+                                    if (key=="aboutBlankPopupState" && currentState == false){
+                        showModal("This feature is recommended to be on so GoGuardian or any third party apps cannot see your screen!");
+                  }
                 setter(newState);
                 localStorage.setItem(key, newState.toString());
             };
