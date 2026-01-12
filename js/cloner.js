@@ -17,7 +17,7 @@ if (window.location.href !== 'about:blank' && localStorage.getItem('aboutBlankPo
             }
             
             // 2. Find and remove the cloak/cover element
-            const cloakElement = document.getElementById('cover');
+            const cloakElement = document.getElementById('CloakingAlert');
             if (cloakElement) {
                 cloakElement.remove(); // Note: Removing here so it doesn't get cloned
             }
