@@ -507,33 +507,41 @@
         /* --- PERFORMANCE MONITOR --- */
         #info-btn {
             position: fixed; bottom: 80px; right: 20px;
-            width: 30px; height: 30px; border-radius: 50%;
-            background: var(--primary-color); color: white;
+            width: 30px; height: 30px; border-radius: 50%; /* Resized to 30px */
+            background: var(--secondary-bg); 
+            color: var(--text-color); 
             display: flex; align-items: center; justify-content: center;
             cursor: grab; z-index: 1000;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            font-size: 1rem;
+            box-shadow: var(--shadow-light-bottom), var(--shadow-light-top);
+            font-size: 0.8rem; /* Smaller font for smaller button */
             font-weight: 700;
-            transition: background-color 0.2s, box-shadow 0.2s;
-            outline: 3px solid #a5b4fc; 
+            transition: background-color 0.2s, box-shadow 0.2s, transform 0.2s, color 0.2s;
+            outline: none; 
             border: none;
         }
-        #info-btn:hover { background-color: #97a1de; }
+        #info-btn:hover { 
+            transform: translateY(-2px);
+            color: var(--primary-color);
+            box-shadow: var(--shadow-inset-light); 
+        }
         #performance-modal {
             position: fixed; bottom: 140px; right: 20px;
             width: 160px; background: var(--secondary-bg);
             padding: 15px; border-radius: 15px;
-            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+            box-shadow: var(--shadow-light-bottom); 
             font-size: 0.9em; z-index: 999;
-            opacity: 0; pointer-events: none; transition: opacity 0.3s;
+            opacity: 0; 
+            pointer-events: none; /* Always allow click through */
+            transition: opacity 0.3s;
             border: 1px solid rgba(255,255,255,0.1);
             
-            /* UPDATED DISPLAY */
             display: flex;
             flex-direction: column;
             gap: 5px;
         }
-        #performance-modal.visible { opacity: 1; pointer-events: auto; }
+        
+        /* Visible State: Opacity 0.9, still no pointer events */
+        #performance-modal.visible { opacity: 0.9; }
 
         /* Performance Colors */
         .text-good { color: #2ecc71; font-weight: bold; }
@@ -588,7 +596,7 @@
         #CloakingAlert {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: var(--bg-color); z-index: 20000;
-            display: flex; /* Hidden by default, toggle with JS */
+            display: none; /* Hidden by default, toggle with JS */
             flex-direction: column; justify-content: center; align-items: center;
             color: var(--primary-color); font-size: 1.2em; font-weight: bold;
             font-family: var(--font-stack);
@@ -749,7 +757,8 @@ const PRESETS = [
             const [fps, setFps] = useState(0);
             const [ping, setPing] = useState(0);
             const [isOpen, setIsOpen] = useState(false);
-            const [pos, setPos] = useState({ bottom: 80, right: 20 });
+            // REVERTED: Default position back to bottom corner (20px)
+            const [pos, setPos] = useState({ bottom: 20, right: 20 });
             
             // FPS Loop
             useEffect(() => {
@@ -768,13 +777,17 @@ const PRESETS = [
                 loop();
             }, []);
 
-            // Ping Loop
+            // Ping Loop - REVERTED TO CDN (Works best)
             useEffect(() => {
                 const interval = setInterval(async () => {
                     if(!isOpen) return;
                     const start = performance.now();
                     try {
-                        await fetch('https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js', { method: 'HEAD', mode: 'no-cors' });
+                        // Added timestamp to bypass cache
+                        await fetch(`https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js?t=${Date.now()}`, { 
+                            method: 'HEAD', 
+                            mode: 'no-cors' 
+                        });
                         setPing(Math.round(performance.now() - start));
                     } catch { setPing('Err'); }
                 }, 2000);
@@ -796,16 +809,18 @@ const PRESETS = [
                 return 'text-bad';
             };
 
-            // Drag Logic
+            // Drag Logic - FIXED CLICK VS DRAG
             const handleMouseDown = (e) => {
                 e.preventDefault();
                 const startX = e.clientX;
                 const startY = e.clientY;
                 const startRight = pos.right;
                 const startBottom = pos.bottom;
-                let isDragging = false;
+                
+                // Track if movement occurred
+                let hasMoved = false;
 
-                // Create Overlay for Iframe Dragging
+                // Create Overlay for Dragging
                 const overlay = document.createElement('div');
                 overlay.id = 'drag-overlay';
                 overlay.style.position = 'fixed';
@@ -818,23 +833,45 @@ const PRESETS = [
                 document.body.appendChild(overlay);
 
                 const onMouseMove = (moveEvent) => {
-                    isDragging = true;
                     const deltaX = startX - moveEvent.clientX;
                     const deltaY = startY - moveEvent.clientY;
-                    setPos({
-                        right: startRight + deltaX,
-                        bottom: startBottom + deltaY
-                    });
+
+                    // Threshold: Only drag if moved > 3 pixels
+                    if (Math.abs(deltaX) > 3 || Math.abs(deltaY) > 3) {
+                        hasMoved = true;
+                    }
+
+                    if (hasMoved) {
+                        let newRight = startRight + deltaX;
+                        let newBottom = startBottom + deltaY;
+
+                        // Modified: Allow full range (0 margin)
+                        // Button size is 30px, so max range is InnerWidth - 30
+                        const maxX = window.innerWidth - 30;
+                        const maxY = window.innerHeight - 30;
+                        
+                        // Changed min to 0 to allow touching the edge
+                        newRight = Math.max(0, Math.min(maxX, newRight));
+                        newBottom = Math.max(0, Math.min(maxY, newBottom));
+
+                        setPos({
+                            right: newRight,
+                            bottom: newBottom
+                        });
+                    }
                 };
 
                 const onMouseUp = () => {
                     document.removeEventListener('mousemove', onMouseMove);
                     document.removeEventListener('mouseup', onMouseUp);
-                    // Remove Overlay
+                    
                     const ov = document.getElementById('drag-overlay');
                     if(ov) ov.remove();
 
-                    if (!isDragging) setIsOpen(!isOpen);
+                    // If NOT dragged, it was a click -> Toggle Menu
+                    if (!hasMoved) {
+                        setIsOpen(prev => !prev);
+                    }
                 };
 
                 document.addEventListener('mousemove', onMouseMove);
@@ -843,20 +880,51 @@ const PRESETS = [
 
             if (!visible) return null;
 
+            // --- SMART POSITIONING LOGIC ---
+            let modalBottom = pos.bottom + 40; 
+            let modalRight = pos.right;       
+            // UPDATED: Reduced height estimate to 90 to remove top gap
+            const modalHeight = 90; 
+            const modalWidth = 120;
+
+            if (modalBottom + modalHeight > window.innerHeight) {
+                modalBottom = window.innerHeight - modalHeight;
+            }
+            if (modalRight + modalWidth > window.innerWidth) {
+                modalRight = window.innerWidth - modalWidth;
+            }
+
             return e(React.Fragment, null,
                 e('div', { 
-                    id: 'performance-modal', 
+                    id: 'performance-modal',
                     className: isOpen ? 'visible' : '', 
-                    style: { bottom: `${pos.bottom + 60}px`, right: `${pos.right}px` } 
+                    style: { 
+                        bottom: `${modalBottom}px`, 
+                        right: `${modalRight}px`,
+                        width: '120px',
+                        padding: '10px',
+                        // REMOVED INLINE OPACITY: Let CSS handle visibility
+                    } 
                 }, 
-                    e('div', null, 'FPS: ', e('span', { className: getColor(fps) }, fps)),
-                    e('div', null, 'Ping: ', e('span', { className: getPingColor(ping) }, `${ping}ms`))
+                    e('div', { style: { 
+                        fontSize: '0.7em', 
+                        opacity: 0.7, 
+                        marginBottom: '4px', 
+                        paddingBottom: '4px',
+                        borderBottom: '1px solid rgba(255,255,255,0.1)',
+                        textAlign: 'center',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.5px'
+                    } }, 'Performance Stat'),
+                    
+                    e('div', { style: { fontSize: '0.8em' } }, 'FPS: ', e('span', { className: getColor(fps) }, fps)),
+                    e('div', { style: { fontSize: '0.8em' } }, 'Ping: ', e('span', { className: getPingColor(ping) }, `${ping}ms`))
                 ),
                 e('div', { 
                     id: 'info-btn', 
                     onMouseDown: handleMouseDown,
                     style: { bottom: `${pos.bottom}px`, right: `${pos.right}px` }
-                }, '?')
+                }, e('i', { className: 'fas fa-info', style: { fontSize: '0.9rem' } })) 
             );
         };
 
