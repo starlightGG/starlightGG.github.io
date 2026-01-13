@@ -40,7 +40,7 @@ if (window.location.href !== 'about:blank' && localStorage.getItem('aboutBlankPo
             // Failure! Popup was blocked.
             showModal("Please enable popups!");
             // Remove cover only in failure case, as it's already removed in success case
-            const cloakElement = document.getElementById('cover');
+            const cloakElement = document.getElementById('CloakingAlert');
             if (cloakElement) {
                 cloakElement.remove();
             }
@@ -48,7 +48,7 @@ if (window.location.href !== 'about:blank' && localStorage.getItem('aboutBlankPo
     } else {
         // Condition for cloning was not met (e.g., already on about:blank or state not set).
         // Just remove the cloak if it exists.
-        const cloakElement = document.getElementById('cover');
+        const cloakElement = document.getElementById('CloakingAlert');
         if (cloakElement) {
             cloakElement.remove();
         }
