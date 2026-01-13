@@ -879,7 +879,8 @@ const PRESETS = [
             // INITIAL LOAD (Cloak & Quote)
             useEffect(() => {
                 document.documentElement.setAttribute('data-theme', theme);
-                
+                                setTimeout(() => {
+
                 // RESTORE CLOAK FROM STORAGE
                 const storedTitle = localStorage.getItem('customPageTitle');
                 const storedFavicon = localStorage.getItem('customFaviconURL');
@@ -900,7 +901,8 @@ const PRESETS = [
                     updateFavicon(defaultFavicon);
                     localStorage.setItem('customFaviconURL', defaultFavicon);
                 }
-                setTimeout(() => setIsLoading(false), 1500);
+                                      }, 1000);
+                setTimeout(() => setIsLoading(false), 800);
 
                 const timer = setInterval(() => {
                     const now = new Date();
