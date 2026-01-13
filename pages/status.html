@@ -1,25 +1,144 @@
 <!DOCTYPE html>
 <html>
 <head>
-    
     <title>Live System Status</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
-        body { font-family: sans-serif; text-align: center; padding: 40px; background: #f0f2f5; }
-        .log-container { max-width: 500px; margin: 0 auto; }
-        .status-card { background: white; margin: 15px 0; padding: 20px; border-radius: 12px; text-align: left; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border-left: 8px solid #ccc; }
-        .Online { border-left-color: #4caf50; }
-        .Offline { border-left-color: #f44336; }
-        .Error { border-left-color: #ff9800; }
-        .Bug { border-left-color: #9c27b0; }
-        .time { font-size: 0.8em; color: #777; float: right; }
-        .type-label { font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+        /* --- 1. Define Variables for Soft UI (Neumorphism) --- */
+        :root {
+            /* Light Mode Defaults */
+            --bg-color: #e0e5ec;
+            --text-color: #4a5568;
+            --card-bg: #e0e5ec;
+            /* Light Shadows: One white, one dark grey to create the 3D effect */
+            --shadow-light: #ffffff;
+            --shadow-dark: #a3b1c6;
+            
+            /* Status Colors */
+            --status-online: #4caf50;
+            --status-offline: #f44336;
+            --status-error: #ff9800;
+            --status-bug: #9c27b0;
+        }
+
+        /* Dark Mode Overrides */
+        [data-theme="dark"] {
+            --bg-color: #292d32;
+            --text-color: #e2e8f0;
+            --card-bg: #292d32;
+            /* Dark Shadows: One lighter grey, one deep black */
+            --shadow-light: #353b42;
+            --shadow-dark: #1e2125;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            text-align: center;
+            padding: 40px 20px;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        h1 {
+            margin-bottom: 40px;
+            letter-spacing: 1px;
+            opacity: 0.8;
+            text-shadow: 2px 2px 4px var(--shadow-dark), -2px -2px 4px var(--shadow-light);
+        }
+
+        .log-container {
+            max-width: 550px;
+            margin: 0 auto;
+        }
+
+        /* --- 2. The Soft UI Card --- */
+        .status-card {
+            background: var(--card-bg);
+            margin: 25px 0;
+            padding: 25px;
+            border-radius: 20px;
+            text-align: left;
+            position: relative;
+            
+            /* The Neumorphic Effect: Two opposite shadows */
+            box-shadow: 
+                9px 9px 16px var(--shadow-dark), 
+                -9px -9px 16px var(--shadow-light);
+            
+            /* Smooth transition for theme switching */
+            transition: all 0.3s ease;
+            
+            /* Flex layout for alignment */
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Colored indicators (Left Bar) */
+        .status-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 6px;
+        }
+
+        .Online::before { background: var(--status-online); box-shadow: 2px 0 10px var(--status-online); }
+        .Offline::before { background: var(--status-offline); box-shadow: 2px 0 10px var(--status-offline); }
+        .Error::before { background: var(--status-error); box-shadow: 2px 0 10px var(--status-error); }
+        .Bug::before { background: var(--status-bug); box-shadow: 2px 0 10px var(--status-bug); }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .time {
+            font-size: 0.85em;
+            opacity: 0.6;
+        }
+
+        .type-label {
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            font-size: 0.9em;
+        }
+
+        .Online .type-label { color: var(--status-online); }
+        .Offline .type-label { color: var(--status-offline); }
+        .Error .type-label { color: var(--status-error); }
+        .Bug .type-label { color: var(--status-bug); }
+
+        p { margin: 0; line-height: 1.5; padding-left: 15px; }
     </style>
 </head>
 <body>
+
     <h1>System Status History</h1>
     <div id="logs" class="log-container">Loading...</div>
 
     <script>
+        // 1. APPLY THEME IMMEDIATELY
+        // This runs before the content loads to prevent flashing
+        (function() {
+            try {
+                const storedTheme = localStorage.getItem('theme');
+                if (storedTheme === 'dark') {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                } else {
+                    document.documentElement.removeAttribute('data-theme');
+                }
+            } catch (e) {
+                console.log("Could not access localStorage");
+            }
+        })();
+
+        // 2. FETCH DATA LOGIC
         const binURL = 'https://api.npoint.io/b0d54f3aac6cad7e0d2c';
 
         async function refreshStatus() {
@@ -32,18 +151,21 @@
                 data.history.forEach(item => {
                     container.innerHTML += `
                         <div class="status-card ${item.type}">
-                            <span class="time">${item.time}</span>
-                            <div class="type-label ${item.type}">${item.type}</div>
+                            <div class="header">
+                                <span class="type-label">${item.type}</span>
+                                <span class="time">${item.time}</span>
+                            </div>
                             <p>${item.message}</p>
                         </div>
                     `;
                 });
-            } catch (e) { console.log("Refresh failed"); }
+            } catch (e) { 
+                console.log("Refresh failed"); 
+            }
         }
 
-        // Run every 30 seconds
         setInterval(refreshStatus, 30000); 
-        refreshStatus(); // Initial run
+        refreshStatus();
     </script>
 </body>
 </html>
