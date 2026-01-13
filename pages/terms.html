@@ -306,7 +306,11 @@
 
         // Run immediately when DOM is ready
     window.addEventListener('load', () => {
+                                        setTimeout(() => {
+
             applyStoredCloak();
+                                              }, 1000);
+
         });
     </script>
 </body>
