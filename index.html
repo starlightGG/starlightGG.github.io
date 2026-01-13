@@ -684,7 +684,9 @@ const PRESETS = [
                 e('div', { className: 'modal-content' },
                     e('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: '15px' } },
                         e('h3', { id: 'modal-title' }, 'Notification'),
-                        e('button', { onClick: onClose, style: { background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '1.2em' } }, '✖')
+                        e('button', { onClick: onClose, style: { background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '1.2em', color: 'var(--text-color)' } }, 
+                            e('i', { className: 'fas fa-times' }) // Replaced '✖'
+                        )
                     ),
                     e('p', { id: 'modal-message', dangerouslySetInnerHTML: { __html: message } }),
                     e('div', { style: { display: 'flex', justifyContent: 'flex-end', marginTop: '20px' } },
@@ -1286,8 +1288,29 @@ const PRESETS = [
 
             // 4. CHATBOTS (Iframe Logic)
             const ChatbotsContent = e('div', { id: 'chatbots-content', className: `menu-tab-content ${activeTab === 'chatbots' ? 'active' : ''}` },
-                e(PageHeader, { title: 'AI Chatbots', onBack: () => setActiveTab('home') }),
-                // Content wrapper for sizing - Fixed with flex: 1
+                e(PageHeader, { title: 'AI Chatbots', onBack: () => setActiveTab('home') },
+                    // Refresh Button added as a child of PageHeader
+                    e('button', { 
+                        onClick: () => {
+                            const iframe = document.getElementById('chatbot-iframe');
+                            if(iframe) iframe.src = iframe.src;
+                        },
+                        style: { 
+                            background: 'var(--primary-color)', 
+                            color: 'white', 
+                            border: 'none', 
+                            padding: '8px 15px', 
+                            borderRadius: '12px', 
+                            cursor: 'pointer', 
+                            fontWeight: '600',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            boxShadow: 'var(--shadow-light-bottom)'
+                        }
+                    }, e('i', { className: 'fas fa-sync-alt' }), 'Refresh')
+                ),
+                  // Content wrapper for sizing - Fixed with flex: 1
                 e('div', { style: { 
                     width: '100%', 
                     flex: 1, 
@@ -1405,10 +1428,10 @@ const PRESETS = [
             // --- IFRAME OVERLAY (Game View) ---
             const IframeOverlay = e('div', { id: 'iframe-container', style: { display: iframeState.active ? 'flex' : 'none' } },
                 e('nav', { id: 'iframe-nav' },
-                    e('button', { onClick: exitGame }, '🏠 Home'),
-                     e('button', { onClick: reloadGame }, '🔄 Reload'),
-                    e('button', { onClick: openNewWindow }, '↗️ Popout'),
-                    e('button', { onClick: () => document.getElementById('my-iframe').requestFullscreen() }, '📺 Fullscreen'),
+                    e('button', { onClick: exitGame }, e('i', { className: 'fas fa-home' }), ' Home'), // Replaced 🏠
+                    e('button', { onClick: reloadGame }, e('i', { className: 'fas fa-sync-alt' }), ' Reload'), // Replaced 🔄
+                    e('button', { onClick: openNewWindow }, e('i', { className: 'fas fa-external-link-alt' }), ' Popout'), // Replaced ↗️
+                    e('button', { onClick: () => document.getElementById('my-iframe').requestFullscreen() }, e('i', { className: 'fas fa-expand' }), ' Fullscreen'), // Replaced 📺
                     e('button', { 
                         id: 'footer-toggle', 
                         onClick: () => {
@@ -1475,7 +1498,7 @@ e('div', { id: 'loading-screen', className: isLoading ? '' : 'fade-out' },
                             }
                             setActiveTab('settings');
                         } 
-                    }, '⚙️')
+                    }, e('i', { className: 'fas fa-cog' })) // Replaced '⚙️'
                 )
             );
         };
