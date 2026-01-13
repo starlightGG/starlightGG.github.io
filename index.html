@@ -864,13 +864,29 @@
                     setTime(`${now.toLocaleDateString([], {weekday:'short'})} | ${now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}`);
                 }, 1000);
 
-                // Quote
+              // Quote Logic with Non-Repeating Rotation
+                let quoteInterval;
                 fetch('txt/quotes.txt').then(r => r.text()).then(t => {
-                    const lines = t.split('\n').filter(l => l.trim());
-                    setQuote(lines[Math.floor(Math.random() * lines.length)]);
+                    const allQuotes = t.split('\n').filter(l => l.trim());
+                    if (allQuotes.length === 0) return setQuote('Welcome to StarlightGG');
+                    
+                    let currentPool = [...allQuotes];
+
+                    const rotate = () => {
+                        if (currentPool.length === 0) currentPool = [...allQuotes]; // Refill list when empty
+                        const randomIndex = Math.floor(Math.random() * currentPool.length);
+                        setQuote(currentPool[randomIndex]);
+                        currentPool.splice(randomIndex, 1); // Remove selected to prevent repeat
+                    };
+
+                    rotate(); // Initial set
+                    quoteInterval = setInterval(rotate, 5000); // Rotate every 5 seconds
                 }).catch(() => setQuote('Welcome to StarlightGG'));
 
-                return () => clearInterval(timer);
+                return () => {
+                    clearInterval(timer);
+                    if (quoteInterval) clearInterval(quoteInterval);
+                };
             }, []);
 
             useEffect(() => {
