@@ -15,30 +15,28 @@ function getSetting(key, defaultValue) {
 
 // === IMMEDIATE SETUP: CSS & OVERLAY INJECTION ===
 (function initializeSetup() {
-    // 1. Inject Overlay CSS (Safe to do in HEAD)
+    // 1. Inject Overlay CSS
     const css = `
         #offscreen-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-color: white; z-index: 99999; display: none;
             flex-direction: column; justify-content: center; align-items: center;
             color: black; font-family: sans-serif; opacity: 1;
-            /* CHANGED: Instant appearance (0s) when showing overlay */
             transition: opacity 0s;
             cursor: none;
-            pointer-events: auto;
+            pointer-events: auto; /* Blocks interaction when visible */
         }
         #offscreen-overlay.fade-out { 
             opacity: 0 !important; 
-            /* CHANGED: Keep fade effect only when hiding overlay */
             transition: opacity ${FADE_DURATION_CSS} ease-in-out;
-            pointer-events: none;
+            pointer-events: none !important; /* ALLOWS CLICKS IMMEDIATELY */
         }
     `;
     const style = document.createElement('style');
     style.textContent = css;
     document.head.appendChild(style);
 
-    // 2. Create Overlay Element (Needs BODY)
+    // 2. Create Overlay Element
     const injectOverlay = () => {
         if (!document.getElementById('offscreen-overlay')) {
             let overlay = document.createElement('div');
@@ -46,7 +44,7 @@ function getSetting(key, defaultValue) {
             overlay.innerHTML = `<div></div>`; 
             document.body.appendChild(overlay);
             
-            // Handle Fade Transition
+            // Handle Fade Transition Cleanup
             overlay.addEventListener('transitionend', (event) => {
                 if (event.propertyName === 'opacity' && overlay.classList.contains('fade-out')) {
                     overlay.style.display = 'none';
@@ -56,7 +54,6 @@ function getSetting(key, defaultValue) {
         }
     };
 
-    // FIX: Check if body exists. If script is in <head>, wait for DOMContentLoaded.
     if (document.body) {
         injectOverlay();
     } else {
@@ -71,10 +68,15 @@ function toggleContentVisibility(showContent) {
     if (!overlay) return;
 
     if (showContent) {
+        // Trigger fade and immediately disable mouse blocking
         overlay.classList.add('fade-out');
+        overlay.style.pointerEvents = 'none'; 
+        window.focus(); 
     } else {
+        // Show overlay and block mouse interaction
         overlay.classList.remove('fade-out'); 
         overlay.style.display = 'flex'; 
+        overlay.style.pointerEvents = 'auto';
     }
 }
 
@@ -86,19 +88,18 @@ function performRedirect() {
     window.location.replace(target);
 }
 
-// === EVENT LISTENERS (The "Engine") ===
+// === EVENT LISTENERS ===
 
 // 1. Tab Protection (Anti-Close)
 window.addEventListener('beforeunload', function(e) {
     const isProtected = getSetting('tabProtectionState', true); 
-    
     if (isProtected && !manualExitIntent) { 
         e.preventDefault(); 
         e.returnValue = ''; 
     }
 });
 
-// 2. Visibility Change (The Main Cloaking Logic)
+// 2. Visibility Change
 document.addEventListener('visibilitychange', () => {
     const redirectEnabled = getSetting('redirectToggleState', false); 
     const overlayEnabled = getSetting('overlayToggleState', true);
@@ -132,9 +133,11 @@ window.addEventListener('focus', function () {
 document.addEventListener('keydown', (event) => {
     const overlay = document.getElementById('offscreen-overlay');
     
-    // Only listen if overlay is actually blocking screen
+    // Check if overlay is active/visible
     if (overlay && getComputedStyle(overlay).display === 'flex') {
-        if (event.key.toUpperCase() === 'E') {
+        const key = event.key.toUpperCase();
+        
+        if (key === 'E') {
             toggleContentVisibility(true); 
             event.preventDefault();
         }
@@ -147,8 +150,13 @@ document.addEventListener('keydown', (event) => {
 
 // 5. Initialize Defaults
 (function syncDefaults() {
-    if (localStorage.getItem('tabProtectionState') === null) localStorage.setItem('tabProtectionState', 'true');
-    if (localStorage.getItem('overlayToggleState') === null) localStorage.setItem('overlayToggleState', 'true');
-    if (localStorage.getItem('aboutBlankPopupState') === null) localStorage.setItem('aboutBlankPopupState', 'true');
-    if (localStorage.getItem('redirectToggleState') === null) localStorage.setItem('redirectToggleState', 'false');
+    const defaults = {
+        'tabProtectionState': 'true',
+        'overlayToggleState': 'true',
+        'aboutBlankPopupState': 'true',
+        'redirectToggleState': 'false'
+    };
+    for (const [key, value] of Object.entries(defaults)) {
+        if (localStorage.getItem(key) === null) localStorage.setItem(key, value);
+    }
 })();
