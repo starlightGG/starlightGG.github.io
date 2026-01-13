@@ -1031,8 +1031,7 @@
             const exitGame = () => {
                 setIframeState({ active: false, src: '' });
                 setActiveTab('home');
-                // Ensure footer is visible when returning to home, even if hidden in game/chat
-                setFooterVisible(true); 
+                // Removed setFooterVisible(true) so the user's preference (hidden/shown) persists
             };
 
             // URL Cloak Logic
@@ -1297,6 +1296,9 @@
                     e('iframe', { 
                         id: 'chatbot-iframe', 
                         src: activeTab === 'chatbots' ? 'https://starlightgg.github.io/pages/chatbot' : 'about:blank',
+                        // Sandbox: Blocks popups (window.open) but allows everything else
+                        sandbox: 'allow-forms allow-scripts allow-same-origin allow-downloads allow-modals allow-presentation allow-pointer-lock',
+                        fullscreen: true
                     })
                 )
             );
