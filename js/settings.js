@@ -7,7 +7,6 @@ let manualExitIntent = false;
 let timeoutHandle = null;
 
 // === HELPER: READ SETTINGS WITH SPECIFIC DEFAULTS ===
-// This ensures your requested defaults apply if the user hasn't toggled anything yet.
 function getSetting(key, defaultValue) {
     const val = localStorage.getItem(key);
     if (val === null) return defaultValue;
@@ -16,7 +15,7 @@ function getSetting(key, defaultValue) {
 
 // === IMMEDIATE SETUP: CSS & OVERLAY INJECTION ===
 (function initializeSetup() {
-    // 1. Inject Overlay CSS
+    // 1. Inject Overlay CSS (Safe to do in HEAD)
     const css = `
         #offscreen-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -32,21 +31,29 @@ function getSetting(key, defaultValue) {
     style.textContent = css;
     document.head.appendChild(style);
 
-    // 2. Create Overlay Element if missing
-    if (!document.getElementById('offscreen-overlay')) {
-        let overlay = document.createElement('div');
-        overlay.id = 'offscreen-overlay';
-        // Add a hidden text or instruction if you want, currently empty for stealth
-        overlay.innerHTML = `<div></div>`; 
-        document.body.appendChild(overlay);
-        
-        // Handle Fade Transition
-        overlay.addEventListener('transitionend', (event) => {
-            if (event.propertyName === 'opacity' && overlay.classList.contains('fade-out')) {
-                overlay.style.display = 'none';
-                overlay.classList.remove('fade-out'); 
-            }
-        });
+    // 2. Create Overlay Element (Needs BODY)
+    const injectOverlay = () => {
+        if (!document.getElementById('offscreen-overlay')) {
+            let overlay = document.createElement('div');
+            overlay.id = 'offscreen-overlay';
+            overlay.innerHTML = `<div></div>`; 
+            document.body.appendChild(overlay);
+            
+            // Handle Fade Transition
+            overlay.addEventListener('transitionend', (event) => {
+                if (event.propertyName === 'opacity' && overlay.classList.contains('fade-out')) {
+                    overlay.style.display = 'none';
+                    overlay.classList.remove('fade-out'); 
+                }
+            });
+        }
+    };
+
+    // FIX: Check if body exists. If script is in <head>, wait for DOMContentLoaded.
+    if (document.body) {
+        injectOverlay();
+    } else {
+        document.addEventListener('DOMContentLoaded', injectOverlay);
     }
 })();
 
@@ -68,7 +75,6 @@ function performRedirect() {
     clearTimeout(timeoutHandle);
     manualExitIntent = true; 
     const savedUrl = localStorage.getItem('LINKTAB_KEY');
-    // Default fallback if no custom URL is set
     const target = savedUrl ? savedUrl : 'https://google.com/';
     window.location.replace(target);
 }
@@ -76,9 +82,8 @@ function performRedirect() {
 // === EVENT LISTENERS (The "Engine") ===
 
 // 1. Tab Protection (Anti-Close)
-// Default: ON (true)
 window.addEventListener('beforeunload', function(e) {
-    const isProtected = getSetting('tabProtectionState', true); // Default true
+    const isProtected = getSetting('tabProtectionState', true); 
     
     if (isProtected && !manualExitIntent) { 
         e.preventDefault(); 
@@ -88,29 +93,19 @@ window.addEventListener('beforeunload', function(e) {
 
 // 2. Visibility Change (The Main Cloaking Logic)
 document.addEventListener('visibilitychange', () => {
-    // Defaults: Redirect OFF, Overlay ON
     const redirectEnabled = getSetting('redirectToggleState', false); 
     const overlayEnabled = getSetting('overlayToggleState', true);
     const REDIRECT_DELAY = 65;
 
     if (document.visibilityState === 'hidden') {
         if (redirectEnabled) {
-            // Priority 1: Redirect (If enabled, ignore overlay)
             timeoutHandle = setTimeout(() => { 
-                // We just set the intent here, actual redirect on user return isn't usually possible
-                // fully headless, but we prepare the state.
-                // However, standard "Redirect" cloaks usually redirect immediately 
-                // or when you try to switch back.
-                
-                // For this specific implementation style:
                 performRedirect(); 
             }, REDIRECT_DELAY);
         } else if (overlayEnabled) {
-            // Priority 2: Overlay (Only if redirect is OFF)
             toggleContentVisibility(false); 
         }
     } else {
-        // Tab is visible/focused again
         if (timeoutHandle) {
             clearTimeout(timeoutHandle);
             timeoutHandle = null;
@@ -118,7 +113,7 @@ document.addEventListener('visibilitychange', () => {
     }
 });
 
-// 3. Clear Redirect Timer on Focus (Safety net)
+// 3. Clear Redirect Timer on Focus
 window.addEventListener('focus', function () {
     if (timeoutHandle) {
         clearTimeout(timeoutHandle);
@@ -132,12 +127,10 @@ document.addEventListener('keydown', (event) => {
     
     // Only listen if overlay is actually blocking screen
     if (overlay && getComputedStyle(overlay).display === 'flex') {
-        // Press 'E' to Exit overlay
         if (event.key.toUpperCase() === 'E') {
             toggleContentVisibility(true); 
             event.preventDefault();
         }
-        // Press 'Space' to Panic Redirect
         if (event.key === ' ') {
             performRedirect(); 
             event.preventDefault();
@@ -145,8 +138,7 @@ document.addEventListener('keydown', (event) => {
     }
 });
 
-// 5. Initialize Defaults in LocalStorage if missing
-// This ensures the React UI picks up the correct state on next reload
+// 5. Initialize Defaults
 (function syncDefaults() {
     if (localStorage.getItem('tabProtectionState') === null) localStorage.setItem('tabProtectionState', 'true');
     if (localStorage.getItem('overlayToggleState') === null) localStorage.setItem('overlayToggleState', 'true');
