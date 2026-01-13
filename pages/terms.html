@@ -3,15 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Google</title>
-        <script id="cloning-script" src="/js/cloner.js"></script>
+    <title>Terms of Service - Starlight Games</title>
+    
+    <script id="cloning-script" src="/js/cloner.js"></script>
+
     <style>
+        /* --- 1. Soft UI Theme Variables --- */
         :root {
-            /* Define variables for a clean, professional look */
-            --primary-color: #4c68ff; /* Matches your app's main color */
-            --text-color: #333333;
-            --bg-color: #f8f8f8;
+            /* Light Mode Defaults */
+            --bg-color: #e0e5ec;
+            --text-color: #4a5568;
+            --text-secondary: #718096;
+            --card-bg: #e0e5ec;
+            
+            /* Neumorphism Shadows */
+            --shadow-light: #ffffff;
+            --shadow-dark: #a3b1c6;
+            
+            /* Accents */
+            --primary-color: #4c68ff;
+            --danger-color: #d93025;
+            
             --font-stack: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        /* Dark Mode Overrides */
+        [data-theme="dark"] {
+            --bg-color: #292d32;
+            --text-color: #e2e8f0;
+            --text-secondary: #94a3b8;
+            --card-bg: #292d32;
+            
+            --shadow-light: #353b42;
+            --shadow-dark: #1e2125;
         }
         
         body {
@@ -19,44 +43,54 @@
             background-color: var(--bg-color);
             color: var(--text-color);
             margin: 0;
-            padding: 0;
+            padding: 20px;
+            transition: background 0.3s ease, color 0.3s ease;
         }
         
-        /* 🔥 THE CSS BOLDING FIX 🔥 */
-        /* This ensures that <strong> text is visibly bold (weight 700), 
-           addressing why it might not have appeared bold previously. */
         strong {
             font-weight: 700; 
+            color: var(--primary-color); /* Highlight strong text slightly */
         }
 
+        /* --- 2. The Soft UI Card Container --- */
         .terms-container {
             max-width: 900px;
-            margin: 50px auto;
+            margin: 40px auto;
             padding: 40px;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            background: var(--card-bg);
+            border-radius: 20px;
+            
+            /* The Neumorphic Effect */
+            box-shadow: 
+                9px 9px 16px var(--shadow-dark), 
+                -9px -9px 16px var(--shadow-light);
+            
+            transition: all 0.3s ease;
         }
         
         h1 {
             color: var(--primary-color);
-            font-size: 2.5em;
-            border-bottom: 3px solid var(--primary-color);
-            padding-bottom: 10px;
+            font-size: 2.2em;
+            /* Soft text shadow */
+            text-shadow: 1px 1px 2px var(--shadow-dark), -1px -1px 2px var(--shadow-light);
+            border-bottom: 2px solid var(--shadow-dark);
+            padding-bottom: 15px;
             margin-bottom: 30px;
         }
         
         h2 {
-            color: var(--primary-color);
-            font-size: 1.6em;
-            margin-top: 30px;
+            color: var(--text-color);
+            font-size: 1.5em;
+            margin-top: 35px;
             margin-bottom: 15px;
+            opacity: 0.9;
         }
         
         p, ul {
-            line-height: 1.6;
+            line-height: 1.7;
             font-size: 1.05em;
             margin-bottom: 20px;
+            color: var(--text-color);
         }
         
         ul {
@@ -72,48 +106,88 @@
             margin-top: -20px;
             margin-bottom: 40px;
             font-size: 0.9em;
-            color: #777;
+            color: var(--text-secondary);
+            font-style: italic;
         }
 
         /* Highlight for Liability Section */
         .liability-warning {
-            color: #d93025; /* Red warning text */
+            color: var(--danger-color);
             font-weight: bold;
             font-style: italic;
+            display: block;
+            margin-top: 5px;
         }
 
-        /* STYLES for Footer and Button */
+        /* Link Styling */
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            position: relative;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+
+        /* --- 3. Footer and Soft Button --- */
         .footer-actions {
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 1px solid #eee;
-            text-align: right; /* Align button to the right */
+            margin-top: 50px;
+            padding-top: 30px;
+            border-top: 1px solid var(--shadow-dark);
+            text-align: right;
         }
 
         .back-button {
-            padding: 10px 20px;
+            padding: 12px 25px;
             font-size: 1em;
             font-weight: bold;
-            color: white;
+            color: var(--bg-color); /* Text matches bg for contrast against primary */
             background-color: var(--primary-color);
             border: none;
-            border-radius: 6px;
+            border-radius: 12px;
             cursor: pointer;
-            transition: background-color 0.3s ease;
             text-decoration: none;
             display: inline-block;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            
+            /* Button Shadow */
+            box-shadow: 
+                5px 5px 10px var(--shadow-dark), 
+                -5px -5px 10px var(--shadow-light);
         }
 
         .back-button:hover {
-            background-color: #3a50d8; /* Slightly darker shade on hover */
+            transform: translateY(-2px);
+            box-shadow: 
+                7px 7px 14px var(--shadow-dark), 
+                -7px -7px 14px var(--shadow-light);
+        }
+        
+        .back-button:active {
+            transform: translateY(1px);
+            box-shadow: inset 2px 2px 5px rgba(0,0,0,0.2);
         }
     </style>
-    </head>
+</head>
 <body>
+
+    <script>
+        // 1. APPLY THEME IMMEDIATELY
+        (function() {
+            try {
+                const storedTheme = localStorage.getItem('theme');
+                if (storedTheme === 'dark') {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                } else {
+                    document.documentElement.removeAttribute('data-theme');
+                }
+            } catch (e) { console.log("LocalStorage access denied"); }
+        })();
+    </script>
 
     <div class="terms-container">
         <h1>Terms of Service - Starlight Games</h1>
-        <span class="update-date">Last Updated: November 14, 2025</span>
+        <span class="update-date">Last Updated: January 12, 2026</span>
 
         <h2>1. Acceptance of Terms</h2>
         <p>
@@ -154,24 +228,27 @@
         <p>
             We reserve the right, at our sole discretion, to modify or replace these Terms at any time. We will attempt to provide reasonable notice prior to any major revisions taking effect. By continuing to access or use our Service after those revisions become effective, you agree to be bound by the revised terms.
         </p>
-        <h2>7. Community chat</h2>
+        
+        <h2>7. Community Chat</h2>
         <p>
-            We are <strong>NOT RESPONSIBLE</strong> for the chat logs in starlight games!
+            We are <strong>NOT RESPONSIBLE</strong> for the chat logs in Starlight Games!
         </p>
-        <h2>8. Music Playlist</h2>
 
+        <h2>8. Music Playlist</h2>
         <p>
-            We are <strong>NOT RESPONSIBLE</strong> for the 'My Playlist' button to have inappropiate songs inside that affects you/their life
-         </p>
+            We are <strong>NOT RESPONSIBLE</strong> for the 'My Playlist' button containing inappropriate songs that may affect you or others.
+        </p>
+
         <h2>9. Cloak Info</h2>
         <p>
-            We are <strong>NOT RESPONSIBLE</strong> for taking other websites name and favicon, this is for entertainment purposes only.
+            We are <strong>NOT RESPONSIBLE</strong> for taking other websites' names and favicons; this is for entertainment purposes only.
         </p>
+
         <h2>10. Contact Information</h2>
         <p>
-            If you have any questions about these Terms, please contact the owner/creator or visit 
+            If you have any questions about these Terms, please contact the owner/creator or visit:
         </p>
-        <a href="https://starlightgg.github.io/aihelper">https://starlightgg.github.io/aihelper.</a>
+        <a href="https://starlightgg.github.io/aihelper">https://starlightgg.github.io/aihelper</a>
 
         <div class="footer-actions">
             <button class="back-button" onclick="redirectToApp()">
@@ -180,67 +257,57 @@
         </div>
 
     </div>
-<script>
-                  // --- Constants for Local Storage Keys ---
-const TITLE_KEY = 'customPageTitle';
-const FAVICON_KEY = 'customFaviconURL';
-    function redirectToApp() {
-        // IMPORTANT: Change the URL below to your application's actual link.
-        window.location.href = '/'; 
-    }
-/**
- * Applies custom page title and favicon URL,
- * and saves them to Local Storage for persistence.
- * @param {string} customTitle - The new document title.
- * @param {string} faviconURL - The URL for the new favicon.
- */
-function applyCustomCloak(customTitle, faviconURL) {
-    if (customTitle) {
-        document.title = customTitle;
-        // 🔑 FIXED: Use the constant TITLE_KEY for saving
-        localStorage.setItem(TITLE_KEY, customTitle);
-    }
-    
-    if (faviconURL) {
-        // 🔑 FIXED: Use the constant FAVICON_KEY for saving
-        localStorage.setItem(FAVICON_KEY, faviconURL);
-        
-        let faviconEl = document.getElementById("dynamic-favicon");
-        if (!faviconEl) {
-            faviconEl = document.createElement("link");
-            faviconEl.rel = "icon";
-            faviconEl.id = "dynamic-favicon";
-            document.head.appendChild(faviconEl);
+
+    <script>
+        // --- Constants for Local Storage Keys ---
+        const TITLE_KEY = 'customPageTitle';
+        const FAVICON_KEY = 'customFaviconURL';
+
+        function redirectToApp() {
+            // IMPORTANT: Change the URL below to your application's actual link.
+            window.location.href = '/'; 
         }
-        faviconEl.href = faviconURL;
-    }
-}
 
-/**
- * Retrieves saved title and favicon from Local Storage and applies them.
- * If no cloak is saved, the current default title/favicon remain unchanged.
- */
-function applyStoredCloak() {
+        /**
+         * Applies custom page title and favicon URL,
+         * and saves them to Local Storage for persistence.
+         */
+        function applyCustomCloak(customTitle, faviconURL) {
+            if (customTitle) {
+                document.title = customTitle;
+                localStorage.setItem(TITLE_KEY, customTitle);
+            }
+            
+            if (faviconURL) {
+                localStorage.setItem(FAVICON_KEY, faviconURL);
+                
+                let faviconEl = document.getElementById("dynamic-favicon");
+                if (!faviconEl) {
+                    faviconEl = document.createElement("link");
+                    faviconEl.rel = "icon";
+                    faviconEl.id = "dynamic-favicon";
+                    document.head.appendChild(faviconEl);
+                }
+                faviconEl.href = faviconURL;
+            }
+        }
 
-    // 1. Retrieve the stored data using the correct constants
-    const storedTitle = localStorage.getItem(TITLE_KEY);
-    const storedFavicon = localStorage.getItem(FAVICON_KEY);
+        /**
+         * Retrieves saved title and favicon from Local Storage and applies them.
+         */
+        function applyStoredCloak() {
+            const storedTitle = localStorage.getItem(TITLE_KEY);
+            const storedFavicon = localStorage.getItem(FAVICON_KEY);
 
+            if (storedTitle || storedFavicon) {
+                applyCustomCloak(storedTitle, storedFavicon);
+            } 
+        }
 
-    // CRITICAL IMPROVEMENT: Only apply the cloak if a title or favicon was saved.
-    if (storedTitle || storedFavicon) {
-         // 2. Apply the retrieved data
-        applyCustomCloak(storedTitle, storedFavicon);
-    } 
-    
-    
-}
-window.addEventListener('load', () => {
-    // Call the function directly when the basic HTML structure is ready
-          setTimeout(applyStoredCloak, 800);
-});
-</script>
-
-
+        // Run immediately when DOM is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            applyStoredCloak();
+        });
+    </script>
 </body>
 </html>
