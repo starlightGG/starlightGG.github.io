@@ -22,10 +22,15 @@ function getSetting(key, defaultValue) {
             background-color: white; z-index: 99999; display: none;
             flex-direction: column; justify-content: center; align-items: center;
             color: black; font-family: sans-serif; opacity: 1;
-            transition: opacity ${FADE_DURATION_CSS} ease-in-out;
+            /* CHANGED: Instant appearance (0s) when showing overlay */
+            transition: opacity 0s;
             cursor: none;
         }
-        #offscreen-overlay.fade-out { opacity: 0 !important; }
+        #offscreen-overlay.fade-out { 
+            opacity: 0 !important; 
+            /* CHANGED: Keep fade effect only when hiding overlay */
+            transition: opacity ${FADE_DURATION_CSS} ease-in-out;
+        }
     `;
     const style = document.createElement('style');
     style.textContent = css;
