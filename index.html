@@ -588,7 +588,7 @@
         #CloakingAlert {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: var(--bg-color); z-index: 20000;
-            display: none; /* Hidden by default, toggle with JS */
+            display: flex; /* Hidden by default, toggle with JS */
             flex-direction: column; justify-content: center; align-items: center;
             color: var(--primary-color); font-size: 1.2em; font-weight: bold;
             font-family: var(--font-stack);
@@ -1221,7 +1221,10 @@
             // 2. GAMES (Embeds)
             const EmbedContent = e('div', { id: 'embed-content', className: `menu-tab-content ${activeTab === 'embed' ? 'active' : ''}` },
                 e(PageHeader, { title: 'Games Hub', onBack: () => setActiveTab('home') }),
-                e('div', { className: 'menu-buttons' },
+                
+                // Section 1: Starlight Official
+                e('div', { className: 'settings-group-title', style: { width: '90%', maxWidth: '800px', marginTop: '20px' } }, 'Starlight Official'),
+                e('div', { className: 'menu-buttons', style: { marginTop: '10px' } },
                     // Lunaar Lite (Recommended - Moved to Top & Styled Blue)
                     e('button', { 
                         onClick: () => openGame('https://starlightgg.github.io/lunaar-lite/'),
@@ -1231,7 +1234,12 @@
                     ),
                     e('button', { onClick: () => openGame('https://starlightgg.github.io/pages/gamesearch.html') }, 
                         e('i', { className: 'fas fa-gamepad' }), 'StarlightGG Hub'
-                    ),
+                    )
+                ),
+
+                // Section 2: Third Party Pages
+                e('div', { className: 'settings-group-title', style: { width: '90%', maxWidth: '800px', marginTop: '40px' } }, 'Third Party Pages'),
+                e('div', { className: 'menu-buttons', style: { marginTop: '10px' } },
                     // SlashFlash Added
                     e('button', { onClick: () => openGame('https://amhooman.github.io/website/games/index.html') }, 
                         e('i', { className: 'fas fa-bolt' }), 'SlashFlash'
@@ -1451,7 +1459,17 @@ e('div', { id: 'loading-screen', className: isLoading ? '' : 'fade-out' },
                         : 'translateX(-50%) translateY(200%)' 
                 } },
                     e('div', { id: 'footer-time' }, time),
-                    e('button', { id: 'footer-settings-btn', onClick: () => setActiveTab('settings') }, '⚙️')
+                    e('button', { 
+                        id: 'footer-settings-btn', 
+                        onClick: () => {
+                            // Kick out of iframe if active
+                            if (iframeState.active) {
+                                setIframeState({ active: false, src: '' });
+                                setFooterVisible(true);
+                            }
+                            setActiveTab('settings');
+                        } 
+                    }, '⚙️')
                 )
             );
         };
