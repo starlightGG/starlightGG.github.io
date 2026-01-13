@@ -1,86 +1,84 @@
-// cloner.js content:
+// js/cloner.js
 
-// The core logic function, now named for clarity
+// 1. Tip Advisory (Defined but needs to be called if you want it to run)
+function alertthing() {
+    const localStorageKey4 = 'tipadvisoryShown_v2_2_0'; 
+    if (localStorage.getItem(localStorageKey4) === null) {
+        alert("If studentkeeper is blocking this webpage, turn off your internet, then paste back the link. It should say studentkeeper blocked it. If so, turn on internet and enter link again to bypass!");
+        localStorage.setItem(localStorageKey4, 'true');
+    }
+}
+
+// 2. Core Cloning Logic
 function executeCloningLogic() {
-    // 1. Check if we should attempt cloning
-if (window.location.href !== 'about:blank' && localStorage.getItem('aboutBlankPopupState') === 'true') {
-        // Try to open the new 'about:blank' tab
+    const cloakElement = document.getElementById('CloakingAlert');
+    const savedState = localStorage.getItem('aboutBlankPopupState');
+
+    // Only attempt cloning if enabled and not already in about:blank
+    if (window.location.href !== 'about:blank' && savedState === 'true') {
+        
+        // Attempt to open new window
         const newWindow = window.open('about:blank', '_blank');
 
         if (newWindow) {
-            // Success! (Cloning Logic)
-
-            // 1. Find and remove the script element
+            // --- SUCCESS ---
+            
+            // 1. Remove this script so it doesn't loop in the new tab
             const scriptElement = document.getElementById('cloning-script');
-            if (scriptElement) {
-                scriptElement.remove();
-            }
+            if (scriptElement) scriptElement.remove();
             
-            // 2. Find and remove the cloak/cover element
-            const cloakElement = document.getElementById('CloakingAlert');
-            if (cloakElement) {
-                cloakElement.remove(); // Note: Removing here so it doesn't get cloned
-            }
+            // 2. Remove the cloak from the DOM to be copied (so the new tab doesn't start cloaked)
+            if (cloakElement) cloakElement.remove();
             
-            // 3. Get the current page's entire HTML (now without the cloning script)
+            // 3. Clone HTML
             const currentHtml = document.documentElement.outerHTML;
 
-            // 4. Write that HTML into the new 'about:blank' tab
+            // 4. Write to new window
             newWindow.document.write(currentHtml);
             newWindow.document.close();
 
-            // 5. Redirect the original window
+            // 5. Redirect original tab
             const savedLink = localStorage.getItem('LINKTAB_KEY');
-            if (savedLink) {
-                window.location.replace(savedLink);
-            } else {
-                window.location.replace('https://google.com/');
-            }
+            window.location.replace(savedLink ? savedLink : 'https://google.com/');
+            
         } else {
-            // Failure! Popup was blocked.
-            showModal("Please enable popups!");
-            // Remove cover only in failure case, as it's already removed in success case
-            const cloakElement = document.getElementById('CloakingAlert');
+            // --- FAILURE (Popup Blocked) ---
+            
+            // Instead of calling showModal() which doesn't exist here,
+            // we update the CloakingAlert text to warn the user.
             if (cloakElement) {
-                cloakElement.remove();
+                const textDiv = cloakElement.querySelector('div:last-child');
+                if (textDiv) {
+                    textDiv.innerText = "Popups Blocked! Please Enable.";
+                    textDiv.style.color = "#ff4444"; // Red color for error
+                }
+                
+                // Allow user to click to dismiss if it failed
+                cloakElement.style.cursor = "pointer";
+                cloakElement.title = "Click to close";
+                cloakElement.onclick = function() {
+                    this.remove();
+                };
             }
         }
     } else {
-        // Condition for cloning was not met (e.g., already on about:blank or state not set).
-        // Just remove the cloak if it exists.
-        const cloakElement = document.getElementById('CloakingAlert');
+        // --- NO CLONING NEEDED ---
+        // Just remove the cloak immediately
         if (cloakElement) {
             cloakElement.remove();
         }
     }
 }
-function alertthing() {
-    // A unique key to store in localStorage
-const localStorageKey4 = 'tipadvisoryShown_v2_2_0'; 
 
-// Check if the advisory has already been shown
-if (localStorage.getItem(localStorageKey4) === null) {
-    
-    // The advisory has NOT been shown, so proceed to display the modals
-        alert("If studentkeeper is blocking this webpage, turn off your internet, then paste back the link, it should say studentkeeper blocked it, if so, turn on internet and enter link again then you bypassed the blocker!");
-        // After showing all the modals, set the flag in localStorage
-        // This prevents the modals from showing again on subsequent visits
-        localStorage.setItem(localStorageKey4, 'true');
-        
-}
-}
-// --- New Delay Implementation ---
-      window.addEventListener('load', () => {
-          const savedAboutBlankState = localStorage.getItem('aboutBlankPopupState');
-        if (savedAboutBlankState == null){
-                        localStorage.setItem('aboutBlankPopupState', 'true');
-
+// 3. Initialization
+window.addEventListener('load', () => {
+    // Ensure default state is set
+    if (localStorage.getItem('aboutBlankPopupState') === null) {
+        localStorage.setItem('aboutBlankPopupState', 'true');
     }
-    // Set a delay of 10 milliseconds (0.01 seconds)
-    const delayInMilliseconds = 10; 
-    
-    console.log(`Cloning will start in ${delayInMilliseconds / 1000} seconds...`);
 
-    // Use setTimeout to wrap the cloning logic
+    const delayInMilliseconds = 10; 
+    console.log(`Cloning logic initiated...`);
+
     setTimeout(executeCloningLogic, delayInMilliseconds);
 });
