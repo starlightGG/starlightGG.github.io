@@ -3,16 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Google</title>
-        <script id="cloning-script" src="/js/cloner.js"></script>
+    <title>Community Chat - Starlight Games</title>
+    
+    <script id="cloning-script" src="/js/cloner.js"></script>
     <script src="/js/settings.js"></script>
 
     <style>
+        /* --- 1. Soft UI Theme Variables --- */
         :root {
+            /* Light Mode Defaults */
+            --bg-color: #e0e5ec;
+            --text-color: #4a5568;
+            --text-secondary: #718096;
+            --card-bg: #e0e5ec;
+            
+            /* Neumorphism Shadows */
+            --shadow-light: #ffffff;
+            --shadow-dark: #a3b1c6;
+            
+            /* Accents */
             --primary-color: #4c68ff;
-            --text-color: #333333;
-            --bg-color: #f8f8f8;
-            --font-stack: 'Inter', sans-serif;
+            --success-color: #008069;
+            --warning-color: #f7941d;
+            
+            --font-stack: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        /* Dark Mode Overrides */
+        [data-theme="dark"] {
+            --bg-color: #292d32;
+            --text-color: #e2e8f0;
+            --text-secondary: #94a3b8;
+            --card-bg: #292d32;
+            
+            --shadow-light: #353b42;
+            --shadow-dark: #1e2125;
         }
         
         body {
@@ -25,103 +50,157 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
+            overflow: hidden; /* Prevent body scroll, let container handle it if needed */
+            transition: background 0.3s ease;
         }
 
+        /* --- 2. Main Layout & Container --- */
         .main-app-container {
             width: 90%;
-            max-width: 900px; 
-            height: 90vh; 
-            padding: 20px;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+            max-width: 1000px;
+            height: 85vh;
+            padding: 30px;
+            background: var(--card-bg);
+            border-radius: 20px;
+            
+            /* Neumorphic Outset Shadow */
+            box-shadow: 
+                15px 15px 30px var(--shadow-dark), 
+                -15px -15px 30px var(--shadow-light);
+            
             display: flex;
             flex-direction: column;
         }
 
         h1 {
             color: var(--primary-color);
-            border-bottom: 2px solid #eee;
-            padding-bottom: 10px;
-            margin-top: 0;
+            font-size: 1.8em;
+            margin: 0 0 10px 0;
+            text-shadow: 1px 1px 2px var(--shadow-dark), -1px -1px 2px var(--shadow-light);
+        }
+
+        p {
+            color: var(--text-secondary);
+            font-size: 0.9em;
             margin-bottom: 20px;
         }
 
+        /* --- 3. Chat Embed Area (Recessed Screen) --- */
         .chat-embed-area {
-            flex-grow: 1; /* Makes this area fill the space */
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            overflow: hidden; 
+            flex-grow: 1;
+            border-radius: 15px;
+            overflow: hidden;
+            background-color: var(--bg-color);
+            position: relative;
+            
+            /* Neumorphic Inset Shadow (Recessed look) */
+            box-shadow: 
+                inset 6px 6px 12px var(--shadow-dark), 
+                inset -6px -6px 12px var(--shadow-light);
         }
-        
-        /* Ensures the iframe takes up all the space within its container */
+
         .chat-embed-area iframe {
             width: 100%;
             height: 100%;
             border: none;
+            display: block;
         }
 
-        /* --- BUTTON STYLES --- */
-        
-        /* Fixed: Styling for the container holding the buttons */
+        /* --- 4. Footer Buttons --- */
         .footer-actions {
-            margin-top: 15px;
-            padding-top: 10px;
-            border-top: 1px solid #eee;
-            text-align: right;
+            margin-top: 25px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+            flex-wrap: wrap;
         }
 
-        /* Base button style */
         .nav-button {
-            padding: 8px 15px;
-            font-size: 0.9em;
-            font-weight: 600;
-            color: white;
-            background-color: var(--primary-color);
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-            text-decoration: none; 
-            display: inline-block;
-            margin-left: 10px; 
-        }
-
-        /* Back to App button specific style */
-        .back-button {
-            padding: 10px 20px; /* Slightly larger padding for primary action */
-            font-size: 1em;
+            padding: 12px 20px;
+            font-size: 0.95em;
             font-weight: bold;
-            background-color: var(--primary-color);
-        }
-        .back-button:hover {
-            background-color: #3a50d8;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            text-decoration: none;
+
+            /* Button Shadow */
+            box-shadow: 
+                5px 5px 10px var(--shadow-dark), 
+                -5px -5px 10px var(--shadow-light);
         }
 
-        /* Refresh button specific style */
-        .refresh-button {
-            background-color: #008069; /* Green color */
-            padding: 10px 15px;
+        .nav-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 
+                7px 7px 14px var(--shadow-dark), 
+                -7px -7px 14px var(--shadow-light);
+            filter: brightness(1.1);
         }
-        .refresh-button:hover {
-            background-color: #006b5a;
+
+        .nav-button:active {
+            transform: translateY(1px);
+            box-shadow: inset 2px 2px 5px rgba(0,0,0,0.2);
         }
-/* Specific style for the Fullscreen button */
-.fullscreen-button {
-    background-color: #f7941d; /* A distinctive orange/yellow color */
-}
-.fullscreen-button:hover {
-    background-color: #e0851a;
-}
+
+        /* Button Colors */
+        .back-button { background-color: var(--primary-color); }
+        .refresh-button { background-color: var(--success-color); }
+        .fullscreen-button { background-color: var(--warning-color); }
+
+        /* --- 5. Toast Notification Styles --- */
+        #toast-container {
+            visibility: hidden;
+            min-width: 300px;
+            background-color: var(--primary-color);
+            color: #fff;
+            text-align: center;
+            border-radius: 12px;
+            padding: 16px;
+            position: fixed;
+            z-index: 1000;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            font-size: 0.95em;
+            line-height: 1.5;
+            opacity: 0;
+            transition: opacity 0.5s, top 0.5s;
+        }
+
+        #toast-container.show {
+            visibility: visible;
+            opacity: 1;
+            top: 50px; /* Slight slide down effect */
+        }
     </style>
 </head>
 <body>
 
+    <script>
+        // 1. APPLY THEME IMMEDIATELY
+        (function() {
+            try {
+                const storedTheme = localStorage.getItem('theme');
+                if (storedTheme === 'dark') {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            } catch (e) {}
+        })();
+    </script>
+
     <div class="main-app-container">
         <h1>Starlight Games | Community Chat</h1>
-        <p>For the best experience, we recommend using the fullscreen option, especially on Chromebooks. (use appropriate names)</p>
+        <p>For the best experience, we recommend using the fullscreen option, especially on Chromebooks.</p>
+        
         <div class="chat-embed-area">
-  <iframe id= "chatFrame" src="https://starlightgg.github.io/pages/chat_embed" width="100%" height="100%"></iframe>            
+            <iframe id="chatFrame" src="https://starlightgg.github.io/pages/chat_embed"></iframe>            
         </div>
         
         <div class="footer-actions">
@@ -130,121 +209,103 @@
             </button>
             
             <button class="nav-button refresh-button" onclick="refreshChat()">
-                ↻ Refresh Chat (Spam if blocked!)
+                ↻ Refresh Chat
             </button>
+            
             <button class="nav-button fullscreen-button" onclick="toggleFullscreen()">
-               ⛶ Fullscreen
+                ⛶ Fullscreen
             </button>
         </div>
     </div>
+
+    <div id="toast-container"></div>
     
     <script>
-              // --- Constants for Local Storage Keys ---
-const TITLE_KEY = 'customPageTitle';
-const FAVICON_KEY = 'customFaviconURL';
+        // --- Constants ---
+        const TITLE_KEY = 'customPageTitle';
+        const FAVICON_KEY = 'customFaviconURL';
+
         // --- Core Functions ---
-    function redirectToApp() {
-        // IMPORTANT: Change the URL below to your application's actual link.
-        window.location.href = '/'; 
-    }
+        function redirectToApp() {
+            window.location.href = '/'; 
+        }
         
         function refreshChat() {
             const iframe = document.getElementById('chatFrame');
             if (iframe) {
-                // Forces the iframe to reload its content by resetting the source URL.
                 iframe.src = iframe.src; 
+                showToast("Chat refreshed!");
             }
         }
+
         function toggleFullscreen() {
-    const chatFrame = document.getElementById('chatFrame');
+            const chatFrame = document.getElementById('chatFrame');
 
-    if (!document.fullscreenElement) {
-        // Go fullscreen
-        if (chatFrame.requestFullscreen) {
-            chatFrame.requestFullscreen();
-        } else if (chatFrame.mozRequestFullScreen) { /* Firefox */
-            chatFrame.mozRequestFullScreen();
-        } else if (chatFrame.webkitRequestFullscreen) { /* Chrome, Safari and Opera */
-            chatFrame.webkitRequestFullscreen();
-        } else if (chatFrame.msRequestFullscreen) { /* IE/Edge */
-            chatFrame.msRequestFullscreen();
+            if (!document.fullscreenElement) {
+                if (chatFrame.requestFullscreen) chatFrame.requestFullscreen();
+                else if (chatFrame.mozRequestFullScreen) chatFrame.mozRequestFullScreen();
+                else if (chatFrame.webkitRequestFullscreen) chatFrame.webkitRequestFullscreen();
+                else if (chatFrame.msRequestFullscreen) chatFrame.msRequestFullscreen();
+            } else {
+                if (document.exitFullscreen) document.exitFullscreen();
+                else if (document.mozCancelFullScreen) document.mozCancelFullScreen();
+                else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+                else if (document.msExitFullscreen) document.msExitFullscreen();
+            }
         }
-    } else {
-        // Exit fullscreen
-        if (document.exitFullscreen) {
-            document.exitFullscreen();
-        } else if (document.mozCancelFullScreen) { /* Firefox */
-            document.mozCancelFullScreen();
-        } else if (document.webkitExitFullscreen) { /* Chrome, Safari and Opera */
-            document.webkitExitFullscreen();
-        } else if (document.msExitFullscreen) { /* IE/Edge */
-            document.msExitFullscreen();
+
+        // --- Toast Logic ---
+        function showToast(message, duration = 6000) {
+            const toast = document.getElementById("toast-container");
+            toast.textContent = message;
+            
+            // Add the 'show' class to make it visible
+            toast.className = "show";
+            
+            // Hide it after 'duration' milliseconds
+            setTimeout(function(){ 
+                toast.className = toast.className.replace("show", ""); 
+            }, duration);
         }
-    }
-}
-/**
- * Applies custom page title and favicon URL,
- * and saves them to Local Storage for persistence.
- * @param {string} customTitle - The new document title.
- * @param {string} faviconURL - The URL for the new favicon.
- */
-function applyCustomCloak(customTitle, faviconURL) {
-    if (customTitle) {
-        document.title = customTitle;
-        // 🔑 FIXED: Use the constant TITLE_KEY for saving
-        localStorage.setItem(TITLE_KEY, customTitle);
-    }
-    
-    if (faviconURL) {
-        // 🔑 FIXED: Use the constant FAVICON_KEY for saving
-        localStorage.setItem(FAVICON_KEY, faviconURL);
-        
-        let faviconEl = document.getElementById("dynamic-favicon");
-        if (!faviconEl) {
-            faviconEl = document.createElement("link");
-            faviconEl.rel = "icon";
-            faviconEl.id = "dynamic-favicon";
-            document.head.appendChild(faviconEl);
+
+        // --- Cloak Logic ---
+        function applyCustomCloak(customTitle, faviconURL) {
+            if (customTitle) {
+                document.title = customTitle;
+                localStorage.setItem(TITLE_KEY, customTitle);
+            }
+            if (faviconURL) {
+                localStorage.setItem(FAVICON_KEY, faviconURL);
+                let faviconEl = document.getElementById("dynamic-favicon");
+                if (!faviconEl) {
+                    faviconEl = document.createElement("link");
+                    faviconEl.rel = "icon";
+                    faviconEl.id = "dynamic-favicon";
+                    document.head.appendChild(faviconEl);
+                }
+                faviconEl.href = faviconURL;
+            }
         }
-        faviconEl.href = faviconURL;
-    }
-}
 
-/**
- * Retrieves saved title and favicon from Local Storage and applies them.
- * If no cloak is saved, the current default title/favicon remain unchanged.
- */
-function applyStoredCloak() {
-
-    // 1. Retrieve the stored data using the correct constants
-    const storedTitle = localStorage.getItem(TITLE_KEY);
-    const storedFavicon = localStorage.getItem(FAVICON_KEY);
-
-
-    // CRITICAL IMPROVEMENT: Only apply the cloak if a title or favicon was saved.
-    if (storedTitle || storedFavicon) {
-         // 2. Apply the retrieved data
-        applyCustomCloak(storedTitle, storedFavicon);
-    } 
-    
-    
-}
-window.addEventListener('load', () => {
-    // Call the function directly when the basic HTML structure is ready
-          setTimeout(applyStoredCloak, 800);
-});
-              window.addEventListener('DOMContentLoaded', () => {
-          // Hide the loading screen after a small delay
-setTimeout(()=>{
-                     const localStorageKey = 'chattingadvisoryShown_v2_2_0';
-        if (localStorage.getItem(localStorageKey) === null) {
-         alert("If you have a account, use capital letters depending on password and name. if not, register or use guest mode");
-localStorage.setItem(localStorageKey, 'true');
+        function applyStoredCloak() {
+            const storedTitle = localStorage.getItem(TITLE_KEY);
+            const storedFavicon = localStorage.getItem(FAVICON_KEY);
+            if (storedTitle || storedFavicon) {
+                applyCustomCloak(storedTitle, storedFavicon);
+            } 
         }
-               }, 800)
 
-      });
+        // --- Window Load Event ---
+        window.addEventListener('load', () => {
+            // 1. Apply Cloak
+            applyStoredCloak();
 
+            // 2. Trigger Toast Notification (Always runs, no localstorage check)
+            // Using a small delay (500ms) makes the animation feel smoother after load
+            setTimeout(() => {
+                showToast("NOTICE: Usernames & Passwords are Case Sensitive! If you don't have an account, please use Guest Mode.");
+            }, 500);
+        });
 
     </script>
 </body>
