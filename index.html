@@ -10,8 +10,8 @@
         <meta name="keywords"
     content="games, gamez, unblocked, unblocked games, tunnel rush, retrobowl, slope, run 3, cookie clicker, idle breakout, 2048, flappy bird, bloons td, duck life, learn to fly, the impossible quiz, free, no ads on starlightGG!" />
 <meta name="og:title" content="Starlight GG: Play Tunnel Rush, RetroBowl, and More!" />
-<meta name="og:description" content="Your source for 250+ free, unblocked games! Enjoy Tunnel Rush, RetroBowl, Slope, Run 3, Idle Breakout, 2048, and Bloons TD without any school restrictions or ads for free on starlightGG!" />
-    <meta name="description" content="Your source for 250+ free, unblocked games! Enjoy Tunnel Rush, RetroBowl, Slope, Run 3, Idle Breakout, 2048, and Bloons TD without any school restrictions or ads for free on starlightGG!" />
+<meta name="og:description" content="Your source for 1500+ free, unblocked games! Enjoy Tunnel Rush, RetroBowl, Slope, Run 3, Idle Breakout, 2048, and Bloons TD without any school restrictions or ads for free on starlightGG!" />
+    <meta name="description" content="Your source for 1500+ free, unblocked games! Enjoy Tunnel Rush, RetroBowl, Slope, Run 3, Idle Breakout, 2048, and Bloons TD without any school restrictions or ads for free on starlightGG!" />
 <meta name="og:image" content="https://starlightgg.github.io/favicons/favicon.png" />
 <meta name="og:url" content="https://starlightgg.github.io/" />
 <meta name="og:type" content="website" />
@@ -137,24 +137,22 @@
             background-image: repeating-linear-gradient(45deg, var(--line-color) 0, var(--line-color) 1px, transparent 1px, transparent 30px);
             animation: moveLines 10s linear infinite;
         }
-#main-menu[data-pattern="stars"] {
-  /* I added many gradients with random % positions and varying sizes (0.5px to 2px) */
-  background-image: 
-    radial-gradient(circle at 15% 50%, var(--star-color) 0.5px, transparent 1px),
-    radial-gradient(circle at 80% 12%, var(--star-color) 1px, transparent 2px),
-    radial-gradient(circle at 55% 85%, var(--star-color) 0.5px, transparent 1px),
-    radial-gradient(circle at 40% 40%, var(--star-color) 1.5px, transparent 2px),
-    radial-gradient(circle at 90% 90%, var(--star-color) 0.5px, transparent 1px),
-    radial-gradient(circle at 10% 80%, var(--star-color) 1px, transparent 2px),
-    radial-gradient(circle at 50% 10%, var(--star-color) 0.5px, transparent 1px),
-    radial-gradient(circle at 95% 45%, var(--star-color) 1px, transparent 2px),
-    radial-gradient(circle at 25% 25%, var(--star-color) 1.5px, transparent 2.5px),
-    radial-gradient(circle at 65% 65%, var(--star-color) 0.5px, transparent 1px);
-    
-  /* Increased size to prevent obvious pattern repetition */
-  background-size: 300px 300px; 
-  animation: moveLines 25s linear infinite;
-}
+        #main-menu[data-pattern="stars"] {
+          background-image: 
+            radial-gradient(circle at 15% 50%, var(--star-color) 0.5px, transparent 1px),
+            radial-gradient(circle at 80% 12%, var(--star-color) 1px, transparent 2px),
+            radial-gradient(circle at 55% 85%, var(--star-color) 0.5px, transparent 1px),
+            radial-gradient(circle at 40% 40%, var(--star-color) 1.5px, transparent 2px),
+            radial-gradient(circle at 90% 90%, var(--star-color) 0.5px, transparent 1px),
+            radial-gradient(circle at 10% 80%, var(--star-color) 1px, transparent 2px),
+            radial-gradient(circle at 50% 10%, var(--star-color) 0.5px, transparent 1px),
+            radial-gradient(circle at 95% 45%, var(--star-color) 1px, transparent 2px),
+            radial-gradient(circle at 25% 25%, var(--star-color) 1.5px, transparent 2.5px),
+            radial-gradient(circle at 65% 65%, var(--star-color) 0.5px, transparent 1px);
+            
+          background-size: 300px 300px; 
+          animation: moveLines 25s linear infinite;
+        }
 
         /* --- DASHBOARD GRID SYSTEM --- */
         .dashboard-container {
@@ -189,6 +187,10 @@
             opacity: 0.8;
             max-width: 600px;
             margin: 0 auto;
+            transition: opacity 0.5s ease-in-out; /* Quote Fade Transition */
+        }
+        #quote-display.fade-out {
+            opacity: 0;
         }
 
         .card-grid {
@@ -427,9 +429,11 @@
             top: 0; left: 0; width: 100%; height: 100%;
             background: var(--bg-color);
             z-index: 200;
+            flex-direction: column; /* Changed for gap fix */
         }
         #iframe-nav {
-            position: absolute; top: 0; width: 100%;
+            position: relative; /* Changed from absolute */
+            width: 100%;
             padding: 15px 20px; 
             display: flex; gap: 15px;
             background: var(--glass-color);
@@ -438,6 +442,7 @@
             z-index: 10;
             box-sizing: border-box;
             align-items: center;
+            flex-shrink: 0;
         }
         /* Style for buttons inside iframe nav */
         #iframe-nav button {
@@ -461,7 +466,13 @@
             box-shadow: var(--shadow-inset-light);
         }
 
-        #my-iframe { width: 100%; height: 100%; border: none; padding-top: 70px; box-sizing: border-box; }
+        #my-iframe { 
+            width: 100%; 
+            border: none; 
+            box-sizing: border-box; 
+            flex: 1; /* Fills remaining space */
+            padding-top: 0; /* Removed manual padding */
+        }
         
         #chatbot-iframe {
             width: 100%;
@@ -577,7 +588,7 @@
         #CloakingAlert {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: var(--bg-color); z-index: 20000;
-            display: flex; /* Hidden by default, toggle with JS */
+            display: none; /* Hidden by default, toggle with JS */
             flex-direction: column; justify-content: center; align-items: center;
             color: var(--primary-color); font-size: 1.2em; font-weight: bold;
             font-family: var(--font-stack);
@@ -591,6 +602,23 @@
             border-top-color: var(--primary-color); border-radius: 50%;
             animation: spin 1s linear infinite;
         }
+
+        /* --- IFRAME LOADING BAR --- */
+        .iframe-loading-bar {
+            position: absolute; bottom: 0; left: 0; width: 100%; height: 3px;
+            background: transparent; overflow: hidden; display: none;
+        }
+        .iframe-loading-bar.active { display: block; }
+        .iframe-loading-bar::after {
+            content: ''; position: absolute; top: 0; left: 0; bottom: 0; width: 40%;
+            background: var(--primary-color);
+            animation: iframe-load-anim 1s infinite linear;
+        }
+        @keyframes iframe-load-anim {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(300%); }
+        }
+
 /* Pulse Animation */
 .pulse {
     animation: pulse-animation 1.5s infinite ease-in-out;
@@ -631,7 +659,7 @@
 
         // --- NEW PRESETS DATA (Custom Names vs Stealth Titles) ---
         const PRESETS = [
-            { name: "iCivics", title: "Home | iCivics", favicon: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y+mAAAAV1BMVEVHcEz/ZAD/ZwD/WwD/WwD/YAD/ZAD/WwD/WwD/WwD/WwD/WwD/WwD/WwD/ZgD/WwD/WwD/WwD/aAD/gAD/kQD/kAD/kQD/kQD/kQD/ZQD/kQD/jQD/bwAvM226AAAAHHRSTlMACCEwRhgPhrjT4e6tdjyd+/9a///yfrli/53evbsBzAAAAOVJREFUeAGtkgUSwlAMRL+71u3+18QSHDrWheqbbpQcIcq4EIJL+o2U0MY672yI6ZPx7EoFFavVG0sWCeDAXpmr7zLy6Wnrp7JCpjK6OZMNhvYNQgGmPidKVMq+XhXAmGpgmKPMpV4LAsgM5HDPkMX4bAWkU+KzVZ91FMjgQwDbrv8FwfYCh5+2zFxhNz4SGqbEFCVYSqlzd/kUS1m6fjU5ymcT2gtdbk1Y+q7bsAnYvvlCu3VcxvVybbF9mBJSUAuNfyt1A9zOMLLPYc/bts1vw95fExC9LZi7zoP/Xs0kEpfkAJ0B2VoUsYiyizsAAAAASUVORK5CYII=", link: "https://www.icivics.org" },
+            { name: "iCivics", title: "Home | iCivics", favicon: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y+mAAAAV1BMVEVHcEz/ZAD/ZwD/WwD/WwD/YAD/ZAD/WwD/WwD/WwD/WwD/WwD/WwD/ZgD/WwD/WwD/WwD/aAD/gAD/kQD/kAD/kQD/kQD/kQD/ZQD/kQD/jQD/bwAvM226AAAAHHRSTlMACCEwRhgPhrjT4e6tdjyd+/9a///yfrli/53evbsBzAAAAOVJREFUeAGtkgUSwlAMRL+71u3+18QSHDrWheqbbpQcIcq4EIJL+o2U0MY672yI6ZPx7EoFFavVG0sWCeDAXpmr7zLy6Wnrp7JCpjK6OZMNhvYNQgGmPidKVMq+XhXAmGpgmKPMpV4LAsgM5HDPkMX4bAWkU+KzVZ91FMjgQwDbrv8FwfYCh5+2zFxhNz4SGqbEFCVYSqlzd/kUS1m6fjU5ymcT2gtdbk1Y+q7bsAnYvvlCu3VcxvVybbF9mBJSUAuNfyt1A9zOMLLPYc/bts1vw95fExC9LZi7zoP/Xs0kEpfkAJ0B2VoUsYiyizsAAAAASUVORK5CYII=", link: "https://www.icivics.org" },
             { name: "Clever", title: "Clever | Portal", favicon: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQi3ptQJ9ibYtsUiQ1yNX5abVZvtmG9fwqjNpUqzO6N8qbrYgM:https://resources.finalsite.net/images/f_auto,q_auto/v1689877141/mooreschoolscom/emadd6nvplrnh1vsswjf/Clever-Logo.jpg&s", link: "https://clever.com" },
             { name: "Google Classroom", title: "Home", favicon: "https://ssl.gstatic.com/classroom/favicon.ico", link: "https://classroom.google.com/h" },
             { name: "Khan Academy", title: "Khan Academy", favicon: "https://www.khanacademy.org/favicon.ico", link: "https://www.khanacademy.org" },
@@ -643,7 +671,7 @@
             { name: "StarlightGG (Default)", title: "StarlightGG", favicon: "https://starlightgg.github.io/favicons/favicon.png", link: "https://google.com" },
             { name: "Activate Learning", title: "Activate Learning Digital Platform - Home", favicon: "https://activatelearning.com/wp-content/uploads/2023/05/favicon.png", link: "https://activatelearning.com" },
             { name: "Gallopade", title: "Gallopade: Educational Products, Social Studies Curriculum, Reading, Common Core", favicon: "https://gallopade.com/favicon.ico", link: "https://gallopade.com" },
-            { name: "IL Classroom", title: "Classes | IL Classroom", favicon: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y+mAAAAV1BMVEVHcEwAAHwAAH0AAHwAAHwAAHwAAH0AAHwAAHwAAHwAAHwAAHwAAHoaGoMoKIYAAHZGR5fv8vv///+oqs6Mjr78///3+f5ucKzU1uk4OI/j5vPCxN+fosqdJ3hnAAAADHRSTlMAN4bC6//oX+wj1USkbhSpAAABF0lEQVR4AYTSBwKEIAwEQCxrjQY5g/X/7zwi1+vaHQsEzC1JmuVAkaWJeU1Z4JaqfKK6wVOa+m4t3tI+22etASIg7u+JX25AXR+A++5RG7USZAd3Yh7FT4x7tM0VeHYiSzeIW0F3LELfAd6c810/iBxIIdAkJgWo39aJr8i0LB0rpyZDUGamC/I0e1m3PmhmimAYT5Yj8uiciLiNgdwA4N25FRGtiouIA2cRbw+kXWGcV0uK+RPq6QomqBUm+4ikmJn0/bPzvh6fTbUIdEcsXlsUG5QYU2iFxB/lm+mhK9VT4f0wMdhug1tPHaG8DRlDh4wBULjS8jWfBzu2tf47TVR/2M+pqSmr85CSACxRo2QHNmA0IWcHAAp4HJXYNfpWAAAAAElFTkSuQmCC", link: "https://ilclassroom.com" },
+            { name: "IL Classroom", title: "Classes | IL Classroom", favicon: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y+mAAAAV1BMVEVHcEwAAHwAAH0AAHwAAHwAAH0AAHwAAH0AAHwAAHwAAHwAAHwAAHoaGoMoKIYAAHZGR5fv8vv///+oqs6Mjr78///3+f5ucKzU1uk4OI/j5vPCxN+fosqdJ3hnAAAADHRSTlMAN4bC6//oX+wj1USkbhSpAAABF0lEQVR4AYTSBwKEIAwEQCxrjQY5g/X/7zwi1+vaHQsEzC1JmuVAkaWJeU1Z4JaqfKK6wVOa+m4t3tI+22etASIg7u+JX25AXR+A++5RG7USZAd3Yh7FT4x7tM0VeHYiSzeIW0F3LELfAd6c810/iBxIIdAkJgWo39aJr8i0LB0rpyZDUGamC/I0e1m3PmhmimAYT5Yj8uiciLiNgdwA4N25FRGtiouIA2cRbw+kXWGcV0uK+RPq6QomqBUm+4ikmJn0/bPzvh6fTbUIdEcsXlsUG5QYU2iFxB/lm+mhK9VT4f0wMdhug1tPHaG8DRlDh4wBULjS8jWfBzu2tf47TVR/2M+pqSmr85CSACxRo2QHNmA0IWcHAAp4HJXYNfpWAAAAAElFTkSuQmCC", link: "https://ilclassroom.com" },
             { name: "Zearn", title: "Student Home - Zearn", favicon: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y+mAAAAYFBMVEVHcExFvdM6utGKxq8/u9I8utFIvtM8utFFvNM+u9JJvdNAu9Jnxdg/u9E9utFIvtQ/u9E8utFxydolutn1z0D+0Cr1z0H1zj/1z0H31GD1z0H10EovluFDAAAAIHRSTlMA2P8Vrf8v9EuXcci5auP/XGR9wLmh4v9CW5Vod9EfI0NLlVAAAACgSURBVHgBddDFAcRADATBRTMzO/8ojyTzXH9rUeKUVFKLPxllrXUEzrXfPIy+/RVglaQ+1lD91GCNSENxLk5cm34jvKhnP6lvlvMf7zyVHJhh5HzXdS+Yi2eFIjPAPLYQmGMpCUyDx+yVVIisqilkTUt1wCq2HtjANgKb2CZgXcvNc1VV9TAMJ2wfNbvp9tmyK8B1x/5hlThaur4fT/Ek3sqLEwwJ2FthAAAAAElFTkSuQmCC", link: "https://zearn.org" },
             { name: "Pear Assessment", title: "Pear Assessment", favicon: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y+mAAAAY1BMVEVHcEwrOkIsO0I0QkMoN0InNkIiMUEnNUImNUEqOEIwPkI0QkMzQEMxP0IyQEMxP0PI21fL3lfQ5FjO4Vi4ylR2hUphcEVNXEKer1CnuVFqekbU6FmAlTmvwVNbaUdATkQAF0B9mIX1AAAAEHRSTlMApyf621LnZv7HHJjFfLc+PB2r8AAAALxJREFUKJHFkEkWgzAMQwljAg+I7cxhuv8pC3RHwrbV9luS7aL4q/qpHothyqGRVWGxVTXk4GCXZTHiJVVYY6v5rXPumDhb37zGe1PnWbdFgLh1WdiuICWsbY41FuUptE0GcgUXBMVTxjTJW6RZarxtBOdIYm0MXdtoFYDMs7W7UkEFFYj085obKocgHSaw3FGCPFbUIe7ls7R2JMHzYyOXfrDnHgEQo+d9emjJjVPKGZ6EfpcSbSvyf/+dPiDkDIV9PRLKAAAAAElFTkSuQmCC", link: "https://app.edulastic.com/home/assignments" },
             { name: "Google Drive", title: "My Drive - Google Drive", favicon: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAYAAAByDd+UAAAB+klEQVR4AWJwL/ChKx68ForXW7SJN1iswYb5GyxaqGqhycrgR+rTAKzUA2hoURwG8Cn3bL/wbNuIz7Y5p9kOY57NMBvZs23bPtt/dW7b4VR94ep3v6OHaJvFJSoaZldQROB+hDJValcFPBj20vB82AsEAYCVyTT1uUykaWitGAQIB1oy22WoKOhKQMCCMKa0dLypYN9dTs7HcMvg5YCAHQKAzLmwpwpYGbORBHH2LAfMY4G4JdmOaJkvBQnsMQ+DHAl5MTSeqjaMASaarvZ00SB8UATCyp1OVzMWgfBDiwLhY7J2+Nn5LScyVCkUfkoI3nLqWivAcB7j52HYSISMEJz9WIwEyyE/AAtEBJLbRLoNiBxigIcVgDO08AwFwnkpwfx4Sx1aSFrmLwAvRDz+BBtaFB6Gg9txA9sEg6d9NLNO+/5HvFz0sXXardmy567d4CFW4F5V1BuXiUgVNBa5jpdEBdz2vTRy2/cyxMtduyFpTjtMotobD1D75Yvs3LjopYDwh9v/5CNWrtsOSjGc/8bFqP/mHtRx7zyVodP7tisgZMeffB8SO6xfLYeIlllvTSkM2jH34UraQeB5VkvexoeWWsttR7bEaPu9Cz95IEZbAVw8wm461+7uuXrp4Q0L6LxxS/NKQQ+t2HpYKEKQPMhXkpkNqoYwXTEA+kphQitc/vYAAAAASUVORK5CYII=", link: "https://drive.google.com" },
@@ -693,6 +721,7 @@
             // Ping Loop
             useEffect(() => {
                 const interval = setInterval(async () => {
+                    if(!isOpen) return;
                     const start = performance.now();
                     try {
                         await fetch('https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js', { method: 'HEAD', mode: 'no-cors' });
@@ -706,6 +735,14 @@
             const getColor = (val) => {
                 if (val >= 50) return 'text-good';
                 if (val >= 30) return 'text-medium';
+                return 'text-bad';
+            };
+
+            // Helper for Ping Color
+            const getPingColor = (val) => {
+                if (val === 'Err') return 'text-bad';
+                if (val < 100) return 'text-good';
+                if (val < 200) return 'text-medium';
                 return 'text-bad';
             };
 
@@ -763,7 +800,7 @@
                     style: { bottom: `${pos.bottom + 60}px`, right: `${pos.right}px` } 
                 }, 
                     e('div', null, 'FPS: ', e('span', { className: getColor(fps) }, fps)),
-                    e('div', null, 'Ping: ', e('span', null, `${ping}ms`)) // Newline via Flex Column
+                    e('div', null, 'Ping: ', e('span', { className: getPingColor(ping) }, `${ping}ms`))
                 ),
                 e('div', { 
                     id: 'info-btn', 
@@ -799,14 +836,15 @@
         // --- MAIN APP COMPONENT ---
         const App = () => {
             // State
-                        const [isLoading, setIsLoading] = useState(true); // Loading State
-
+            const [isLoading, setIsLoading] = useState(true); // Loading State
             const [activeTab, setActiveTab] = useState('home');
             const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
             const [pattern, setPattern] = useState(localStorage.getItem('pattern') || 'lines');
             const [modalState, setModalState] = useState({ isActive: false, message: '' });
             const [time, setTime] = useState('');
             const [onlineCount, setOnlineCount] = useState('Loading...');
+            const [quote, setQuote] = useState('Loading quote...');
+            const [isQuoteFading, setIsQuoteFading] = useState(false); // Quote Fade State
             
             // Settings States
             const [footerVisible, setFooterVisible] = useState(() => localStorage.getItem('footerVisible') !== 'false');
@@ -816,11 +854,13 @@
             const [aboutBlankEnabled, setAboutBlankEnabled] = useState(() => localStorage.getItem('aboutBlankPopupState') === 'true');
             const [statsEnabled, setStatsEnabled] = useState(() => localStorage.getItem('statsToggleState') === 'true');
 
+            // Game Loading State
+            const [gameLoading, setGameLoading] = useState(false);
+
             // Cloak Mode State
             const [cloakMode, setCloakMode] = useState(''); // '' | 'custom' | 'url'
 
             const [iframeState, setIframeState] = useState({ active: false, src: '' });
-            const [quote, setQuote] = useState('Loading quote...');
 
             // Helpers
             const showModal = (msg) => setModalState({ isActive: true, message: msg });
@@ -847,15 +887,18 @@
                 if (storedTitle) {
                     document.title = storedTitle;
                 } else {
-                    // Default to Google if nothing saved
+                    // Default to Google if nothing saved AND save it
                     document.title = "Google";
+                    localStorage.setItem('customPageTitle', "Google");
                 }
 
                 if (storedFavicon) {
                     updateFavicon(storedFavicon);
                 } else {
-                    // Default to Google if nothing saved
-                    updateFavicon("https://google.com/favicon.ico");
+                    // Default to Google if nothing saved AND save it
+                    const defaultFavicon = "https://google.com/favicon.ico";
+                    updateFavicon(defaultFavicon);
+                    localStorage.setItem('customFaviconURL', defaultFavicon);
                 }
                 setTimeout(() => setIsLoading(false), 1500);
 
@@ -864,7 +907,7 @@
                     setTime(`${now.toLocaleDateString([], {weekday:'short'})} | ${now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}`);
                 }, 1000);
 
-              // Quote Logic with Non-Repeating Rotation
+              // Quote Logic with Non-Repeating Rotation and Transition
                 let quoteInterval;
                 fetch('txt/quotes.txt').then(r => r.text()).then(t => {
                     const allQuotes = t.split('\n').filter(l => l.trim());
@@ -873,14 +916,23 @@
                     let currentPool = [...allQuotes];
 
                     const rotate = () => {
-                        if (currentPool.length === 0) currentPool = [...allQuotes]; // Refill list when empty
-                        const randomIndex = Math.floor(Math.random() * currentPool.length);
-                        setQuote(currentPool[randomIndex]);
-                        currentPool.splice(randomIndex, 1); // Remove selected to prevent repeat
+                        // 1. Fade Out
+                        setIsQuoteFading(true);
+                        
+                        setTimeout(() => {
+                            // 2. Change Text (while invisible)
+                            if (currentPool.length === 0) currentPool = [...allQuotes];
+                            const randomIndex = Math.floor(Math.random() * currentPool.length);
+                            setQuote(currentPool[randomIndex]);
+                            currentPool.splice(randomIndex, 1);
+                            
+                            // 3. Fade In
+                            setIsQuoteFading(false);
+                        }, 500); // Wait for fade-out duration
                     };
 
-                    rotate(); // Initial set
-                    quoteInterval = setInterval(rotate, 5000); // Rotate every 5 seconds
+                    rotate(); // Initial set (no fade for first one ideally, but handles state)
+                    quoteInterval = setInterval(rotate, 5000); 
                 }).catch(() => setQuote('Welcome to StarlightGG'));
 
                 return () => {
@@ -970,6 +1022,7 @@
             const toggleTheme = () => setTheme(prev => prev === 'light' ? 'dark' : 'light');
             
             const openGame = (url) => {
+                setGameLoading(true); // Start loading animation
                 setIframeState({ active: true, src: url });
                 setActiveTab('game-view');
             };
@@ -1104,9 +1157,17 @@
                  }
             };
 
-            const renderSwitch = (id, isOn, onClick) => 
+            // MODIFIED: Accepts onIcon and offIcon as arguments
+            const renderSwitch = (id, isOn, onClick, onIcon, offIcon) => 
                 e('div', { id: id, className: `switch-container ${isOn ? 'switch-on' : ''}`, onClick: onClick },
-                    e('div', { className: 'switch-thumb' })
+                    e('div', { className: 'switch-thumb' },
+                        // Renders specific icons based on state
+                        // Changed color logic: White when ON for better contrast in dark mode
+                        e('i', { 
+                            className: isOn ? (onIcon || 'fas fa-check') : (offIcon || 'fas fa-times'), 
+                            style: { fontSize: '1rem', color: isOn ? '#ffffff' : '#888' } 
+                        })
+                    )
                 );
 
             // --- TAB CONTENTS ---
@@ -1116,7 +1177,7 @@
                 e('div', { className: 'dashboard-container' },
                     e('div', { className: 'hero-section' },
                         e('h2', null, 'Welcome to StarlightGG'),
-                        e('div', { id: 'quote-display' }, `"${quote}"`),
+                        e('div', { id: 'quote-display', className: isQuoteFading ? 'fade-out' : '' }, `"${quote}"`),
                         e('div', { style: { marginTop: '15px', fontWeight: '600', color: 'var(--primary-color)' } }, 
                             `Active Users: ${onlineCount}`
                         )
@@ -1125,7 +1186,7 @@
                         e(DashboardCard, { 
                             icon: 'fas fa-gamepad', 
                             title: 'Games', 
-                            desc: 'Play 250+ unblocked games',
+                            desc: 'Play 1500+ unblocked games',
                             onClick: () => setActiveTab('embed')
                         }),
                         e(DashboardCard, { 
@@ -1161,11 +1222,19 @@
             const EmbedContent = e('div', { id: 'embed-content', className: `menu-tab-content ${activeTab === 'embed' ? 'active' : ''}` },
                 e(PageHeader, { title: 'Games Hub', onBack: () => setActiveTab('home') }),
                 e('div', { className: 'menu-buttons' },
+                    // Lunaar Lite (Recommended - Moved to Top & Styled Blue)
+                    e('button', { 
+                        onClick: () => openGame('https://starlightgg.github.io/lunaar-lite/'),
+                        style: { backgroundColor: 'var(--primary-color)', color: 'white' }
+                    }, 
+                        e('i', { className: 'fas fa-gamepad' }), 'Twilight Games'
+                    ),
                     e('button', { onClick: () => openGame('https://starlightgg.github.io/pages/gamesearch.html') }, 
                         e('i', { className: 'fas fa-gamepad' }), 'StarlightGG Hub'
                     ),
-                    e('button', { onClick: () => openGame('https://starlightgg.github.io/lunaar-lite/') }, 
-                        e('i', { className: 'fas fa-gamepad' }), 'Lunaar Lite'
+                    // SlashFlash Added
+                    e('button', { onClick: () => openGame('https://amhooman.github.io/website/games/index.html') }, 
+                        e('i', { className: 'fas fa-bolt' }), 'SlashFlash'
                     ),
                     e('button', { onClick: () => openGame('https://unblockedgames1024.gitlab.io/') }, 
                         e('i', { className: 'fas fa-unlock' }), 'Unblocked 66'
@@ -1259,7 +1328,7 @@
                     e('div', { className: 'settings-group-title' }, 'Styling'),
                     e('div', { className: 'settings-item' },
                         e('label', null, 'Theme:'),
-                        renderSwitch('theme-toggle-switch', theme === 'dark', toggleTheme)
+                        renderSwitch('theme-toggle-switch', theme === 'dark', toggleTheme, 'fas fa-moon', 'fas fa-sun')
                     ),
                     
                     e('div', { className: 'settings-item' },
@@ -1277,7 +1346,7 @@
                     e('div', { className: 'settings-group-title' }, 'Gameplay'),
                     e('div', { className: 'settings-item' },
                         e('label', null, 'Show Stats:'),
-                        renderSwitch('stats-toggle-switch', statsEnabled, () => handleToggle('statsToggleState', statsEnabled, setStatsEnabled))
+                        renderSwitch('stats-toggle-switch', statsEnabled, () => handleToggle('statsToggleState', statsEnabled, setStatsEnabled), 'fas fa-chart-line', 'fas fa-times')
                     ),
 
                     // --- SECURITY SECTION ---
@@ -1293,34 +1362,34 @@
                                 onClick: () => showModal("When enabled, switching tabs will instantly redirect this page to a decoy URL (Google) to hide your activity. If not enabled, the overlay can hide page if state is on, when you go off page, the screen is white, you can click 'E' to show page or 'SpaceBar' to redirect to an decoy page")
                             })
                         ),
-                        renderSwitch('blur-toggle-switch', redirectEnabled, () => handleToggle('redirectToggleState', redirectEnabled, setRedirectEnabled))
+                        renderSwitch('blur-toggle-switch', redirectEnabled, () => handleToggle('redirectToggleState', redirectEnabled, setRedirectEnabled), 'fas fa-location-arrow', 'fas fa-times')
                     ),
 
-                    // Overlay Toggle (Missing in previous version)
+                    // Overlay Toggle
                     e('div', { 
                         className: 'settings-item', 
-                        style: { display: redirectEnabled ? 'none' : 'flex' } // Added line
+                        style: { display: redirectEnabled ? 'none' : 'flex' }
                     },
                         e('label', null, 'Overlay:'),
-                        renderSwitch('overlay-toggle-switch', overlayEnabled, () => handleToggle('overlayToggleState', overlayEnabled, setOverlayEnabled))
+                        renderSwitch('overlay-toggle-switch', overlayEnabled, () => handleToggle('overlayToggleState', overlayEnabled, setOverlayEnabled), 'fas fa-eye-slash', 'fas fa-eye')
                     ),
 
-                    // About:Blank Toggle (Missing in previous version)
+                    // About:Blank Toggle
                     e('div', { className: 'settings-item' },
                         e('label', null, 'About:Blank Popup:'),
-                        renderSwitch('about-blank-toggle-switch', aboutBlankEnabled, () => handleToggle('aboutBlankPopupState', aboutBlankEnabled, setAboutBlankEnabled))
+                        renderSwitch('about-blank-toggle-switch', aboutBlankEnabled, () => handleToggle('aboutBlankPopupState', aboutBlankEnabled, setAboutBlankEnabled), 'fas fa-external-link-alt', 'fas fa-times')
                     ),
 
-                    // Tab Protection Toggle (Missing in previous version)
+                    // Tab Protection Toggle
                     e('div', { className: 'settings-item' },
                         e('label', null, 'Tab Protection:'),
-                        renderSwitch('protection-toggle-switch', tabProtection, () => handleToggle('tabProtectionState', tabProtection, setTabProtection))
+                        renderSwitch('protection-toggle-switch', tabProtection, () => handleToggle('tabProtectionState', tabProtection, setTabProtection), 'fas fa-shield-alt', 'fas fa-times')
                     )
                 )
             );
 
             // --- IFRAME OVERLAY (Game View) ---
-            const IframeOverlay = e('div', { id: 'iframe-container', style: { display: iframeState.active ? 'block' : 'none' } },
+            const IframeOverlay = e('div', { id: 'iframe-container', style: { display: iframeState.active ? 'flex' : 'none' } },
                 e('nav', { id: 'iframe-nav' },
                     e('button', { onClick: exitGame }, '🏠 Home'),
                      e('button', { onClick: reloadGame }, '🔄 Reload'),
@@ -1334,9 +1403,16 @@
                             // We do NOT save temporary toggle state to localStorage here if we want it to be transient,
                             // BUT user asked for "remember preference". So we update state, which triggers useEffect save.
                         } 
-                    }, footerVisible ? 'Hide Footer' : 'Show Footer')
+                    }, footerVisible ? 'Hide Footer' : 'Show Footer'),
+                    // Loading Bar Component inside Nav
+                    e('div', { className: `iframe-loading-bar ${gameLoading ? 'active' : ''}` })
                 ),
-                e('iframe', { id: 'my-iframe', src: iframeState.src, allowFullScreen: true })
+                e('iframe', { 
+                    id: 'my-iframe', 
+                    src: iframeState.src, 
+                    allowFullScreen: true,
+                    onLoad: () => setGameLoading(false) // Stop loading when done
+                })
             );
 
             // FOOTER DISPLAY LOGIC:
