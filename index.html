@@ -645,6 +645,54 @@
     </style>
 </head>
 <body>
+  <noscript>
+  <style>
+    /* 1. Reset standard styles to ensure full coverage */
+    body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden; /* Prevents scrolling the underlying content */
+    }
+
+    /* 2. Style the link to be a full-screen block */
+    .noscript-link {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 2147483647; /* Maximum Z-Index to ensure it's on top */
+      background-color: var(--bg-color); /* Background color (White) */
+      text-decoration: none; /* Remove underline */
+      color: #333; /* Text color */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      text-align: center;
+      color: var( --primary-color);
+      font-family: sans-serif;
+    }
+
+    /* 3. Hover effect to indicate it is clickable */
+    .noscript-link:hover {
+      background-color: #f8f8f8;
+    }
+
+    .content-box {
+      max-width: 600px;
+      padding: 20px;
+    }
+  </style>
+
+  <a href="https://www.enable-javascript.com/" class="noscript-link" target="_blank" rel="noopener noreferrer">
+    <div class="content-box">
+      <h1>JavaScript is required</h1>
+      <p>This site requires JavaScript to function correctly.</p>
+      <p><strong>Click anywhere on the screen to learn how to enable it.</strong></p>
+    </div>
+  </a>
+</noscript>
     <!-- External Cloaking Alert Element -->
     <div id="CloakingAlert">
         <div class="loader-circle" style="margin-bottom: 20px;"></div>
