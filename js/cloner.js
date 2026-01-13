@@ -49,7 +49,7 @@ function executeCloningLogic() {
             if (cloakElement) {
                 const textDiv = cloakElement.querySelector('div:last-child');
                 if (textDiv) {
-                    textDiv.innerText = "Popups Blocked! Please Enable.";
+                    textDiv.innerText = "Popups Blocked! Please Enable Popups in Order to Cloak Window. \n(Click to dismiss)";
                     textDiv.style.color = "#ff4444"; // Red color for error
                 }
                 
