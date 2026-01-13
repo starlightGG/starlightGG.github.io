@@ -71,14 +71,23 @@ function executeCloningLogic() {
 }
 
 // 3. Initialization
-window.addEventListener('load', () => {
+const runInitialization = () => {
     // Ensure default state is set
     if (localStorage.getItem('aboutBlankPopupState') === null) {
         localStorage.setItem('aboutBlankPopupState', 'true');
     }
 
-    const delayInMilliseconds = 10; 
+    const delayInMilliseconds = 400; 
     console.log(`Cloning logic initiated...`);
 
     setTimeout(executeCloningLogic, delayInMilliseconds);
-});
+};
+
+// Check if the HTML is already parsed
+if (document.readyState === 'loading') {
+    // If still loading, wait for the 'DOMContentLoaded' event
+    document.addEventListener('DOMContentLoaded', runInitialization);
+} else {
+    // If the HTML is already parsed, run immediately
+    runInitialization();
+}
