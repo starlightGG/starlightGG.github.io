@@ -25,11 +25,13 @@ function getSetting(key, defaultValue) {
             /* CHANGED: Instant appearance (0s) when showing overlay */
             transition: opacity 0s;
             cursor: none;
+            pointer-events: auto;
         }
         #offscreen-overlay.fade-out { 
             opacity: 0 !important; 
             /* CHANGED: Keep fade effect only when hiding overlay */
             transition: opacity ${FADE_DURATION_CSS} ease-in-out;
+            pointer-events: none;
         }
     `;
     const style = document.createElement('style');
