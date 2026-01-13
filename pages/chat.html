@@ -298,10 +298,8 @@
         // --- Window Load Event ---
         window.addEventListener('load', () => {
             // 1. Apply Cloak
-                                            setTimeout(() => {
+                setTimeout(applyStoredCloak, 800);
 
-            applyStoredCloak();
-                                      }, 1000);
 
             // 2. Trigger Toast Notification (Always runs, no localstorage check)
             // Using a small delay (500ms) makes the animation feel smoother after load
