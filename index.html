@@ -1122,7 +1122,7 @@ const PRESETS = [
                     localStorage.setItem('customFaviconURL', favicon);
                     localStorage.setItem('LINKTAB_KEY', targetUrl);
                     
-                    showModal(`Cloaked successfully!\nTitle: ${fetchedTitle}`);
+                    showModal(`Cloaked successfully!<br><br><b>Title:</b> ${fetchedTitle}<br><b>Favicon:</b> ${favicon}<br><br>If this information is incorrect, please use the <b>Custom Cloak</b> mode instead.`);
                 } catch (error) {
                     console.error(error);
                     // Fallback to domain if proxy fails
@@ -1232,7 +1232,7 @@ const PRESETS = [
                         e('h2', null, 'Welcome to StarlightGG'),
                         e('div', { id: 'quote-display', className: isQuoteFading ? 'fade-out' : '' }, `"${quote}"`),
                         e('div', { style: { marginTop: '15px', fontWeight: '600', color: 'var(--primary-color)' } }, 
-                            `Active Users: ${onlineCount}`
+                             `Active Users: ${onlineCount === 0 ? 1 : onlineCount}`
                         )
                     ),
                     e('div', { className: 'card-grid' },
