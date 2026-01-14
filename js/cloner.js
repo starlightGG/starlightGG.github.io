@@ -15,7 +15,7 @@ function executeCloningLogic() {
     const savedState = localStorage.getItem('aboutBlankPopupState');
 
     // Only attempt cloning if enabled and not already in about:blank
-    if (window.location.href !== 'about:blank' && savedState === 'true') {
+    if (window.top.location.href !== 'about:blank' && savedState === 'true') {
         
         // Attempt to open new window
         const newWindow = window.open('about:blank', '_blank');
@@ -42,23 +42,47 @@ function executeCloningLogic() {
             window.location.replace(savedLink ? savedLink : 'https://google.com/');
             
         } else {
-            // --- FAILURE (Popup Blocked) ---
+
+        // --- FAILURE (Popup Blocked) ---
             
-            // Instead of calling showModal() which doesn't exist here,
-            // we update the CloakingAlert text to warn the user.
             if (cloakElement) {
                 const textDiv = cloakElement.querySelector('div:last-child');
+                const Loader = cloakElement.querySelector('div:first-child');
+                
+                // Remove the loader since it failed
+                if (Loader) Loader.remove();
+
                 if (textDiv) {
-                    textDiv.innerText = "Popups Blocked! Please Enable Popups in Order to Cloak Window. \n(Click to dismiss)";
-                    textDiv.style.color = "#ff4444"; // Red color for error
+                    // Update text to tell them clicking will try again
+                    textDiv.innerText = "Popups Blocked! Click here to open the window manually.";
+                    textDiv.style.color = "#ff4444"; 
                 }
                 
-                // Allow user to click to dismiss if it failed
                 cloakElement.style.cursor = "pointer";
-                cloakElement.title = "Click to close";
-                cloakElement.onclick = function() {
-                    this.remove();
+                cloakElement.title = "Click to open window and dismiss";
+
+                // --- NEW ONCLICK LOGIC ---
+                cloakElement.onclick = function(e) {
+// Prevent default browser behavior (stops page jumps/reloads)
+                    if (e) e.preventDefault(); 
+                    // Stop the click from bubbling up to parents (optional but good for modals)
+                    if (e) e.stopPropagation();
+                    // 1. Try to open the popup AGAIN. 
+                    // Because this code is running inside a 'click' event, 
+                    // browsers usually ALLOW this even if they blocked the automatic one.
+                    // IMPORTANT: Replace arguments below with your actual URL/Variables
+                    const retryWindow = window.open(window.location.href, "_blank", "width=800,height=600"); 
+
+                    // 2. Run the fade out animation (happens regardless of success/fail)
+                    this.style.transition = "opacity 0.5s ease";
+                    this.style.opacity = "0";
+
+                    // 3. Destroy the element after animation
+                    setTimeout(() => {
+                        this.remove();
+                    }, 500);
                 };
+            
             }
         }
     } else {
