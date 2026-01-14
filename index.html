@@ -777,22 +777,39 @@ const PRESETS = [
                 loop();
             }, []);
 
-            // Ping Loop - REVERTED TO CDN (Works best)
-            useEffect(() => {
-                const interval = setInterval(async () => {
-                    if(!isOpen) return;
-                    const start = performance.now();
-                    try {
-                        // Added timestamp to bypass cache
-                        await fetch(`https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js?t=${Date.now()}`, { 
-                            method: 'HEAD', 
-                            mode: 'no-cors' 
-                        });
-                        setPing(Math.round(performance.now() - start));
-                    } catch { setPing('Err'); }
-                }, 750);
-                return () => clearInterval(interval);
-            }, [isOpen]);
+            // Ping Loop - REVERTED TO gstatic (Works best)
+useEffect(() => {
+    let interval;
+
+    const performPing = async () => {
+        if (!isOpen) return;
+
+        const start = performance.now();
+        try {
+            // Using a lightweight 204 (No Content) endpoint is more accurate than a CDN library
+            await fetch(`https://connectivitycheck.gstatic.com/generate_204?t=${Date.now()}`, {
+                method: 'HEAD',
+                mode: 'no-cors',
+                cache: 'no-cache' // Ensures the browser doesn't use a cached result
+            });
+            
+            const end = performance.now();
+            setPing(Math.round(end - start));
+        } catch (err) {
+            setPing('Err');
+        }
+    };
+
+    if (isOpen) {
+        // Run immediately on open, then start interval
+        performPing();
+        interval = setInterval(performPing, 500);
+    }
+
+    return () => {
+        if (interval) clearInterval(interval);
+    };
+}, [isOpen]);
 
             // Helper for Color
             const getColor = (val) => {
