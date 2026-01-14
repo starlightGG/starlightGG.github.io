@@ -188,6 +188,11 @@
             max-width: 600px;
             margin: 0 auto;
             transition: opacity 0.5s ease-in-out; /* Quote Fade Transition */
+            /* UPDATED: Fixed height and centering to prevent layout jumping */
+            min-height: 80px; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         #quote-display.fade-out {
             opacity: 0;
@@ -1083,6 +1088,11 @@ useEffect(() => {
                 document.documentElement.setAttribute('data-theme', theme);
                 localStorage.setItem('theme', theme);
             }, [theme]);
+
+            // ADDED: Save Pattern to LocalStorage whenever it changes
+            useEffect(() => {
+                localStorage.setItem('pattern', pattern);
+            }, [pattern]);
 
             // Save footer state whenever it changes
             useEffect(() => {
