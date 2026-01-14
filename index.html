@@ -596,7 +596,7 @@
         #CloakingAlert {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: var(--bg-color); z-index: 20000;
-            display: flex; /* Hidden by default, toggle with JS */
+            display: flex /* Hidden by default, toggle with JS */
             flex-direction: column; justify-content: center; align-items: center;
             color: var(--primary-color); font-size: 1.2em; font-weight: bold;
             font-family: var(--font-stack);
@@ -790,7 +790,7 @@ const PRESETS = [
                         });
                         setPing(Math.round(performance.now() - start));
                     } catch { setPing('Err'); }
-                }, 2000);
+                }, 1000);
                 return () => clearInterval(interval);
             }, [isOpen]);
 
@@ -981,7 +981,8 @@ const PRESETS = [
             const [iframeState, setIframeState] = useState({ active: false, src: '' });
 
             // Helpers
-            const showModal = (msg) => setModalState({ isActive: true, message: msg });
+            // UPDATED: Added .replace(/\n/g, '<br>') to support \n newlines
+            const showModal = (msg) => setModalState({ isActive: true, message: msg.replace(/\n/g, '<br>') });
             const closeModal = () => setModalState({ ...modalState, isActive: false });
             
             const updateFavicon = (url) => {
@@ -1512,7 +1513,7 @@ const PRESETS = [
                             e('i', { 
                                 className: 'fas fa-question-circle', 
                                 style: { cursor: 'pointer', opacity: 0.7 },
-                                onClick: () => showModal("When enabled, switching tabs will instantly redirect this page to a decoy URL (Google) to hide your activity. If not enabled, the overlay can hide page if state is on, when you go off page, the screen is white, you can click 'E' to show page or 'SpaceBar' to redirect to an decoy page")
+                                onClick: () => showModal("When enabled, switching tabs will instantly redirect this page to a decoy URL (Google) to hide your activity.\n\n If not enabled, the overlay can hide page if state is on, when you go off page, the screen is white, you can click 'E' to show page or 'SpaceBar' to redirect to an decoy page.")
                             })
                         ),
                         renderSwitch('blur-toggle-switch', redirectEnabled, () => handleToggle('redirectToggleState', redirectEnabled, setRedirectEnabled), 'fas fa-location-arrow', 'fas fa-times')
