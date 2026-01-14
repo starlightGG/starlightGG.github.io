@@ -68,10 +68,34 @@ function executeCloningLogic() {
                     // Stop the click from bubbling up to parents (optional but good for modals)
                     if (e) e.stopPropagation();
                     // 1. Try to open the popup AGAIN. 
-                    // Because this code is running inside a 'click' event, 
-                    // browsers usually ALLOW this even if they blocked the automatic one.
-                    // IMPORTANT: Replace arguments below with your actual URL/Variables
-                    const retryWindow = window.open(window.location.href, "_blank", "width=800,height=600"); 
+    const cloakElement2 = document.getElementById('CloakingAlert');
+    const savedState2 = localStorage.getItem('aboutBlankPopupState');
+
+        
+        // Attempt to open new window
+        const newWindow2 = window.open('about:blank', '_blank');
+
+        if (newWindow2) {
+            // --- SUCCESS ---
+            
+            // 1. Remove this script so it doesn't loop in the new tab
+            const scriptElement2 = document.getElementById('cloning-script');
+            if (scriptElement2) scriptElement2.remove();
+            
+            // 2. Remove the cloak from the DOM to be copied (so the new tab doesn't start cloaked)
+            if (cloakElement) cloakElement2.remove();
+            
+            // 3. Clone HTML
+            const currentHtml2 = document.documentElement.outerHTML;
+
+            // 4. Write to new window
+            newWindow2.document.write(currentHtml2);
+            newWindow2.document.close();
+
+            // 5. Redirect original tab
+            const savedLink2 = localStorage.getItem('LINKTAB_KEY');
+            window.location.replace(savedLink2 ? savedLink2 : 'https://google.com/');
+            
 
                     // 2. Run the fade out animation (happens regardless of success/fail)
                     this.style.transition = "opacity 0.5s ease";
