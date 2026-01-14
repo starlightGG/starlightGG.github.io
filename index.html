@@ -790,7 +790,7 @@ const PRESETS = [
                         });
                         setPing(Math.round(performance.now() - start));
                     } catch { setPing('Err'); }
-                }, 1000);
+                }, 750);
                 return () => clearInterval(interval);
             }, [isOpen]);
 
