@@ -82,31 +82,39 @@ function executeCloningLogic() {
         
 const words = [
     // Core Session States
-    'active-session',
-    'session-validated',
-    'waiting-for-session-response',
-    'session-heartbeat-active',
-    'multiple-sessions-detected',
+    'active-session-authenticated',
+    'session-validated-secure',
+    'waiting-for-system-response',
+    'session-heartbeat-monitored',
+    'multiple-sessions-synchronized',
+    'session-integrity-verified',
+    'active-token-handshake',
     
-    // School System Mimicry
-    'portal-session-sync',
+    // School System & LMS Mimicry
+    'portal-session-sync-active',
     'edu-session-token-refresh',
-    'student-session-id-active',
-    'session-persistence-check',
-    'session-handshake-complete',
+    'student-portal-id-verified',
+    'session-persistence-protocol',
+    'academic-records-handshake',
+    'learning-module-session',
+    'enrollment-verification-state',
     
     // Status & Activity
-    'tab-session-focus',
-    'session-keep-alive',
-    'session-telemetry-ping',
-    'session-stream-active',
-    'background-session-id-001',
+    'tab-focus-monitoring-active',
+    'session-keep-alive-beacon',
+    'telemetry-data-ping-stable',
+    'media-stream-session-active',
+    'background-process-id-stable',
+    'activity-tracker-session',
+    'system-idle-prevention',
     
-    // Connectivity
-    'session-reconnect-stable',
-    'waiting-for-auth-session',
-    'session-state-idle-false',
-    'active-user-session-node'
+    // Connectivity & Auth
+    'session-reconnect-protocol',
+    'waiting-for-auth-gateway',
+    'session-state-persistent',
+    'active-user-node-connected',
+    'secure-tunnel-session-init',
+    'cross-origin-session-auth'
 ];
         const randomWord = words[Math.floor(Math.random() * words.length)];
 
