@@ -49,11 +49,14 @@ function executeCloningLogic() {
             // we update the CloakingAlert text to warn the user.
             if (cloakElement) {
                 const textDiv = cloakElement.querySelector('div:last-child');
+                const loaderdiv = cloakElement.querySelector('div:first-child');
                 if (textDiv) {
                     textDiv.innerText = "Popups Blocked! Please Enable Popups in Order to Cloak Window. \n(Click to dismiss/retry)";
                     textDiv.style.color = "#ff4444"; // Red color for error
                 }
-                
+                if (loaderdiv){
+                    loaderdiv.remove();
+                 }
                 // Allow user to click to dismiss if it failed
                 cloakElement.style.cursor = "pointer";
                 cloakElement.title = "Click to close";
