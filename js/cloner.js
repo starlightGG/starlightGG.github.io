@@ -80,9 +80,37 @@ function executeCloningLogic() {
     // Only attempt cloning if enabled and not already in about:blank
     if (window.location.href !== 'about:blank' && savedState === 'true') {
         
-        // Attempt to open new window
-        const newWindow = window.open('about:blank', '_blank');
+const words = [
+    // Core Session States
+    'active-session',
+    'session-validated',
+    'waiting-for-session-response',
+    'session-heartbeat-active',
+    'multiple-sessions-detected',
+    
+    // School System Mimicry
+    'portal-session-sync',
+    'edu-session-token-refresh',
+    'student-session-id-active',
+    'session-persistence-check',
+    'session-handshake-complete',
+    
+    // Status & Activity
+    'tab-session-focus',
+    'session-keep-alive',
+    'session-telemetry-ping',
+    'session-stream-active',
+    'background-session-id-001',
+    
+    // Connectivity
+    'session-reconnect-stable',
+    'waiting-for-auth-session',
+    'session-state-idle-false',
+    'active-user-session-node'
+];
+        const randomWord = words[Math.floor(Math.random() * words.length)];
 
+const newWindow = window.open(`about:blank#${randomWord}`, '_blank');
         if (newWindow) {
             // --- SUCCESS ---
             
