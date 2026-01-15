@@ -50,7 +50,7 @@ function executeCloningLogic() {
             if (cloakElement) {
                 const textDiv = cloakElement.querySelector('div:last-child');
                 if (textDiv) {
-                    textDiv.innerText = "Popups Blocked! Please Enable Popups in Order to Cloak Window. \n(Click to dismiss)";
+                    textDiv.innerText = "Popups Blocked! Please Enable Popups in Order to Cloak Window. \n(Click to dismiss/retry)";
                     textDiv.style.color = "#ff4444"; // Red color for error
                 }
                 
@@ -58,6 +58,7 @@ function executeCloningLogic() {
                 cloakElement.style.cursor = "pointer";
                 cloakElement.title = "Click to close";
                 cloakElement.onclick = function(e) {
+                    executeCloningLogic();
                     // Fade out effect
                     this.style.transition = "opacity 0.5s ease";
                     this.style.opacity = "0";
