@@ -1,4 +1,3 @@
-
 // js/cloner.js
 
 // 1. Tip Advisory (Defined but needs to be called if you want it to run)
@@ -10,9 +9,72 @@ function alertthing() {
     }
 }
 
+// Helper: Ensure Cloak Exists (Moved logic here for reuse and early execution)
+function ensureCloakExists() {
+    let cloakElement = document.getElementById('CloakingAlert');
+    const savedState = localStorage.getItem('aboutBlankPopupState');
+
+    // Only create if enabled and not already in about:blank
+    if (window.location.href !== 'about:blank' && savedState === 'true') {
+        if (!cloakElement) {
+            console.log("Cloak element missing, recreating...");
+            
+            // --- Theme Logic ---
+            const theme = localStorage.getItem('theme') || 'light';
+            const isDark = theme === 'dark';
+            
+            // Define colors based on theme to match index.html variables
+            const bgColor = isDark ? '#1e2023' : '#e0e5ec';
+            const textColor = isDark ? '#6a7eff' : '#4c68ff'; // Primary Color
+            const spinnerTrack = isDark ? 'rgba(106, 126, 255, 0.2)' : '#7c90ff'; // Muted Primary
+            const spinnerTop = isDark ? '#6a7eff' : '#4c68ff'; // Primary
+
+            cloakElement = document.createElement('div');
+            cloakElement.id = 'CloakingAlert';
+            
+            // Apply original CSS styles dynamically using theme colors
+            cloakElement.style.cssText = `
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                background: ${bgColor}; z-index: 20000;
+                display: flex; flex-direction: column; justify-content: center; align-items: center;
+                color: ${textColor}; font-size: 1.2em; font-weight: bold;
+                font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            `;
+            
+            // Recreate Inner HTML (Loader + Text)
+            cloakElement.innerHTML = `
+                <div class="loader-circle" style="
+                    width: 50px; height: 50px; 
+                    border: 5px solid ${spinnerTrack}; 
+                    border-top-color: ${spinnerTop}; 
+                    border-radius: 50%; 
+                    margin-bottom: 20px;
+                    animation: spin 1s linear infinite;
+                "></div>
+                <div>Cloaking Window...</div>
+            `;
+            
+            // Inject Keyframes for the spinner animation if needed
+            if (!document.getElementById('dynamic-spin-style')) {
+                const styleSheet = document.createElement("style");
+                styleSheet.id = 'dynamic-spin-style';
+                styleSheet.innerText = "@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }";
+                document.head.appendChild(styleSheet);
+            }
+
+            if (document.body) {
+                document.body.appendChild(cloakElement);
+            }
+        }
+    }
+}
+
 // 2. Core Cloning Logic
 function executeCloningLogic() {
-    const cloakElement = document.getElementById('CloakingAlert');
+    // Ensure the element exists before running logic (redundancy for retry clicks)
+    ensureCloakExists();
+
+    let cloakElement = document.getElementById('CloakingAlert');
     const savedState = localStorage.getItem('aboutBlankPopupState');
 
     // Only attempt cloning if enabled and not already in about:blank
@@ -45,18 +107,24 @@ function executeCloningLogic() {
         } else {
             // --- FAILURE (Popup Blocked) ---
             
-            // Instead of calling showModal() which doesn't exist here,
-            // we update the CloakingAlert text to warn the user.
+            // Update the CloakingAlert text to warn the user.
             if (cloakElement) {
+                // Ensure it is visible
+                cloakElement.style.display = 'flex';
+
                 const textDiv = cloakElement.querySelector('div:last-child');
-                const loaderdiv = cloakElement.querySelector('div:first-child');
+                const loaderdiv = cloakElement.querySelector('div:first-child') || cloakElement.querySelector('.loader-circle');
+                
                 if (textDiv) {
                     textDiv.innerText = "Popups Blocked! Please Enable Popups in Order to Cloak Window. \n(Click to dismiss/retry)";
                     textDiv.style.color = "#ff4444"; // Red color for error
+                    textDiv.style.textAlign = "center";
                 }
-                if (loaderdiv){
+                
+                if (loaderdiv) {
                     loaderdiv.remove();
-                 }
+                }
+                
                 // Allow user to click to dismiss if it failed
                 cloakElement.style.cursor = "pointer";
                 cloakElement.title = "Click to close";
@@ -71,7 +139,7 @@ function executeCloningLogic() {
         }
     } else {
         // --- NO CLONING NEEDED ---
-        // Just remove the cloak immediately
+        // Just remove the cloak immediately if it exists
         if (cloakElement) {
             cloakElement.remove();
         }
@@ -84,6 +152,9 @@ const runInitialization = () => {
     if (localStorage.getItem('aboutBlankPopupState') === null) {
         localStorage.setItem('aboutBlankPopupState', 'true');
     }
+
+    // --- Create Cloak Immediately (Before Delay) ---
+    ensureCloakExists();
 
     const delayInMilliseconds = 400; 
     console.log(`Cloning logic initiated...`);
