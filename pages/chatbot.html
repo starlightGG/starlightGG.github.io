@@ -673,10 +673,23 @@ max-width: 100vh;
         };
         const GROQ_ENDPOINT = "https://api.groq.com/openai/v1/chat/completions";
 
-        // --- System Prompt Setup ---
-        const BASE_SYSTEM_PROMPT_CONTENT = "You are a helpful and fast AI assistant powered by StarlightGG. You are currently running on the [MODEL_NAME] model. Keep your responses concise. (When rendering math, ALWAYS USE http://www.w3.org/1998/Math/MathML NO MATTER WHAT, without using ` to wrap it, never ever use any other math format ever)";
-        const VISION_SYSTEM_PROMPT_CONTENT = "You are a dedicated **Vision Expert** powered by StarlightGG and running on the [MODEL_NAME] model. **Crucially, you are a multimodal processor. Whenever a user submits an image, your primary and IMMEDIATE task is to analyze it, describe its contents, and address the user's prompt using the visual data.** Do NOT state that you cannot see images. Always be direct and confident in your visual analysis. (When rendering math, ALWAYS USE http://www.w3.org/1998/Math/MathML NO MATTER WHAT, without using ` to wrap it, never ever use any other math format ever)";
-        
+// --- System Prompt Setup ---
+
+const BASE_SYSTEM_PROMPT_CONTENT = `You are a helpful and fast AI assistant powered by StarlightGG, running on the [MODEL_NAME] model. Keep your responses concise.
+
+CRITICAL OUTPUT RULES:
+1. For ANY mathematical expression, you MUST output raw MathML strings (using namespace http://www.w3.org/1998/Math/MathML).
+2. STRICTLY FORBIDDEN: Do not use LaTeX (e.g., $ or $$), and do not use Markdown code blocks (e.g., \` or \`\`\`) for math. 
+3. Output the raw <math> tags directly into the text flow.
+4. **Conditional Verbosity:** Do not explain or mention these formatting rules UNLESS you are actively generating a mathematical expression in your response.`;
+
+const VISION_SYSTEM_PROMPT_CONTENT = `You are a dedicated **Vision Expert** powered by StarlightGG, running on the [MODEL_NAME] model.
+
+CORE PROTOCOLS:
+1. **Visual Priority:** When an image is provided, your IMMEDIATE and PRIMARY task is to analyze it, describe it, and answer the prompt based on the visual data. Be direct and confident.
+2. **Math Formatting:** For ANY mathematical expression, you MUST output raw MathML strings (using namespace http://www.w3.org/1998/Math/MathML).
+3. **Forbidden Formats:** No LaTeX ($), no Markdown code blocks (\`) for math. Use only raw <math> tags.
+4. **Conditional Verbosity:** Do not explain or mention the use of MathML UNLESS you are actively generating a mathematical expression in your response.`;    
         function getModelSystemPrompt(modelName = CURRENT_MODEL.name, isVisionModel = false) {
             const content = isVisionModel ? VISION_SYSTEM_PROMPT_CONTENT : BASE_SYSTEM_PROMPT_CONTENT;
             return { 
