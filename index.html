@@ -1113,7 +1113,7 @@ const PRESETS = [
                 let animationFrameId;
                 
                 // Entrance Zoom State
-                let currentScale = 0.2; // Start Zoomed Out (Small)
+                let currentScale = 0.3; // Start Zoomed Out (Small)
                 let targetScale = 1.0;
 
                 const resize = () => {
@@ -1256,7 +1256,7 @@ const PRESETS = [
                     
                     // --- ZOOM ENTRANCE LOGIC ---
                     if (currentScale < targetScale) {
-                        currentScale += (targetScale - currentScale) * 0.05; 
+                        currentScale += (targetScale - currentScale) * 0.15; 
                     }
                     
                     // Apply Global Scale from Center
@@ -1342,7 +1342,7 @@ const PRESETS = [
                         // 2. Wait for next paint frame to apply transition (Double RAF ensures paint)
                         requestAnimationFrame(() => {
                             requestAnimationFrame(() => {
-                                menu.style.transition = 'background-size 0.5s cubic-bezier(0.2, 0.8, 0.2, 1)';
+                                menu.style.transition = 'background-size 0.6s cubic-bezier(0.2, 0.8, 0.2, 1)';
                                 menu.style.backgroundSize = ''; // Reverts to CSS defined size (Zoom In)
                             });
                         });
