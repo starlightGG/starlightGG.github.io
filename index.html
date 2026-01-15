@@ -1100,8 +1100,8 @@ const PRESETS = [
                 const canvas = canvasRef.current;
                 if (!canvas) return;
                 
-                // Only run if pattern is hexagons OR snow OR fireworks
-                if (pattern !== 'hexagons' && pattern !== 'snow' && pattern !== 'fireworks') {
+                // Only run if pattern is hexagons OR snow OR fireworks OR waves
+                if (pattern !== 'hexagons' && pattern !== 'snow' && pattern !== 'fireworks' && pattern !== 'waves') {
                     const ctx = canvas.getContext('2d');
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
                     return;
@@ -1240,6 +1240,33 @@ const PRESETS = [
                     }
                 }
 
+                // --- 4. WAVE CLASS ---
+                class Wave {
+                    constructor(y) {
+                        this.y = y;
+                        this.wavelength = Math.random() * 0.01 + 0.005;
+                        this.amplitude = Math.random() * 30 + 20;
+                        this.speed = Math.random() * 0.03 + 0.01;
+                        this.offset = Math.random() * Math.PI * 2;
+                    }
+                    update() {
+                        this.offset += this.speed;
+                    }
+                    draw() {
+                        ctx.beginPath();
+                        const color = theme === 'dark' ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)';
+                        ctx.strokeStyle = color;
+                        ctx.lineWidth = 2;
+                        
+                        for (let x = 0; x <= width; x += 10) {
+                            const y = this.y + Math.sin(x * this.wavelength + this.offset) * this.amplitude;
+                            if (x === 0) ctx.moveTo(x, y);
+                            else ctx.lineTo(x, y);
+                        }
+                        ctx.stroke();
+                    }
+                }
+
                 // --- INITIALIZE PARTICLES ---
                 particles = [];
                 if (pattern === 'hexagons') {
@@ -1248,6 +1275,10 @@ const PRESETS = [
                 } else if (pattern === 'snow') {
                     const pCount = Math.floor(width / 5); 
                     for (let i = 0; i < pCount; i++) particles.push(new Snowflake());
+                } else if (pattern === 'waves') {
+                     for(let i=0; i<7; i++) {
+                        particles.push(new Wave(height * ((i+1)/8)));
+                     }
                 }
 
                 // --- ANIMATION LOOP ---
@@ -1303,6 +1334,11 @@ const PRESETS = [
                             particles[i].update();
                             particles[i].draw();
                             if (particles[i].alpha <= 0) particles.splice(i, 1);
+                        }
+                    } else if (pattern === 'waves') {
+                        for (let i = 0; i < particles.length; i++) {
+                            particles[i].update();
+                            particles[i].draw();
                         }
                     }
                     
@@ -1803,6 +1839,7 @@ const PRESETS = [
                             e('option', { value: 'hexagons' }, 'Hexagons'),
                             e('option', { value: 'snow' }, 'Snow'), 
                             e('option', { value: 'fireworks' }, 'Fireworks'), // Renamed from Lightning
+                            e('option', { value: 'waves' }, 'Waves'),
                             e('option', { value: 'none' }, 'None')
                         )
                     ),
