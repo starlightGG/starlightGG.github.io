@@ -1088,6 +1088,7 @@ CORE PROTOCOLS:
         function showChatInterface() {
             startPage.style.display = 'none';
             mainChatContainer.style.display = 'flex';
+            renderCurrentChat(); // Force refresh to update Welcome Message with correct Model Name
             setupMainInputCounter();
             userInput.focus();
         }
