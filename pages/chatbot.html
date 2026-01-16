@@ -107,6 +107,26 @@
 .latex-btn:active { box-shadow: var(--inner-shadow-recessed); transform: translateY(0); }
 .latex-category { grid-column: span 5; font-size: 0.85em; color: var(--main-color); margin-top: 15px; margin-bottom: 5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--shadow-dark); padding-bottom: 5px; }
 
+/* FIX: Insert Button Style */
+#latex-insert-main-btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 8px;
+    background-color: var(--main-color);
+    color: white;
+    font-weight: 600;
+    box-shadow: var(--outer-shadow-embossed);
+    transition: all 0.2s ease;
+}
+#latex-insert-main-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 4px 4px 8px rgba(0, 123, 255, 0.4), -4px -4px 8px var(--shadow-light);
+}
+#latex-insert-main-btn:active {
+    transform: translateY(0);
+    box-shadow: var(--inner-shadow-recessed);
+}
+
 /* Scrollbar for grid */
 .latex-grid::-webkit-scrollbar { width: 6px; }
 .latex-grid::-webkit-scrollbar-track { background: transparent; }
@@ -699,6 +719,17 @@ max-width: 100vh;
         <div class="modal-content latex-picker">
             <h3>Math Symbols</h3>
             
+            <!-- NEW: Live Render Preview -->
+            <div id="latex-live-preview" style="min-height: 60px; margin-bottom: 15px; padding: 15px; background: var(--neumorphic-bg); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.5em; box-shadow: var(--inner-shadow-recessed); overflow-x: auto; color: var(--main-color);">
+                <span style="color:#aaa; font-size:0.6em; font-weight:normal;">Preview</span>
+            </div>
+
+            <!-- NEW: Live Preview / Builder Input -->
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                <input type="text" id="latex-preview-input" class="fraction-input" placeholder="Build equation (e.g., 2 + \pi)" style="text-align: left; flex-grow: 1;">
+                <button id="latex-insert-main-btn" class="confirm-btn">Insert</button>
+            </div>
+
             <!-- Standard Grid -->
             <div class="latex-grid" id="latex-grid-container">
                 <!-- Buttons injected by JS -->
@@ -821,7 +852,7 @@ CRITICAL MATHEMATICAL FORMATTING RULES:
 1. **LATEX IS MANDATORY:** Use LaTeX for ALL math, numbers in context, and formulas.
 2. **DELIMITERS:** - INLINE: Use $...$ (Single dollar sign).
    - BLOCK: Use $$...$$ (Double dollar signs).
-3. **FORBIDDEN SYNTAX:** NEVER use \\[ ... \\] or \\( ... \\) or [ ... ] for math. THESE WILL BREAK THE RENDERER.
+3. **FORBIDDEN SYNTAX:** NEVER use \\[ ... \\] or \\( ... \\) or [ ... ] or ( ... ) for math. THESE WILL BREAK THE RENDERER.
 4. **STRICT COMPLIANCE:** If you generate brackets like [ x^2 ], the user cannot see it. YOU MUST WRITE $$ x^2 $$.
 5. **Universal Wrapping:** Wrap simple numbers in $ if they refer to values (e.g. $1$, $2.5$).`;
 
@@ -829,9 +860,17 @@ const VISION_SYSTEM_PROMPT_CONTENT = `You are a dedicated Vision Expert. Your pr
 
 CORE PROTOCOLS:
 1. **Visual Priority:** When an image is provided, immediately analyze it and answer the prompt based on the visual data. Be direct.
-2. **Technical Descriptions:** If the image contains math, data, or technical symbols, represent them using LaTeX with $ or $$ delimiters. NEVER use \\[ or \\(.
-3. **Detail Oriented:** Describe colors, text, objects, and spatial relationships clearly.
-4. **Scannability:** Use headers or lists to break down complex visual observations into digestible parts.`;
+2. **Detail Oriented:** Describe colors, text, objects, and spatial relationships clearly.
+3. **Scannability:** Use headers or lists to break down complex visual observations into digestible parts.
+
+CRITICAL MATHEMATICAL FORMATTING RULES:
+1. **LATEX IS MANDATORY:** Use LaTeX for ALL math, numbers in context, and formulas.
+2. **DELIMITERS:** - INLINE: Use $...$ (Single dollar sign).
+   - BLOCK: Use $$...$$ (Double dollar signs).
+3. **FORBIDDEN SYNTAX:** NEVER use \\[ ... \\] or \\( ... \\) or [ ... ] or ( ... ) for math. THESE WILL BREAK THE RENDERER.
+4. **STRICT COMPLIANCE:** If you generate brackets like [ x^2 ], the user cannot see it. YOU MUST WRITE $$ x^2 $$.
+5. **Universal Wrapping:** Wrap simple numbers in $ if they refer to values (e.g. $1$, $2.5$).
+`;
 
 
         function getModelSystemPrompt(modelName = CURRENT_MODEL.name, isVisionModel = false) {
@@ -881,6 +920,11 @@ CORE PROTOCOLS:
         const latexGridContainer = document.getElementById('latex-grid-container');
         const closeLatexBtn = document.getElementById('close-latex-btn');
         
+        // NEW Preview Elements
+        const latexPreviewInput = document.getElementById('latex-preview-input');
+        const latexLivePreview = document.getElementById('latex-live-preview');
+        const latexInsertMainBtn = document.getElementById('latex-insert-main-btn');
+
         // Fraction Builder Elements
         const fractionBuilderUI = document.getElementById('fraction-builder-ui');
         const mainLatexButtons = document.getElementById('main-latex-buttons');
@@ -889,6 +933,18 @@ CORE PROTOCOLS:
         const fracWhole = document.getElementById('frac-whole');
         const fracNum = document.getElementById('frac-num');
         const fracDen = document.getElementById('frac-den');
+
+        function updateLivePreview() {
+            const val = latexPreviewInput.value.trim();
+            if (!val) {
+                latexLivePreview.innerHTML = '<span style="color:#aaa; font-size:0.6em; font-weight:normal;">Preview</span>';
+            } else {
+                latexLivePreview.innerHTML = `$$${val}$$`;
+                if (window.MathJax) {
+                    MathJax.typesetPromise([latexLivePreview]).catch(err => console.log('Preview render error:', err));
+                }
+            }
+        }
 
         // Single Builder Elements
         const singleBuilderUI = document.getElementById('single-builder-ui');
@@ -956,8 +1012,9 @@ CORE PROTOCOLS:
                         } else if (sym.code.includes("{}")) {
                             showSingleBuilder(sym.label, sym.code);
                         } else {
-                            // User requested all symbols be wrapped in $$
-                            insertAtCursor(userInput, `$$${sym.code}$$`);
+                            // Append to preview input instead of main chat
+                            insertAtCursor(latexPreviewInput, sym.code);
+                            latexPreviewInput.focus();
                         }
                     };
                     latexGridContainer.appendChild(btn);
@@ -1010,9 +1067,12 @@ CORE PROTOCOLS:
             const val = singleInputVal.value.trim();
             // Replace first instance of {} with {val}
             const finalLatex = currentSingleTemplate.replace("{}", `{${val}}`);
-            insertAtCursor(userInput, `$$${finalLatex}$$`);
+            
+            // Insert into preview input
+            insertAtCursor(latexPreviewInput, finalLatex);
+            
             hideSingleBuilder();
-            latexModal.style.display = 'none';
+            // Do not close modal, return to grid
         }
 
         function insertFraction() {
@@ -1030,12 +1090,11 @@ CORE PROTOCOLS:
             if (w) latex += `${w} `;
             latex += `\\frac{${n}}{${d}}`;
             
-            // Automatically wrap in $$ as requested
-            const finalCode = `$$${latex}$$`;
+            // Insert into preview input
+            insertAtCursor(latexPreviewInput, latex);
 
-            insertAtCursor(userInput, finalCode);
             hideFractionBuilder();
-            latexModal.style.display = 'none'; 
+            // Do not close modal
         }
 
         function insertAtCursor(myField, myValue) {
@@ -1733,11 +1792,28 @@ CORE PROTOCOLS:
             // New Math Listeners
             if (mathButton) mathButton.addEventListener('click', () => {
                 latexModal.style.display = 'flex';
+                latexPreviewInput.value = ''; // Clear previous build
+                updateLivePreview(); // Clear preview display
+                latexPreviewInput.focus();
                 hideFractionBuilder(); // Reset to grid view
                 hideSingleBuilder();
             });
             if (closeLatexBtn) closeLatexBtn.addEventListener('click', () => latexModal.style.display = 'none');
             
+            // Live Preview Listener
+            if (latexPreviewInput) {
+                latexPreviewInput.addEventListener('input', updateLivePreview);
+            }
+
+            // NEW: Main Insert Button Listener
+            if (latexInsertMainBtn) latexInsertMainBtn.addEventListener('click', () => {
+                const equation = latexPreviewInput.value.trim();
+                if (equation) {
+                    insertAtCursor(userInput, `$$${equation}$$`);
+                }
+                latexModal.style.display = 'none';
+            });
+
             // Fraction Builder Listeners
             if (insertFracBtn) insertFracBtn.addEventListener('click', insertFraction);
             if (cancelFracBtn) cancelFracBtn.addEventListener('click', hideFractionBuilder);
