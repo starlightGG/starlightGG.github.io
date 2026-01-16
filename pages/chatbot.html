@@ -724,6 +724,18 @@ max-width: 100vh;
                 </div>
             </div>
 
+            <!-- NEW: Generic Single Input Builder UI -->
+            <div id="single-builder-ui" class="fraction-builder">
+                <h4 id="single-builder-title">Insert Value</h4>
+                <div class="fraction-row">
+                    <input type="text" id="single-input-val" class="fraction-input" placeholder="Value" style="width: 150px;">
+                </div>
+                <div class="modal-buttons">
+                    <button class="cancel-btn" id="cancel-single-btn">Back</button>
+                    <button class="confirm-btn" id="insert-single-btn">Insert</button>
+                </div>
+            </div>
+
             <div class="modal-buttons" id="main-latex-buttons">
                  <button class="cancel-btn" id="close-latex-btn">Close</button>
             </div>
@@ -877,24 +889,50 @@ CORE PROTOCOLS:
         const fracNum = document.getElementById('frac-num');
         const fracDen = document.getElementById('frac-den');
 
+        // Single Builder Elements
+        const singleBuilderUI = document.getElementById('single-builder-ui');
+        const singleBuilderTitle = document.getElementById('single-builder-title');
+        const singleInputVal = document.getElementById('single-input-val');
+        const insertSingleBtn = document.getElementById('insert-single-btn');
+        const cancelSingleBtn = document.getElementById('cancel-single-btn');
+        let currentSingleTemplate = "";
+
         // --- NEW: LaTeX Picker Logic ---
         const latexSymbols = [
             { cat: "Basic", symbols: [ 
                 { label: "+", code: "+" }, { label: "-", code: "-" }, { label: "=", code: "=" }, 
                 { label: "±", code: "\\pm" }, { label: "×", code: "\\times" }, { label: "÷", code: "\\div" },
-                { label: "√", code: "\\sqrt{}" }, { label: "frac", code: "SPECIAL_FRAC" }, { label: "^", code: "^{}" }, { label: "_", code: "_{}" }
+                { label: "·", code: "\\cdot" }, { label: "√", code: "\\sqrt{}" }, { label: "frac", code: "SPECIAL_FRAC" }, 
+                { label: "^", code: "^{}" }, { label: "_", code: "_{}" }, { label: "( )", code: "\\left(  \\right)" }
             ]},
             { cat: "Greek", symbols: [
-                { label: "α", code: "\\alpha" }, { label: "β", code: "\\beta" }, { label: "γ", code: "\\gamma" }, { label: "θ", code: "\\theta" },
-                { label: "π", code: "\\pi" }, { label: "σ", code: "\\sigma" }, { label: "ω", code: "\\omega" }, { label: "Δ", code: "\\Delta" },
-                { label: "Σ", code: "\\Sigma" }, { label: "λ", code: "\\lambda" }, { label: "φ", code: "\\phi" }, { label: "∞", code: "\\infty" }
+                { label: "α", code: "\\alpha" }, { label: "β", code: "\\beta" }, { label: "γ", code: "\\gamma" }, { label: "δ", code: "\\delta" },
+                { label: "ε", code: "\\epsilon" }, { label: "θ", code: "\\theta" }, { label: "λ", code: "\\lambda" }, { label: "μ", code: "\\mu" },
+                { label: "π", code: "\\pi" }, { label: "ρ", code: "\\rho" }, { label: "σ", code: "\\sigma" }, { label: "τ", code: "\\tau" },
+                { label: "φ", code: "\\phi" }, { label: "ω", code: "\\omega" }, { label: "Δ", code: "\\Delta" }, { label: "Γ", code: "\\Gamma" },
+                { label: "Λ", code: "\\Lambda" }, { label: "Π", code: "\\Pi" }, { label: "Σ", code: "\\Sigma" }, { label: "Φ", code: "\\Phi" },
+                { label: "Ω", code: "\\Omega" }
             ]},
-            { cat: "Relations", symbols: [
+            { cat: "Calculus", symbols: [
+                { label: "∫", code: "\\int" }, { label: "∬", code: "\\iint" }, { label: "∮", code: "\\oint" }, { label: "∂", code: "\\partial" },
+                { label: "∇", code: "\\nabla" }, { label: "lim", code: "\\lim_{x \\to \\infty}" }, { label: "Σ", code: "\\sum" }, { label: "Π", code: "\\prod" },
+                { label: "∞", code: "\\infty" }, { label: "dx", code: "\\,dx" }, { label: "x'", code: "x'" }
+            ]},
+             { cat: "Sets & Logic", symbols: [
+                { label: "∈", code: "\\in" }, { label: "∉", code: "\\notin" }, { label: "⊂", code: "\\subset" }, { label: "⊃", code: "\\supset" },
+                { label: "∪", code: "\\cup" }, { label: "∩", code: "\\cap" }, { label: "∀", code: "\\forall" }, { label: "∃", code: "\\exists" },
+                { label: "¬", code: "\\neg" }, { label: "∨", code: "\\lor" }, { label: "∧", code: "\\land" }, { label: "∅", code: "\\emptyset" },
+                { label: "ℝ", code: "\\mathbb{R}" }, { label: "ℤ", code: "\\mathbb{Z}" }, { label: "ℕ", code: "\\mathbb{N}" }, { label: "ℚ", code: "\\mathbb{Q}" }
+            ]},
+            { cat: "Relations & Arrows", symbols: [
                 { label: "≠", code: "\\neq" }, { label: "≈", code: "\\approx" }, { label: "≤", code: "\\leq" }, { label: "≥", code: "\\geq" },
-                { label: "→", code: "\\rightarrow" }, { label: "←", code: "\\leftarrow" }, { label: "⇒", code: "\\Rightarrow" }, { label: "∈", code: "\\in" }
+                { label: "≡", code: "\\equiv" }, { label: "→", code: "\\rightarrow" }, { label: "←", code: "\\leftarrow" }, { label: "↔", code: "\\leftrightarrow" },
+                { label: "⇒", code: "\\Rightarrow" }, { label: "⇐", code: "\\Leftarrow" }, { label: "⇔", code: "\\Leftrightarrow" }, { label: "↑", code: "\\uparrow" },
+                { label: "↓", code: "\\downarrow" }
             ]},
-            { cat: "Wrappers", symbols: [
-                { label: "$...$", code: "$  $" }, { label: "$$...$$", code: "$$\n  \n$$" }
+            { cat: "Geometry/Trig", symbols: [
+                { label: "∠", code: "\\angle" }, { label: "△", code: "\\triangle" }, { label: "⊥", code: "\\perp" }, { label: "∥", code: "\\parallel" },
+                { label: "°", code: "^\\circ" }, { label: "sin", code: "\\sin" }, { label: "cos", code: "\\cos" }, { label: "tan", code: "\\tan" }
             ]}
         ];
 
@@ -914,8 +952,8 @@ CORE PROTOCOLS:
                     btn.onclick = () => {
                         if (sym.code === "SPECIAL_FRAC") {
                             showFractionBuilder();
-                        } else if (group.cat === "Wrappers") {
-                            insertAtCursor(userInput, sym.code);
+                        } else if (sym.code.includes("{}")) {
+                            showSingleBuilder(sym.label, sym.code);
                         } else {
                             // User requested all symbols be wrapped in $$
                             insertAtCursor(userInput, `$$${sym.code}$$`);
@@ -942,6 +980,38 @@ CORE PROTOCOLS:
             fractionBuilderUI.style.display = 'none';
             latexGridContainer.style.display = 'grid';
             mainLatexButtons.style.display = 'flex';
+        }
+
+        // Single Builder Logic
+        function showSingleBuilder(label, template) {
+            currentSingleTemplate = template;
+            latexGridContainer.style.display = 'none';
+            mainLatexButtons.style.display = 'none';
+            singleBuilderUI.style.display = 'flex';
+            
+            let titleText = "Insert Value";
+            if (label === "√") titleText = "Square Root";
+            else if (label === "^") titleText = "Exponent";
+            else if (label === "_") titleText = "Subscript";
+            
+            singleBuilderTitle.textContent = titleText;
+            singleInputVal.value = '';
+            singleInputVal.focus();
+        }
+
+        function hideSingleBuilder() {
+            singleBuilderUI.style.display = 'none';
+            latexGridContainer.style.display = 'grid';
+            mainLatexButtons.style.display = 'flex';
+        }
+
+        function insertSingleValue() {
+            const val = singleInputVal.value.trim();
+            // Replace first instance of {} with {val}
+            const finalLatex = currentSingleTemplate.replace("{}", `{${val}}`);
+            insertAtCursor(userInput, `$$${finalLatex}$$`);
+            hideSingleBuilder();
+            latexModal.style.display = 'none';
         }
 
         function insertFraction() {
@@ -1643,12 +1713,22 @@ CORE PROTOCOLS:
             if (mathButton) mathButton.addEventListener('click', () => {
                 latexModal.style.display = 'flex';
                 hideFractionBuilder(); // Reset to grid view
+                hideSingleBuilder();
             });
             if (closeLatexBtn) closeLatexBtn.addEventListener('click', () => latexModal.style.display = 'none');
             
             // Fraction Builder Listeners
             if (insertFracBtn) insertFracBtn.addEventListener('click', insertFraction);
             if (cancelFracBtn) cancelFracBtn.addEventListener('click', hideFractionBuilder);
+
+            // Single Builder Listeners
+            if (insertSingleBtn) insertSingleBtn.addEventListener('click', insertSingleValue);
+            if (cancelSingleBtn) cancelSingleBtn.addEventListener('click', hideSingleBuilder);
+            
+            // Allow Enter key in single input to submit
+            if (singleInputVal) singleInputVal.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') insertSingleValue();
+            });
 
             userInput.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter' && !e.shiftKey && !sendButton.disabled) {
