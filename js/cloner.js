@@ -81,40 +81,7 @@ function executeCloningLogic() {
     if (window.location.href !== 'about:blank' && savedState === 'true') {
         
 const words = [
-    // Core Session States
-    'active-session-authenticated',
-    'session-validated-secure',
-    'waiting-for-system-response',
-    'session-heartbeat-monitored',
-    'multiple-sessions-synchronized',
-    'session-integrity-verified',
-    'active-token-handshake',
-    
-    // School System & LMS Mimicry
-    'portal-session-sync-active',
-    'edu-session-token-refresh',
-    'student-portal-id-verified',
-    'session-persistence-protocol',
-    'academic-records-handshake',
-    'learning-module-session',
-    'enrollment-verification-state',
-    
-    // Status & Activity
-    'tab-focus-monitoring-active',
-    'session-keep-alive-beacon',
-    'telemetry-data-ping-stable',
-    'media-stream-session-active',
-    'background-process-id-stable',
-    'activity-tracker-session',
-    'system-idle-prevention',
-    
-    // Connectivity & Auth
-    'session-reconnect-protocol',
-    'waiting-for-auth-gateway',
-    'session-state-persistent',
-    'active-user-node-connected',
-    'secure-tunnel-session-init',
-    'cross-origin-session-auth'
+    'chrome://settings','chrome://camera-app','chrome://file-manager', 'chrome://os-settings'
 ];
         const randomWord = words[Math.floor(Math.random() * words.length)];
 
