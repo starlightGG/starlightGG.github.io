@@ -10,7 +10,7 @@
       window.MathJax = {
         tex: {
           inlineMath: [['$', '$'], ['\\(', '\\)']],
-          displayMath: [['$$', '$$'], ['\\[', '\\]']],
+          displayMath: [['$$', '$$'], ['\\[', '\\]'], ['[', ']']],
           processEscapes: true
         },
         options: {
@@ -815,14 +815,15 @@ max-width: 100vh;
 
 // --- Updated System Prompt Setup for LaTeX Support ---
 
-const BASE_SYSTEM_PROMPT_CONTENT = `You are a helpful, fast, and professional AI assistant. Keep your responses concise and well-structured.
+const BASE_SYSTEM_PROMPT_CONTENT = `You are a helpful, fast, and professional AI assistant.
 
-CRITICAL OUTPUT RULES:
-1. **Mathematical Expressions:** For ANY math or science formulas, you MUST use LaTeX notation.
-2. **Strict Delimiters:** Use single dollar signs ($) for inline math and double dollar signs ($$) for block math. STRICTLY FORBIDDEN: Do not use \\[ or \\( or raw brackets.
-3. **Universal Wrapping:** AUTOMATICALLY WRAP ALL MATH IN $$ OR $. Even simple numbers like "1" or "2" must be formatted as $1$ or $2$ if they are part of a quantitative statement.
-4. **No Spaces Required:** You may place math directly against text (e.g., "The answer is $x=5$").
-5. **Formatting:** Use Markdown bolding and bullet points to ensure the response is scannable and easy to read.`;
+CRITICAL MATHEMATICAL FORMATTING RULES:
+1. **LATEX IS MANDATORY:** Use LaTeX for ALL math, numbers in context, and formulas.
+2. **DELIMITERS:** - INLINE: Use $...$ (Single dollar sign).
+   - BLOCK: Use $$...$$ (Double dollar signs).
+3. **FORBIDDEN SYNTAX:** NEVER use \\[ ... \\] or \\( ... \\) or [ ... ] for math. THESE WILL BREAK THE RENDERER.
+4. **STRICT COMPLIANCE:** If you generate brackets like [ x^2 ], the user cannot see it. YOU MUST WRITE $$ x^2 $$.
+5. **Universal Wrapping:** Wrap simple numbers in $ if they refer to values (e.g. $1$, $2.5$).`;
 
 const VISION_SYSTEM_PROMPT_CONTENT = `You are a dedicated Vision Expert. Your primary goal is to analyze images with high precision and confidence.
 
@@ -1691,6 +1692,25 @@ CORE PROTOCOLS:
 
         // --- Initialization ---
         document.addEventListener('DOMContentLoaded', () => {
+            // Theme Logic (No toggle, just checks storage)
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                const root = document.documentElement;
+                root.style.setProperty('--neumorphic-bg', '#2b2e33');
+                root.style.setProperty('--shadow-light', '#35393f');
+                root.style.setProperty('--shadow-dark', '#212327');
+                document.body.style.color = '#e0e0e0';
+                
+                // Adjust input backgrounds for dark mode visibility
+                const styleSheet = document.createElement("style");
+                styleSheet.innerText = `
+                    .chat-item, .message, .input-area, .sidebar, .fraction-input, #user-input, .latex-btn { color: #e0e0e0; }
+                    .latex-btn:hover { color: var(--main-color); }
+                    #model-select-dropdown { color: #e0e0e0; }
+                `;
+                document.head.appendChild(styleSheet);
+            }
+
             initLatexPicker(); // Initialize Math Buttons
 
             // Event Listeners
