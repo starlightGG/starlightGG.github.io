@@ -3,7 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Google</title>
+    <title>Starlighter AI</title>
+    
+    <!-- 1. MathJax Configuration (Must be before script load) -->
+    <script>
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          displayMath: [['$$', '$$'], ['\\[', '\\]']],
+          processEscapes: true
+        },
+        options: {
+          skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      };
+    </script>
+    
+    <!-- 2. MathJax Library -->
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" id="MathJax-script" async></script>
+
+    <!-- 3. MathJax Safe Refresh Logic -->
+    <script>
+      let mathTimeout;
+      function safeRefreshMath() {
+        if (window.MathJax && window.MathJax.typesetPromise) {
+          clearTimeout(mathTimeout);
+          mathTimeout = setTimeout(() => {
+            MathJax.typesetPromise().catch((err) => console.log('MathJax error:', err));
+          }, 250);
+        }
+      }
+      const observer = new MutationObserver(() => safeRefreshMath());
+      document.addEventListener("DOMContentLoaded", () => {
+        observer.observe(document.body, { childList: true, subtree: true, characterData: true });
+      });
+    </script>
+
+    <!-- 4. Marked Library for Markdown -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
     <style>/* --- Neumorphic Base Color and Variables --- */
 :root {
     --neumorphic-bg: #e0e5ec;
@@ -16,6 +54,63 @@
     --inner-shadow-recessed: inset 5px 5px 10px var(--shadow-dark), inset -5px -5px 10px var(--shadow-light);
     --outer-shadow-embossed: 5px 5px 10px var(--shadow-dark), -5px -5px 10px var(--shadow-light);
 }
+
+/* Fraction Builder Styles - RESTORED */
+.fraction-builder {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    margin-top: 10px;
+    padding: 10px;
+}
+.fraction-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+.fraction-stack {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 80px;
+}
+.fraction-input {
+    width: 100%;
+    padding: 8px;
+    text-align: center;
+    border: none;
+    border-radius: 8px;
+    background: var(--neumorphic-bg);
+    box-shadow: var(--inner-shadow-recessed);
+    outline: none;
+    font-size: 1em;
+}
+.fraction-line {
+    width: 100%;
+    height: 2px;
+    background-color: #555;
+    margin: 5px 0;
+    border-radius: 2px;
+}
+.fraction-whole {
+    width: 60px;
+    height: 40px;
+}
+
+/* LaTeX Picker Modal Specifics */
+.latex-picker { width: 450px; }
+.latex-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin: 15px 0; max-height: 300px; overflow-y: auto; padding-right: 5px; }
+.latex-btn { background: var(--neumorphic-bg); color: #555; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 1.1em; display: flex; justify-content: center; align-items: center; box-shadow: var(--outer-shadow-embossed); transition: all 0.2s ease; }
+.latex-btn:hover { color: var(--main-color); transform: translateY(-2px); }
+.latex-btn:active { box-shadow: var(--inner-shadow-recessed); transform: translateY(0); }
+.latex-category { grid-column: span 5; font-size: 0.85em; color: var(--main-color); margin-top: 15px; margin-bottom: 5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--shadow-dark); padding-bottom: 5px; }
+
+/* Scrollbar for grid */
+.latex-grid::-webkit-scrollbar { width: 6px; }
+.latex-grid::-webkit-scrollbar-track { background: transparent; }
+.latex-grid::-webkit-scrollbar-thumb { background: var(--shadow-dark); border-radius: 3px; }
 
 /* --- Base and Full-Screen Layout --- */
 * {
@@ -366,7 +461,7 @@ max-width: 100vh;
 }
 
 /* SEND & UPLOAD BUTTONS - Updated Block */
-.send-button, .upload-button { 
+.send-button, .upload-button, .math-button { 
     background-color: var(--secondary-color); 
     color: white;
     font-size: 1.2em; 
@@ -382,13 +477,13 @@ max-width: 100vh;
     padding: 12px 20px; /* Add padding for text */
 }
 
-.send-button:active:not(:disabled), .upload-button:active:not(:disabled) { 
+.send-button:active:not(:disabled), .upload-button:active:not(:disabled), .math-button:active:not(:disabled) { 
     box-shadow: var(--inner-shadow-recessed); 
     background-color: #218838;
     transform: scale(0.95); 
 }
 
-.send-button:disabled, .upload-button:disabled {
+.send-button:disabled, .upload-button:disabled, .math-button:disabled {
     opacity: 0.6;
     cursor: not-allowed;
     box-shadow: 2px 2px 4px var(--shadow-dark);
@@ -463,7 +558,7 @@ max-width: 100vh;
 
 /* --- MODAL STYLES (Adjusted for Neumorphism) --- */
 /* The HTML uses IDs like custom-confirm-modal, but this targets the dialog box inside the JS logic, which is fine for visibility control */
-#custom-confirm-modal, #custom-prompt-modal {
+#custom-confirm-modal, #custom-prompt-modal, #latex-modal {
     position: fixed;
     top: 0;
     left: 0;
@@ -474,6 +569,11 @@ max-width: 100vh;
     justify-content: center;
     align-items: center;
     z-index: 2000;
+}
+
+/* Ensure confirm/prompt modals sit on top of the latex picker */
+#custom-confirm-modal, #custom-prompt-modal {
+    z-index: 2100;
 }
 
 .modal-content {
@@ -560,14 +660,17 @@ max-width: 100vh;
         padding-bottom: 120px; /* Make sure chat is visible above input area */
     }
 }</style>
+
 </head>
 <body>
 
+    <!-- Context Menu -->
     <div id="context-menu" class="context-menu">
         <button data-action="edit">Edit Title</button>
         <button data-action="delete">Delete Chat</button>
     </div>
 
+    <!-- Modals -->
     <div id="custom-confirm-modal" class="modal">
         <div class="modal-content">
             <h3 id="confirm-title">Confirm</h3>
@@ -585,24 +688,57 @@ max-width: 100vh;
             <p id="prompt-message">Enter value:</p>
             <input type="text" id="prompt-input">
             <div class="modal-buttons">
-              
                 <button class="cancel-btn" data-prompt-response="false">Cancel</button>
                 <button class="confirm-btn" data-prompt-response="true">Save</button>
             </div>
         </div>
     </div>
-    
+
+        <!-- New LaTeX Picker Modal Structure -->
+    <div id="latex-modal" class="modal">
+        <div class="modal-content latex-picker">
+            <h3>Math Symbols</h3>
+            
+            <!-- Standard Grid -->
+            <div class="latex-grid" id="latex-grid-container">
+                <!-- Buttons injected by JS -->
+            </div>
+
+            <!-- New Fraction Builder UI -->
+            <div id="fraction-builder-ui" class="fraction-builder">
+                <h4>Insert Fraction</h4>
+                <div class="fraction-row">
+                    <!-- Whole Number -->
+                    <input type="text" id="frac-whole" class="fraction-input fraction-whole" placeholder="#">
+                    
+                    <!-- Fraction Stack -->
+                    <div class="fraction-stack">
+                        <input type="text" id="frac-num" class="fraction-input" placeholder="Num">
+                        <div class="fraction-line"></div>
+                        <input type="text" id="frac-den" class="fraction-input" placeholder="Den">
+                    </div>
+                </div>
+                <div class="modal-buttons">
+                    <button class="cancel-btn" id="cancel-frac-btn">Back</button>
+                    <button class="confirm-btn" id="insert-frac-btn">Insert</button>
+                </div>
+            </div>
+
+            <div class="modal-buttons" id="main-latex-buttons">
+                 <button class="cancel-btn" id="close-latex-btn">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- App Layout -->
     <div class="app-container">
         
         <div class="sidebar">
             <div class="sidebar-header">
                 <h2>Starlighter AI</h2>
             </div>
-            <button id="new-chat-button" class="new-chat-button">
-                + New Chat
-            </button>
-            <div id="chat-list" class="chat-list">
-                </div>
+            <button id="new-chat-button" class="new-chat-button">+ New Chat</button>
+            <div id="chat-list" class="chat-list"></div>
             <div class="sidebar-footer">
                 <p>Model: <span id="displayed-model">Loading...</span></p>
                 <p>Status: <span id="api-status">Loading API Key...</span></p>
@@ -614,35 +750,31 @@ max-width: 100vh;
             <div id="start-page" class="start-page">
                 <h1>Welcome!</h1>
                 <p>Select a model to start a conversation.</p>
-                <div id="model-selector-container" class="model-selector-container">
-                    </div>
+                <div id="model-selector-container" class="model-selector-container"></div>
             </div>
 
             <div id="main-chat-container" class="chat-container">
-                
-                <div id="chat-box" class="chat-box">
-                    </div>
+                <div id="chat-box" class="chat-box"></div>
 
                 <div class="input-area">
-                    
                     <div class="model-select-bar">
                         <label for="model-select-dropdown">Current Model:</label>
-                        <select id="model-select-dropdown" onchange="selectModel(this.value)" disabled>
-                            </select>
+                        <select id="model-select-dropdown" onchange="selectModel(this.value)" disabled></select>
                     </div>
 
                     <div class="input-controls">
-                        
                         <input type="file" id="image-file-input" accept="image/jpeg,image/png,image/webp" style="display:none;">
                         
-                        <button id="file-upload-button" class="upload-button" style="display:none;" title="Upload Image (Multimodal Models Only)">
-                            🖼️
-                        </button>
+                        <!-- File Upload Button -->
+                        <button id="file-upload-button" class="upload-button" style="display:none;" title="Upload Image">🖼️</button>
                         
+                        <!-- NEW: Math Button -->
+                        <button id="math-button" class="math-button" title="Insert Math Symbol">Σ</button>
+
+                        <!-- Reverted Placeholder Text -->
                         <textarea id="user-input" placeholder="Type your message here..." rows="1" disabled></textarea>
-                        <div id="main-char-counter" style="text-align: right; font-size: 0.7em; color: #888; padding: 0 10px;">
-        0 / 4000
-    </div>
+                        
+                        <div id="main-char-counter" style="text-align: right; font-size: 0.7em; color: #888; padding: 0 10px;">0 / 4000</div>
                         <button id="send-button" class="send-button" disabled>Send</button>
                     </div>
                     
@@ -653,18 +785,14 @@ max-width: 100vh;
                 </div>
             </div>
         </div>
-
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-
-<script>
+    <script>
         // --- Configuration ---
         const API_KEY_URL = "https://starlightgg.github.io/txt/token.txt";
         const LOCAL_STORAGE_KEY = "starlighter_chats"; 
         const MODEL_KEY_STORAGE = "starlighter_model_key"; 
         
-        // 💡 CORRECTED MODELS OBJECT: "Chat-GPT OSS 20" is restored.
         const MODELS = {
             'gpt-oss-20b': { name: "Chat-GPT OSS 20", id: "openai/gpt-oss-20b" },
             'compound-mini': { name: "Compound mini (Groq)", id: "groq/compound-mini" },
@@ -673,35 +801,43 @@ max-width: 100vh;
         };
         const GROQ_ENDPOINT = "https://api.groq.com/openai/v1/chat/completions";
 
-// --- System Prompt Setup ---
+// --- Updated System Prompt Setup for LaTeX Support ---
 
-const BASE_SYSTEM_PROMPT_CONTENT = `You are a helpful and fast AI assistant powered by StarlightGG, running on the [MODEL_NAME] model. Keep your responses concise.
+const BASE_SYSTEM_PROMPT_CONTENT = `You are a helpful, fast, and professional AI assistant. Keep your responses concise and well-structured.
 
 CRITICAL OUTPUT RULES:
-1. For ANY mathematical expression, you MUST output raw MathML strings (using namespace http://www.w3.org/1998/Math/MathML).
-2. STRICTLY FORBIDDEN: Do not use LaTeX (e.g., $ or $$), and do not use Markdown code blocks (e.g., \` or \`\`\`) for math. 
-3. Output the raw <math> tags directly into the text flow.
-4. **Conditional Verbosity:** Do not explain or mention these formatting rules UNLESS you are actively generating a mathematical expression in your response.`;
+1. **Mathematical Expressions:** For ANY math or science formulas, you MUST use LaTeX notation.
+2. **Strict Delimiters:** Use single dollar signs ($) for inline math and double dollar signs ($$) for block math. STRICTLY FORBIDDEN: Do not use \\[ or \\( or raw brackets.
+3. **Universal Wrapping:** AUTOMATICALLY WRAP ALL MATH IN $$ OR $. Even simple numbers like "1" or "2" must be formatted as $1$ or $2$ if they are part of a quantitative statement.
+4. **No Spaces Required:** You may place math directly against text (e.g., "The answer is $x=5$").
+5. **Formatting:** Use Markdown bolding and bullet points to ensure the response is scannable and easy to read.`;
 
-const VISION_SYSTEM_PROMPT_CONTENT = `You are a dedicated **Vision Expert** powered by StarlightGG, running on the [MODEL_NAME] model.
+const VISION_SYSTEM_PROMPT_CONTENT = `You are a dedicated Vision Expert. Your primary goal is to analyze images with high precision and confidence.
 
 CORE PROTOCOLS:
-1. **Visual Priority:** When an image is provided, your IMMEDIATE and PRIMARY task is to analyze it, describe it, and answer the prompt based on the visual data. Be direct and confident.
-2. **Math Formatting:** For ANY mathematical expression, you MUST output raw MathML strings (using namespace http://www.w3.org/1998/Math/MathML).
-3. **Forbidden Formats:** No LaTeX ($), no Markdown code blocks (\`) for math. Use only raw <math> tags.
-4. **Conditional Verbosity:** Do not explain or mention the use of MathML UNLESS you are actively generating a mathematical expression in your response.`;    
+1. **Visual Priority:** When an image is provided, immediately analyze it and answer the prompt based on the visual data. Be direct.
+2. **Technical Descriptions:** If the image contains math, data, or technical symbols, represent them using LaTeX with $ or $$ delimiters. NEVER use \\[ or \\(.
+3. **Detail Oriented:** Describe colors, text, objects, and spatial relationships clearly.
+4. **Scannability:** Use headers or lists to break down complex visual observations into digestible parts.`;
+
+
         function getModelSystemPrompt(modelName = CURRENT_MODEL.name, isVisionModel = false) {
             const content = isVisionModel ? VISION_SYSTEM_PROMPT_CONTENT : BASE_SYSTEM_PROMPT_CONTENT;
-            return { 
-                "role": "system", 
-                "content": content.replace('[MODEL_NAME]', modelName) 
-            };
+            return { "role": "system", "content": content.replace('[MODEL_NAME]', modelName) };
         }
 
         let GROQ_API_KEY = null; 
-        let CURRENT_MODEL = MODELS['gpt-oss-20b']; // Setting default back to the first model in the list
+        let CURRENT_MODEL = MODELS['gpt-oss-20b'];
         
-        // --- State Management ---
+        // --- Global State ---
+        let allChatHistories = {};
+        let currentChatId = 'chat-0'; 
+        let chatCounter = 0;
+        let imageAnalysisCounter = 0; 
+        let contextMenuTargetChatId = null; 
+        let selectedFile = null; 
+
+        // --- DOM Elements ---
         const startPage = document.getElementById('start-page');
         const mainChatContainer = document.getElementById('main-chat-container');
         const modelSelectorContainer = document.getElementById('model-selector-container'); 
@@ -714,30 +850,165 @@ CORE PROTOCOLS:
         const modelDisplay = document.getElementById('displayed-model'); 
         const contextMenu = document.getElementById('context-menu'); 
         const newChatButton = document.getElementById('new-chat-button');
-        // --- NEW GLOBAL ELEMENT FOR COUNTER ---
-const mainCharCounter = document.getElementById('main-char-counter');
-        // 💡 File Upload Elements & State
+        const mainCharCounter = document.getElementById('main-char-counter');
+        
         const imageFileInput = document.getElementById('image-file-input');
         const fileUploadButton = document.getElementById('file-upload-button');
         const fileDisplayArea = document.getElementById('file-display-area');
         const selectedFileName = document.getElementById('selected-file-name');
         const clearFileButton = document.getElementById('clear-file-button');
-        let selectedFile = null; 
-
-        // Modal elements
+        
         const confirmModal = document.getElementById('custom-confirm-modal');
         const promptModal = document.getElementById('custom-prompt-modal');
         const promptInput = document.getElementById('prompt-input');
 
-        // 💡 Global State Variables
-        let allChatHistories = {};
-        let currentChatId = 'chat-0'; 
-        let chatCounter = 0;
-        let imageAnalysisCounter = 0; 
-        let contextMenuTargetChatId = null; 
-
-        // --- UI Control Functions ---
+        // NEW: Math Modal Elements
+        const mathButton = document.getElementById('math-button');
+        const latexModal = document.getElementById('latex-modal');
+        const latexGridContainer = document.getElementById('latex-grid-container');
+        const closeLatexBtn = document.getElementById('close-latex-btn');
         
+        // Fraction Builder Elements
+        const fractionBuilderUI = document.getElementById('fraction-builder-ui');
+        const mainLatexButtons = document.getElementById('main-latex-buttons');
+        const insertFracBtn = document.getElementById('insert-frac-btn');
+        const cancelFracBtn = document.getElementById('cancel-frac-btn');
+        const fracWhole = document.getElementById('frac-whole');
+        const fracNum = document.getElementById('frac-num');
+        const fracDen = document.getElementById('frac-den');
+
+        // --- NEW: LaTeX Picker Logic ---
+        const latexSymbols = [
+            { cat: "Basic", symbols: [ 
+                { label: "+", code: "+" }, { label: "-", code: "-" }, { label: "=", code: "=" }, 
+                { label: "±", code: "\\pm" }, { label: "×", code: "\\times" }, { label: "÷", code: "\\div" },
+                { label: "√", code: "\\sqrt{}" }, { label: "frac", code: "SPECIAL_FRAC" }, { label: "^", code: "^{}" }, { label: "_", code: "_{}" }
+            ]},
+            { cat: "Greek", symbols: [
+                { label: "α", code: "\\alpha" }, { label: "β", code: "\\beta" }, { label: "γ", code: "\\gamma" }, { label: "θ", code: "\\theta" },
+                { label: "π", code: "\\pi" }, { label: "σ", code: "\\sigma" }, { label: "ω", code: "\\omega" }, { label: "Δ", code: "\\Delta" },
+                { label: "Σ", code: "\\Sigma" }, { label: "λ", code: "\\lambda" }, { label: "φ", code: "\\phi" }, { label: "∞", code: "\\infty" }
+            ]},
+            { cat: "Relations", symbols: [
+                { label: "≠", code: "\\neq" }, { label: "≈", code: "\\approx" }, { label: "≤", code: "\\leq" }, { label: "≥", code: "\\geq" },
+                { label: "→", code: "\\rightarrow" }, { label: "←", code: "\\leftarrow" }, { label: "⇒", code: "\\Rightarrow" }, { label: "∈", code: "\\in" }
+            ]},
+            { cat: "Wrappers", symbols: [
+                { label: "$...$", code: "$  $" }, { label: "$$...$$", code: "$$\n  \n$$" }
+            ]}
+        ];
+
+        function initLatexPicker() {
+            latexGridContainer.innerHTML = '';
+            latexSymbols.forEach(group => {
+                const header = document.createElement('div');
+                header.className = 'latex-category';
+                header.textContent = group.cat;
+                latexGridContainer.appendChild(header);
+
+                group.symbols.forEach(sym => {
+                    const btn = document.createElement('button');
+                    btn.className = 'latex-btn';
+                    btn.textContent = sym.label;
+                    btn.title = sym.code;
+                    btn.onclick = () => {
+                        if (sym.code === "SPECIAL_FRAC") {
+                            showFractionBuilder();
+                        } else if (group.cat === "Wrappers") {
+                            insertAtCursor(userInput, sym.code);
+                        } else {
+                            // User requested all symbols be wrapped in $$
+                            insertAtCursor(userInput, `$$${sym.code}$$`);
+                        }
+                    };
+                    latexGridContainer.appendChild(btn);
+                });
+            });
+        }
+
+        // Fraction Builder Logic
+        function showFractionBuilder() {
+            latexGridContainer.style.display = 'none';
+            mainLatexButtons.style.display = 'none';
+            fractionBuilderUI.style.display = 'flex';
+            // Reset inputs
+            fracWhole.value = '';
+            fracNum.value = '';
+            fracDen.value = '';
+            fracNum.focus();
+        }
+
+        function hideFractionBuilder() {
+            fractionBuilderUI.style.display = 'none';
+            latexGridContainer.style.display = 'grid';
+            mainLatexButtons.style.display = 'flex';
+        }
+
+        function insertFraction() {
+            const w = fracWhole.value.trim();
+            const n = fracNum.value.trim();
+            const d = fracDen.value.trim();
+            
+            if (!n || !d) {
+                showCustomConfirm("Input Error", "Numerator and Denominator are required.");
+                return;
+            }
+
+            // Construct LaTeX
+            let latex = "";
+            if (w) latex += `${w} `;
+            latex += `\\frac{${n}}{${d}}`;
+            
+            // Automatically wrap in $$ as requested
+            const finalCode = `$$${latex}$$`;
+
+            insertAtCursor(userInput, finalCode);
+            hideFractionBuilder();
+            latexModal.style.display = 'none'; 
+        }
+
+        function insertAtCursor(myField, myValue) {
+            // IE support
+            if (document.selection) {
+                myField.focus();
+                var sel = document.selection.createRange();
+                sel.text = myValue;
+            }
+            // MOZILLA and others
+            else if (myField.selectionStart || myField.selectionStart == '0') {
+                var startPos = myField.selectionStart;
+                var endPos = myField.selectionEnd;
+                // Check if we need to put cursor inside brackets (e.g. \sqrt{})
+                let newCursorPos = startPos + myValue.length;
+                
+                if(myValue.includes("{}")) {
+                    newCursorPos -= 1; // Move back inside the bracket
+                    // If we wrapped it in $$, we need to move back 2 more spaces
+                    if(myValue.endsWith("$$")) {
+                        newCursorPos -= 2;
+                    }
+                } else if (myValue === "$  $") {
+                    newCursorPos -= 2;
+                } else if (myValue.includes("\n")) {
+                    newCursorPos -= 3; // Center of block math
+                }
+
+                myField.value = myField.value.substring(0, startPos)
+                    + myValue
+                    + myField.value.substring(endPos, myField.value.length);
+                
+                myField.focus();
+                myField.selectionStart = newCursorPos;
+                myField.selectionEnd = newCursorPos;
+            } else {
+                myField.value += myValue;
+            }
+            // Trigger input event for counter
+            myField.dispatchEvent(new Event('input'));
+        }
+
+        // --- Standard UI Functions ---
+
         function showStartPage() {
             startPage.style.display = 'flex';
             mainChatContainer.style.display = 'none';
@@ -746,8 +1017,7 @@ const mainCharCounter = document.getElementById('main-char-counter');
         function showChatInterface() {
             startPage.style.display = 'none';
             mainChatContainer.style.display = 'flex';
-                        setupMainInputCounter();
-
+            setupMainInputCounter();
             userInput.focus();
         }
 
@@ -755,28 +1025,23 @@ const mainCharCounter = document.getElementById('main-char-counter');
             contextMenu.style.display = 'none';
             contextMenuTargetChatId = null;
         }
-        
-        // --- MODAL FUNCTIONS ---
-        
+
         function showCustomConfirm(title, message) {
             return new Promise(resolve => {
                 document.getElementById('confirm-title').textContent = title;
                 document.getElementById('confirm-message').textContent = message;
                 confirmModal.style.display = 'flex';
-
                 const confirmButtons = confirmModal.querySelectorAll('.modal-buttons button');
-                
                 const handleConfirmClick = (event) => {
                     const response = event.target.dataset.confirmResponse === 'true';
                     confirmButtons.forEach(btn => btn.removeEventListener('click', handleConfirmClick));
                     confirmModal.style.display = 'none';
                     resolve(response);
                 };
-
                 confirmButtons.forEach(btn => btn.addEventListener('click', handleConfirmClick));
             });
         }
-        
+
         function showCustomPrompt(title, message, defaultValue) {
             return new Promise(resolve => {
                 document.getElementById('prompt-title').textContent = title;
@@ -784,34 +1049,21 @@ const mainCharCounter = document.getElementById('main-char-counter');
                 promptInput.value = defaultValue;
                 promptModal.style.display = 'flex';
                 promptInput.focus();
-                
                 promptInput.select();
-
                 const promptButtons = promptModal.querySelectorAll('.modal-buttons button');
                 
                 const handlePromptClick = (event) => {
                     const responseType = event.target.dataset.promptResponse;
-                    
                     promptButtons.forEach(btn => btn.removeEventListener('click', handlePromptClick));
                     promptInput.removeEventListener('keydown', handlePromptKeydown);
                     promptModal.style.display = 'none';
-
-                    if (responseType === 'true') {
-                        const finalValue = promptInput.value.trim();
-                        resolve(finalValue || null); 
-                    } else {
-                        resolve(null); 
-                    }
+                    if (responseType === 'true') resolve(promptInput.value.trim() || null);
+                    else resolve(null);
                 };
 
                 const handlePromptKeydown = (event) => {
-                    if (event.key === 'Enter') {
-                        event.preventDefault(); 
-                        promptModal.querySelector('.confirm-btn').click();
-                    } else if (event.key === 'Escape') {
-                        event.preventDefault();
-                        promptModal.querySelector('.cancel-btn').click();
-                    }
+                    if (event.key === 'Enter') { event.preventDefault(); promptModal.querySelector('.confirm-btn').click(); }
+                    else if (event.key === 'Escape') { event.preventDefault(); promptModal.querySelector('.cancel-btn').click(); }
                 };
 
                 promptButtons.forEach(btn => btn.addEventListener('click', handlePromptClick));
@@ -819,15 +1071,12 @@ const mainCharCounter = document.getElementById('main-char-counter');
             });
         }
 
-        // --- Model Selection and Initialization (FIXED Vision Visibility Logic) ---
-
+        // --- Model Logic ---
         function populateModelSelector() {
             modelSelectorContainer.innerHTML = '';
             modelSelectDropdown.innerHTML = '';
-            
             Object.keys(MODELS).forEach(key => {
                 const model = MODELS[key];
-                
                 const option = document.createElement('option');
                 option.value = key;
                 option.textContent = model.name;
@@ -844,129 +1093,73 @@ const mainCharCounter = document.getElementById('main-char-counter');
 
         function toggleModelSelectorLock() {
             const history = allChatHistories[currentChatId] ? allChatHistories[currentChatId].history : [];
-            
             const shouldBeLocked = history && history.length > 1; 
-            
             modelSelectDropdown.disabled = shouldBeLocked;
         }
 
-        // 💡 CRUCIAL FIX: Ensures file upload button visibility is toggled based on the selected model's multimodal property.
         function selectModel(modelKey, isInitialSelection = false, targetButton = null) {
             const previousModel = CURRENT_MODEL;
-            
             const modelObject = MODELS[modelKey] || CURRENT_MODEL;
             CURRENT_MODEL = modelObject;
             localStorage.setItem(MODEL_KEY_STORAGE, modelKey); 
 
-            // Update UI components
             modelDisplay.textContent = CURRENT_MODEL.name;
             modelSelectDropdown.value = modelKey;
             
-            // --- VISION BUTTON VISIBILITY LOGIC ---
             if (fileUploadButton) { 
                 if (CURRENT_MODEL.multimodal) {
                     fileUploadButton.style.display = 'flex'; 
                 } else {
                     fileUploadButton.style.display = 'none';
-                    if (selectedFile) {
-                        clearSelectedFile();
-                    }
+                    if (selectedFile) clearSelectedFile();
                 }
             }
-            // -------------------------------------
             
-            // Update system prompt in CURRENT chat history if the model actually changed
             if (previousModel.id !== CURRENT_MODEL.id) {
                 const currentChatObject = allChatHistories[currentChatId];
                 if (currentChatObject && currentChatObject.history && currentChatObject.history.length > 0) {
-                    currentChatObject.history[0] = getModelSystemPrompt(
-                        CURRENT_MODEL.name, 
-                        CURRENT_MODEL.multimodal 
-                    );
+                    currentChatObject.history[0] = getModelSystemPrompt(CURRENT_MODEL.name, CURRENT_MODEL.multimodal);
                     saveStateToLocalStorage();
                 }
             }
 
             if (isInitialSelection) {
-                document.querySelectorAll('.model-button').forEach(btn => {
-                    btn.classList.remove('selected');
-                });
+                document.querySelectorAll('.model-button').forEach(btn => btn.classList.remove('selected'));
                 if (targetButton) {
                     targetButton.classList.add('selected');
-                }
-                if (targetButton) {
                     setTimeout(showChatInterface, 300);
                 }
             } else {
-                // Only rerender if this is not a *new* chat started from the model buttons
                 renderCurrentChat(); 
             }
         }
-            
-/**
- * Sets the character limit and attaches the live counter logic 
- * to the main chat input field (userInput).
- */
-function setupMainInputCounter() {
-    if (!userInput || !mainCharCounter) {
-        // Safety check: Don't run if the elements aren't found in the HTML
-        console.warn("Input or counter element not found. Skipping counter setup.");
-        return;
-    }
 
-    // 1. Enforce the limit directly on the HTML input element
-    userInput.maxLength = 4000;
-
-    const updateCounter = () => {
-        const currentLength = userInput.value.length;
-        
-        // 2. Update the counter display text
-        mainCharCounter.textContent = `${currentLength} / ${4000}`;
-        
-        // Optional: Change color if close to limit
-        if (currentLength >= 4000 * 0.9) {
-            mainCharCounter.style.color = 'orange';
-        } else {
-            mainCharCounter.style.color = '#888';
+        function setupMainInputCounter() {
+            if (!userInput || !mainCharCounter) return;
+            userInput.maxLength = 4000;
+            const updateCounter = () => {
+                const currentLength = userInput.value.length;
+                mainCharCounter.textContent = `${currentLength} / ${4000}`;
+                if (currentLength >= 4000 * 0.9) mainCharCounter.style.color = 'orange';
+                else mainCharCounter.style.color = '#888';
+            };
+            userInput.addEventListener('input', updateCounter);
+            updateCounter();
         }
-    };
 
-    // 3. Attach the 'input' event listener to update the counter in real-time
-    userInput.addEventListener('input', updateCounter);
-    
-    // 4. Initial update (shows '0 / 4000' when the page loads)
-    updateCounter();
-}
-
-
-        // --- Local Storage Functions ---
-
+        // --- Local Storage ---
         function saveStateToLocalStorage() {
-            // Recalculate image analysis counter before saving
             imageAnalysisCounter = 0;
-            
             Object.keys(allChatHistories).forEach(id => {
                 const chatObject = allChatHistories[id];
-                
                 if (typeof chatObject.title === 'string' && chatObject.title.startsWith('Image Analysis')) { 
                     const num = parseInt(chatObject.title.split(' ')[2]);
-                    if (!isNaN(num) && num > imageAnalysisCounter) {
-                        imageAnalysisCounter = num;
-                    }
+                    if (!isNaN(num) && num > imageAnalysisCounter) imageAnalysisCounter = num;
                 }
             });
 
-            const state = {
-                histories: allChatHistories,
-                counter: chatCounter,
-                currentId: currentChatId,
-                imageCounter: imageAnalysisCounter
-            };
-            try {
-                localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(state));
-            } catch (e) {
-                console.error("Error saving to local storage:", e);
-            }
+            const state = { histories: allChatHistories, counter: chatCounter, currentId: currentChatId, imageCounter: imageAnalysisCounter };
+            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(state));
         }
 
         function loadStateFromLocalStorage() {
@@ -974,21 +1167,16 @@ function setupMainInputCounter() {
                 const storedState = localStorage.getItem(LOCAL_STORAGE_KEY);
                 if (storedState) {
                     const state = JSON.parse(storedState);
-                    
                     const loadedHistories = {};
                     for (const id in state.histories) {
                         const item = state.histories[id];
                         if (Array.isArray(item)) {
                             const firstUserMsg = item.find(msg => msg.role === 'user');
-                            loadedHistories[id] = {
-                                history: item,
-                                title: firstUserMsg ? firstUserMsg.content : `Chat ${id.split('-')[1]}`
-                            };
+                            loadedHistories[id] = { history: item, title: firstUserMsg ? firstUserMsg.content : `Chat ${id.split('-')[1]}` };
                         } else {
                             loadedHistories[id] = item;
                         }
                     }
-
                     allChatHistories = loadedHistories;
                     chatCounter = state.counter || 0;
                     currentChatId = state.currentId || 'chat-0';
@@ -998,23 +1186,17 @@ function setupMainInputCounter() {
                         currentChatId = Object.keys(allChatHistories)[0];
                     }
                 }
-
                 const savedModelKey = localStorage.getItem(MODEL_KEY_STORAGE) || Object.keys(MODELS)[0];
-                if (MODELS[savedModelKey]) {
-                    CURRENT_MODEL = MODELS[savedModelKey];
-                }
+                if (MODELS[savedModelKey]) CURRENT_MODEL = MODELS[savedModelKey];
                 
                 return Object.keys(allChatHistories).length > 0;
-
             } catch (e) {
-                console.error("Error loading from local storage:", e);
-                localStorage.removeItem(LOCAL_STORAGE_KEY);
+                console.error("Error loading storage:", e);
                 return false;
             }
         }
 
-        // --- Chat Lifecycle Functions ---
-
+        // --- Chat Lifecycle ---
         function renderCurrentChat() {
             const chatObject = allChatHistories[currentChatId];
             const history = chatObject ? chatObject.history : [];
@@ -1023,26 +1205,18 @@ function setupMainInputCounter() {
             if (!history || history.length <= 1) { 
                 const promptDiv = document.createElement('div');
                 promptDiv.className = 'welcome-prompt';
-                promptDiv.innerHTML = `<h1>Starlighter</h1><p>Using ${CURRENT_MODEL.name}. Ask a question to start a new conversation.</p>`;
+                promptDiv.innerHTML = `<h1>Starlighter</h1><p>Using ${CURRENT_MODEL.name}. Ask a question to start.</p>`;
                 chatBox.appendChild(promptDiv);
             } else {
-                history.slice(1).forEach(msg => { 
-                    addMessage(msg.role, msg.content, chatBox);
-                });
+                history.slice(1).forEach(msg => addMessage(msg.role, msg.content, chatBox));
             }
             toggleModelSelectorLock();
-            userInput.focus();
             scrollToBottom();
         }
 
         function createNewChatObject(id, initialTitle) {
             const newHistory = [getModelSystemPrompt(CURRENT_MODEL.name, CURRENT_MODEL.multimodal)];
-            
-            allChatHistories[id] = {
-                history: newHistory,
-                title: initialTitle
-            };
-            
+            allChatHistories[id] = { history: newHistory, title: initialTitle };
             saveStateToLocalStorage();
             return newHistory;
         }
@@ -1050,13 +1224,8 @@ function setupMainInputCounter() {
         function updateChatTitle(id, newTitle) {
             const chatItem = document.querySelector(`.chat-item[data-chat-id="${id}"]`);
             if (chatItem) {
-// Replacement line:
-const displayedTitle = truncateText(newTitle);
-                chatItem.textContent = displayedTitle;
-                
-                if (allChatHistories[id]) {
-                    allChatHistories[id].title = newTitle;
-                }
+                chatItem.textContent = truncateText(newTitle);
+                if (allChatHistories[id]) allChatHistories[id].title = newTitle;
                 saveStateToLocalStorage();
             }
         }
@@ -1064,101 +1233,58 @@ const displayedTitle = truncateText(newTitle);
         function startNewChat() {
             chatCounter++;
             currentChatId = `chat-${chatCounter}`;
-            
-            // Set default title for a new chat
             createNewChatObject(currentChatId, `New Chat ${chatCounter}`);
-            
             renderSidebar();
-            
-            document.querySelectorAll('.chat-item').forEach(item => {
-                item.classList.remove('active');
-            });
+            document.querySelectorAll('.chat-item').forEach(item => item.classList.remove('active'));
             const newItem = document.querySelector(`.chat-item[data-chat-id="${currentChatId}"]`);
             if (newItem) newItem.classList.add('active'); 
-
             clearSelectedFile();
-
             renderCurrentChat();
-            
-            // Reset model to default (or current) when starting a new chat
             const currentModelKey = Object.keys(MODELS).find(key => MODELS[key].id === CURRENT_MODEL.id) || Object.keys(MODELS)[0];
             selectModel(currentModelKey); 
         }
-        
-        // 💡 FIX APPLIED: Ensures model switch occurs when loading a chat to set multimodal state correctly
-// 💡 FINAL-FINAL FIX: Ensures all model key updates happen BEFORE selectModel runs, preventing UI reversion.
-function loadChat(chatId) {
-    if (currentChatId === chatId) {
-        renderCurrentChat();
-        return; 
-    } 
 
-    currentChatId = chatId;
-    saveStateToLocalStorage();
-    
-    clearSelectedFile(); 
+        function loadChat(chatId) {
+            if (currentChatId === chatId) { renderCurrentChat(); return; } 
+            currentChatId = chatId;
+            saveStateToLocalStorage();
+            clearSelectedFile(); 
 
-    const chatObject = allChatHistories[chatId];
-    const history = chatObject ? chatObject.history : [];
-    
-    let modelKeyToLoad = Object.keys(MODELS)[0]; 
+            const chatObject = allChatHistories[chatId];
+            const history = chatObject ? chatObject.history : [];
+            let modelKeyToLoad = Object.keys(MODELS)[0]; 
 
-    // 1. Determine the Model Key from History
-    if (history && history.length > 0 && history[0].role === 'system') {
-        const promptContent = history[0].content;
-        const match = promptContent.match(/running on the (.*?) model/); 
-        
-        if (match && match[1]) {
-            const modelNameInHistory = match[1].trim();
-            const modelKey = Object.keys(MODELS).find(key => MODELS[key].name === modelNameInHistory);
-
-            if (modelKey) {
-                modelKeyToLoad = modelKey;
+            if (history && history.length > 0 && history[0].role === 'system') {
+                const promptContent = history[0].content;
+                const match = promptContent.match(/running on the (.*?) model/); 
+                if (match && match[1]) {
+                    const modelNameInHistory = match[1].trim();
+                    const modelKey = Object.keys(MODELS).find(key => MODELS[key].name === modelNameInHistory);
+                    if (modelKey) modelKeyToLoad = modelKey;
+                }
             }
+            
+            modelSelectDropdown.value = modelKeyToLoad; 
+            const modelObject = MODELS[modelKeyToLoad] || MODELS[Object.keys(MODELS)[0]];
+            modelDisplay.textContent = modelObject.name;
+            selectModel(modelKeyToLoad, false); 
+
+            document.querySelectorAll('.chat-item').forEach(item => item.classList.remove('active'));
+            const activeItem = document.querySelector(`.chat-item[data-chat-id="${chatId}"]`);
+            if (activeItem) activeItem.classList.add('active');
         }
-    }
-    
-    // --- CRITICAL UI SYNC STEPS ADDED HERE ---
-    // Manually set the model key on the dropdown before calling selectModel,
-    // which should prevent it from flickering or reverting.
-    modelSelectDropdown.value = modelKeyToLoad; 
 
-    // Manually ensure the model display text is updated immediately, 
-    // using the name found for that key.
-    const modelObject = MODELS[modelKeyToLoad] || MODELS[Object.keys(MODELS)[0]];
-    modelDisplay.textContent = modelObject.name;
-    // ------------------------------------------
-
-    // 2. Call selectModel to update the CURRENT_MODEL global state, buttons, and file button visibility.
-    selectModel(modelKeyToLoad, false); 
-
-    // 3. Update Sidebar Active Class
-    document.querySelectorAll('.chat-item').forEach(item => {
-        item.classList.remove('active');
-    });
-    const activeItem = document.querySelector(`.chat-item[data-chat-id="${chatId}"]`);
-    if (activeItem) {
-        activeItem.classList.add('active');
-    }
-}
         function renderSidebar() {
             chatListContainer.innerHTML = ''; 
-            
-            const sortedChatIds = Object.keys(allChatHistories).sort((a, b) => {
-                return parseInt(b.split('-')[1]) - parseInt(a.split('-')[1]);
-            });
-
+            const sortedChatIds = Object.keys(allChatHistories).sort((a, b) => parseInt(b.split('-')[1]) - parseInt(a.split('-')[1]));
             sortedChatIds.forEach(id => {
                 const chatObject = allChatHistories[id];
                 let title = chatObject.title || `Chat ${id.split('-')[1]}`; 
-
                 const chatItem = document.createElement('div');
                 chatItem.className = `chat-item ${id === currentChatId ? 'active' : ''}`;
                 chatItem.dataset.chatId = id;
-// Replacement line:
-chatItem.textContent = truncateText(title);                
+                chatItem.textContent = truncateText(title);                
                 chatItem.onclick = () => loadChat(id); 
-                
                 chatItem.addEventListener('contextmenu', function(event) {
                     event.preventDefault(); 
                     contextMenuTargetChatId = id; 
@@ -1166,337 +1292,184 @@ chatItem.textContent = truncateText(title);
                     contextMenu.style.left = `${event.clientX}px`;
                     contextMenu.style.display = 'block';
                 });
-
                 chatListContainer.appendChild(chatItem);
             });
         }
-        
-        // --- NEW UTILITY: TRUNCATION FUNCTION ---
-const TITLE_MAX_LENGTH = 50; // Set the character limit for display in the sidebar
 
-/**
- * Truncates a string to a specified length and appends '...' if necessary.
- * @param {string} text The original string to truncate.
- * @param {number} maxLength The maximum number of characters allowed.
- * @returns {string} The truncated or original string.
- */
-function truncateText(text, maxLength = TITLE_MAX_LENGTH) {
-    if (!text || typeof text !== 'string' || text.length <= maxLength) {
-        return text;
-    }
-    // Truncate and add ellipsis
-    return text.substring(0, maxLength).trim() + '...';
-}
-// ----------------------------------------
-        // --- Context Menu Handlers (Unchanged) ---
-
-async function handleDeleteChat() {
-    const chatIdToDelete = contextMenuTargetChatId;
-    
-    if (!chatIdToDelete) return; 
-    
-    const confirmed = await showCustomConfirm(
-        "Confirm Deletion", 
-        `Are you sure you want to delete chat ${allChatHistories[chatIdToDelete].title || chatIdToDelete}? This action cannot be undone.`
-    );
-    
-    if (!confirmed) {
-        return;
-    }
-
-    delete allChatHistories[chatIdToDelete];
-    
-    const remainingChatIds = Object.keys(allChatHistories);
-    
-    let newChatToLoadId = null; 
-
-    if (currentChatId === chatIdToDelete) {
-        if (remainingChatIds.length > 0) {
-            // Find the most recent chat ID to load (assuming they are sorted)
-            // Sorting by ID ensures we pick the highest number, which is the most recent
-            const sortedIds = remainingChatIds.sort((a, b) => {
-                return parseInt(b.split('-')[1]) - parseInt(a.split('-')[1]);
-            });
-            newChatToLoadId = sortedIds[0];
-        } else {
-            // Create a new empty chat if no other chats exist
-            chatCounter++;
-            newChatToLoadId = `chat-${chatCounter}`;
-            createNewChatObject(newChatToLoadId, `New Chat ${chatCounter}`);
+        function truncateText(text, maxLength = 50) {
+            if (!text || typeof text !== 'string' || text.length <= maxLength) return text;
+            return text.substring(0, maxLength).trim() + '...';
         }
-    }
-    
-    renderSidebar();
-    saveStateToLocalStorage();
-    
-    // --- CRUCIAL FIX HERE ---
-    // Instead of relying on renderCurrentChat() (which might miss the model sync),
-    // we explicitly call loadChat() for the new chat, forcing the full model sync.
-    if (newChatToLoadId) {
-        loadChat(newChatToLoadId); 
-    } else {
-        // If the deleted chat was not the current chat, just re-render to update the sidebar.
-        renderCurrentChat(); 
-    }
-    // ------------------------
-}
+
+        // --- Handlers ---
+        async function handleDeleteChat() {
+            const chatIdToDelete = contextMenuTargetChatId;
+            if (!chatIdToDelete) return; 
+            const confirmed = await showCustomConfirm("Confirm Deletion", `Delete ${allChatHistories[chatIdToDelete].title || chatIdToDelete}?`);
+            if (!confirmed) return;
+
+            delete allChatHistories[chatIdToDelete];
+            const remainingChatIds = Object.keys(allChatHistories);
+            let newChatToLoadId = null; 
+
+            if (currentChatId === chatIdToDelete) {
+                if (remainingChatIds.length > 0) {
+                    const sortedIds = remainingChatIds.sort((a, b) => parseInt(b.split('-')[1]) - parseInt(a.split('-')[1]));
+                    newChatToLoadId = sortedIds[0];
+                } else {
+                    chatCounter++;
+                    newChatToLoadId = `chat-${chatCounter}`;
+                    createNewChatObject(newChatToLoadId, `New Chat ${chatCounter}`);
+                }
+            }
+            renderSidebar();
+            saveStateToLocalStorage();
+            if (newChatToLoadId) loadChat(newChatToLoadId); 
+            else renderCurrentChat(); 
+        }
 
         async function handleEditChatTitle() {
             const chatIdToEdit = contextMenuTargetChatId;
-            
             const chatObject = allChatHistories[chatIdToEdit];
-            const chatItem = document.querySelector(`.chat-item[data-chat-id="${chatIdToEdit}"]`);
-            if (!chatIdToEdit || !chatItem || !chatObject) return;
+            if (!chatIdToEdit || !chatObject) return;
 
-            const currentTitle = chatObject.title || chatItem.textContent.replace('...', '').trim();
-            
-            const newTitle = await showCustomPrompt(
-                "Edit Chat Title", 
-                `Enter a new title for this chat:`, 
-                currentTitle
-            );
-
+            const currentTitle = chatObject.title;
+            const newTitle = await showCustomPrompt("Edit Title", `Enter new title:`, currentTitle);
             if (newTitle && newTitle.trim()) {
                 const cleanNewTitle = newTitle.trim();
-                
                 chatObject.title = cleanNewTitle;
-                
                 const history = chatObject.history;
                 const firstUserMsgIndex = history.findIndex(msg => msg.role === 'user');
-                
-                if (firstUserMsgIndex !== -1) {
-                    // If a user message exists, update its content to the new title
-                    history[firstUserMsgIndex].content = cleanNewTitle;
-                } else if (history.length === 1) { 
-                    // If only system prompt exists, push a new user message to give context
-                    history.push({ "role": "user", "content": cleanNewTitle });
-                }
-
+                if (firstUserMsgIndex !== -1) history[firstUserMsgIndex].content = cleanNewTitle;
+                else if (history.length === 1) history.push({ "role": "user", "content": cleanNewTitle });
                 updateChatTitle(chatIdToEdit, cleanNewTitle);
                 renderSidebar(); 
             }
         }
-        
-        // --- File Handling Functions (Unchanged) ---
 
         function handleFileSelect(event) {
             const file = event.target.files[0];
             if (file) {
                 if (file.size > 4 * 1024 * 1024) {
-                    alert("File size exceeds 4MB. Please select a smaller image.");
+                    alert("File size exceeds 4MB.");
                     event.target.value = ''; 
                     return;
                 }
                 selectedFile = file;
-                selectedFileName.textContent = selectedFile.name;
+                selectedFileName.textContent = file.name;
                 fileDisplayArea.style.display = 'flex';
-                imageFileInput.value = ''; 
+                const reader = new FileReader();
+                reader.onload = function(e) { selectedFile.base64 = e.target.result; };
+                reader.readAsDataURL(file);
             }
         }
 
         function clearSelectedFile() {
             selectedFile = null;
-            if (imageFileInput) imageFileInput.value = ''; 
-            if (fileDisplayArea) fileDisplayArea.style.display = 'none';
-            if (selectedFileName) selectedFileName.textContent = 'No file selected';
+            imageFileInput.value = ''; 
+            fileDisplayArea.style.display = 'none';
+            selectedFileName.textContent = 'No file selected';
         }
 
         function encodeFileToBase64(file) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
-                reader.onload = () => {
-                    resolve(reader.result);
-                };
-                reader.onerror = (error) => {
-                    reject(error);
-                };
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = (error) => reject(error);
                 reader.readAsDataURL(file);
             });
         }
 
-
-        // --- Utility Functions (Unchanged) ---
         function scrollToBottom() {
-            if (chatBox) chatBox.scrollTop = chatBox.scrollHeight;
+            if(chatBox) chatBox.scrollTop = chatBox.scrollHeight;
         }
-/**
- * Copies text to the clipboard and provides visual feedback on the button.
- * @param {string} text The text content to be copied.
- * @param {HTMLElement} buttonElement The button element clicked (used for feedback).
- */
-function copyToClipboard(text, buttonElement) {
-    if (!text || text.trim() === '') {
-        console.warn("Attempted to copy empty text.");
-        return; 
-    }
 
-    const originalText = buttonElement.textContent;
-
-    // Function to handle the visual feedback
-    const showFeedback = () => {
-        buttonElement.textContent = 'Copied!';
-        buttonElement.classList.add('copied');
-        
-        setTimeout(() => {
-            buttonElement.textContent = originalText;
-            buttonElement.classList.remove('copied');
-        }, 1500);
-    };
-
-    // --- Modern Clipboard API ---
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(text).then(showFeedback).catch(err => {
-            console.error('Modern clipboard failed:', err);
-            // Fall through to the older method if the modern API fails
-            fallbackCopyTextToClipboard(text, buttonElement);
-        });
-    } else {
-        // --- Fallback Method ---
-        fallbackCopyTextToClipboard(text, buttonElement);
-    }
-}
-
-
-/**
- * Fallback mechanism for copying text using the deprecated document.execCommand('copy').
- * This is less secure but highly compatible.
- * @param {string} text The text content to be copied.
- * @param {HTMLElement} buttonElement The button element clicked (used for feedback).
- */
-function fallbackCopyTextToClipboard(text, buttonElement) {
-    let textArea = document.createElement("textarea");
-    
-    // Position off screen
-    textArea.style.position = 'fixed';
-    textArea.style.top = '0';
-    textArea.style.left = '0';
-    textArea.style.width = '2em';
-    textArea.style.height = '2em';
-    textArea.style.padding = '0';
-    textArea.style.border = 'none';
-    textArea.style.outline = 'none';
-    textArea.style.boxShadow = 'none';
-    textArea.style.background = 'transparent';
-    
-    textArea.value = text;
-
-    document.body.appendChild(textArea);
-    textArea.focus();
-    textArea.select();
-
-    try {
-        const successful = document.execCommand('copy');
-        if (successful) {
-            // Success feedback
+        function copyToClipboard(text, buttonElement) {
             const originalText = buttonElement.textContent;
-            buttonElement.textContent = 'Copied!';
-            buttonElement.classList.add('copied');
-            
-            setTimeout(() => {
-                buttonElement.textContent = originalText;
-                buttonElement.classList.remove('copied');
-            }, 1500);
-        } else {
-            console.error('Fallback copy failed.');
-            alert('Could not copy text (fallback failed). Please try manually.');
-        }
-    } catch (err) {
-        console.error('Fallback copy error:', err);
-        alert('Could not copy text (error). Please try manually.');
-    }
-
-    document.body.removeChild(textArea);
-}
-
-
-// --- 2. The Core addMessage Function (FIXED for Copy Reliability) ---
-function addMessage(role, content, targetElement = chatBox) {
-    const msgDiv = document.createElement('div');
-    const safeRole = (role === 'user' || role === 'ai') ? role : 'ai';
-    msgDiv.className = `message ${safeRole}-message`;
-    
-    let contentToParse;
-
-    // Handle Multimodal Content Structure (Array)
-    if (Array.isArray(content)) {
-        let displayParts = [];
-        let hasImage = false;
-        content.forEach(part => {
-            if (part.type === 'text' && part.text && part.text.trim()) {
-                displayParts.push(part.text.trim());
-            } else if (part.type === 'image_url') {
-                hasImage = true;
+            const showFeedback = () => {
+                buttonElement.textContent = 'Copied!';
+                buttonElement.classList.add('copied');
+                setTimeout(() => {
+                    buttonElement.textContent = originalText;
+                    buttonElement.classList.remove('copied');
+                }, 1500);
+            };
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(showFeedback).catch(err => fallbackCopyTextToClipboard(text, buttonElement));
+            } else {
+                fallbackCopyTextToClipboard(text, buttonElement);
             }
-        });
-        if (hasImage) {
-            displayParts.push('**[Image Attached]**');
         }
-        contentToParse = displayParts.join('\n'); // Use \n for Markdown
-    } else {
-        // Standard text-only message (String)
-        contentToParse = content && typeof content === 'string' ? content : '...';
-    }
 
-    
-    // CRITICAL: 1. Capture the original, un-rendered text for copying
-    // This text is stored on the button and used for the copy action.
-    const rawTextForCopy = Array.isArray(content) 
-        ? content.filter(p => p.type === 'text').map(p => p.text).join('\n') 
-        : contentToParse;
+        function fallbackCopyTextToClipboard(text, buttonElement) {
+            let textArea = document.createElement("textarea");
+            textArea.style.position = 'fixed'; textArea.style.top = '0'; textArea.style.left = '0';
+            textArea.value = text;
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    buttonElement.textContent = 'Copied!';
+                    buttonElement.classList.add('copied');
+                    setTimeout(() => { buttonElement.textContent = 'Copy'; buttonElement.classList.remove('copied'); }, 1500);
+                }
+            } catch (err) {}
+            document.body.removeChild(textArea);
+        }
 
+        function addMessage(role, content, targetElement = chatBox) {
+            const msgDiv = document.createElement('div');
+            const safeRole = (role === 'user' || role === 'ai') ? role : 'ai';
+            msgDiv.className = `message ${safeRole}-message`;
+            
+            let contentToParse;
+            if (Array.isArray(content)) {
+                let displayParts = [];
+                let hasImage = false;
+                content.forEach(part => {
+                    if (part.type === 'text' && part.text) displayParts.push(part.text.trim());
+                    else if (part.type === 'image_url') hasImage = true;
+                });
+                if (hasImage) displayParts.push('**[Image Attached]**');
+                contentToParse = displayParts.join('\n');
+            } else {
+                contentToParse = content && typeof content === 'string' ? content : '...';
+            }
 
-    // 2. Render HTML from Content
-    let renderedHtml;
-    if (typeof marked !== 'undefined' && typeof marked.parse === 'function') {
-        const decodedContent = new DOMParser().parseFromString(contentToParse, 'text/html').documentElement.textContent;
-        renderedHtml = marked.parse(decodedContent);
-    } else {
-        renderedHtml = contentToParse.replace(/\n/g, '<br>');
-    }
-    
-    
-    // 3. Create the inner container for text (Preserves button integrity)
-    const contentContainer = document.createElement('div');
-    contentContainer.className = 'message-content';
-    contentContainer.innerHTML = renderedHtml;
+            const rawTextForCopy = Array.isArray(content) 
+                ? content.filter(p => p.type === 'text').map(p => p.text).join('\n') 
+                : contentToParse;
 
-    msgDiv.appendChild(contentContainer); 
+            let renderedHtml;
+            if (typeof marked !== 'undefined') {
+                renderedHtml = marked.parse(contentToParse);
+            } else {
+                renderedHtml = contentToParse.replace(/\n/g, '<br>');
+            }
+            
+            const contentContainer = document.createElement('div');
+            contentContainer.className = 'message-content';
+            contentContainer.innerHTML = renderedHtml;
+            msgDiv.appendChild(contentContainer); 
 
+            if (safeRole === 'ai') {
+                const copyButton = document.createElement('button');
+                copyButton.className = 'copy-button';
+                copyButton.textContent = 'Copy';
+                copyButton.setAttribute('data-text', rawTextForCopy);
+                copyButton.onclick = function() { copyToClipboard(this.getAttribute('data-text'), this); };
+                msgDiv.appendChild(copyButton);
+            }
+            targetElement.appendChild(msgDiv);
+            scrollToBottom();
+            return msgDiv; 
+        }
 
-    // 4. Add Copy Button only to AI Messages
-    if (safeRole === 'ai') {
-        const copyButton = document.createElement('button');
-        copyButton.className = 'copy-button';
-        copyButton.textContent = 'Copy';
-        
-        // CRITICAL FIX: Store the copy text in a data attribute
-        copyButton.setAttribute('data-text', rawTextForCopy);
-        
-        // The click handler reads the text from the data attribute
-        copyButton.onclick = function() {
-            const textToCopy = this.getAttribute('data-text');
-            copyToClipboard(textToCopy, this);
-        };
-        
-        msgDiv.appendChild(copyButton);
-        msgDiv.classList.add('with-action');
-    }
-
-    targetElement.appendChild(msgDiv);
-    // Assume this utility function is defined globally
-    if (typeof scrollToBottom === 'function') {
-        scrollToBottom();
-    }
-    
-    // CRITICAL: Return the main message div (REQUIRED by sendMessage to update the content)
-    return msgDiv; 
-}
-
-        // --- API Key Loading ---
         async function loadApiKey() {
             const hasExistingChats = loadStateFromLocalStorage();
             populateModelSelector(); 
-
             selectModel(Object.keys(MODELS).find(key => MODELS[key].id === CURRENT_MODEL.id) || Object.keys(MODELS)[0]);
 
             if (Object.keys(allChatHistories).length === 0) {
@@ -1505,268 +1478,195 @@ function addMessage(role, content, targetElement = chatBox) {
             }
 
             renderSidebar();
-            
             showStartPage();
             apiStatus.textContent = 'Fetching API Key...';
             try {
                 const response = await fetch(API_KEY_URL);
                 if (!response.ok) throw new Error(`HTTP Status: ${response.status}`);
-                    // 1. Get the actual text from the response
-    let rawKey = (await response.text()).trim();
-    rawKey = atob(rawKey);
+                let rawKey = (await response.text()).trim();
+                rawKey = atob(rawKey);
                 GROQ_API_KEY = `gsk_${rawKey}`;
-
                 if (GROQ_API_KEY.length < 10) throw new Error("Key is too short or invalid.");
-                apiStatus.textContent = 'API Key loaded successfully.';
-                
-                // Enable controls
+                apiStatus.textContent = 'API Key loaded.';
                 modelSelectDropdown.disabled = false;
                 sendButton.disabled = false;
                 userInput.disabled = false;
-                
                 document.querySelectorAll('.model-button').forEach(btn => btn.style.pointerEvents = 'auto');
-
-                if (hasExistingChats) {
-                    showChatInterface();
-                    
-                } else {
-                    // Highlight the currently loaded default model button
-                    const initialModelKey = Object.keys(MODELS).find(key => MODELS[key].id === CURRENT_MODEL.id);
-                    if (initialModelKey) {
-                        const btn = document.querySelector(`.model-button[data-model-key="${initialModelKey}"]`);
-                        if(btn) btn.classList.add('selected');
-                    }
+                if (hasExistingChats) showChatInterface();
+                else {
+                     const initialModelKey = Object.keys(MODELS).find(key => MODELS[key].id === CURRENT_MODEL.id);
+                     if(initialModelKey) document.querySelector(`.model-button[data-model-key="${initialModelKey}"]`)?.classList.add('selected');
                 }
             } catch (error) {
-                console.error('Groq API Key Loading Error:', error);
-                apiStatus.innerHTML = `<span style="color:red;">Error: Could not load API Key. (${error.message})</span>`;
+                console.error('API Key Error:', error);
+                apiStatus.innerHTML = `<span style="color:red;">Error: ${error.message}</span>`;
             }
             toggleModelSelectorLock();
             renderCurrentChat();
         }
-        
- // --- Send Message Function (The core execution loop) ---
-async function sendMessage() {
-           
-    const userText = userInput.value.trim();
-    if (!userText && !selectedFile) return; 
-    if (!GROQ_API_KEY) return;
-           
-    const currentChatObject = allChatHistories[currentChatId];
-    const currentHistory = currentChatObject.history; 
 
-    const isFirstMessage = currentHistory.length === 1; 
-
-    userInput.value = '';
-    sendButton.disabled = true;
-    userInput.disabled = true;
-    modelSelectDropdown.disabled = true;
-    fileUploadButton.disabled = true;
-
-    let finalUserMessageContent;
-    let fileToDisplay = selectedFile; 
-
-    // 💡 Constructing the Multimodal Content Array (Logic unchanged)
-    if (fileToDisplay) {
-        if (!CURRENT_MODEL.multimodal) {
-            alert("Cannot send image. Please select a Multimodal model (like Llama 4 Scout).");
-            clearSelectedFile(); 
-            sendButton.disabled = false;
-            userInput.disabled = false;
-            fileUploadButton.disabled = false;
-            return;
-        }
-           
-        try {
-            const base64Url = await encodeFileToBase64(fileToDisplay);
-               
-            finalUserMessageContent = [];
-            if (userText) {
-                finalUserMessageContent.push({ "type": "text", "text": userText });
-            }
-            finalUserMessageContent.push({ 
-                "type": "image_url", 
-                "image_url": { "url": base64Url } 
-            });
-
-        } catch (e) {
-            addMessage('ai', `Error reading file: ${e.message}`, chatBox);
-            sendButton.disabled = false;
-            userInput.disabled = false;
-            fileUploadButton.disabled = false;
-            clearSelectedFile();
-            return;
-        }
-    } else {
-        // Standard text-only message
-        finalUserMessageContent = userText; 
-    }
-
-    // 1. Add User Message (Appended directly to the chatBox)
-    const displayContent = fileToDisplay ? `${userText} [Image: ${fileToDisplay.name}]` : userText;
-    addMessage('user', displayContent);
-           
-    currentHistory.push({ "role": "user", "content": finalUserMessageContent });
-           
-    clearSelectedFile();
-
-    // 💡 NEW/MODIFIED TITLE LOGIC HERE (Logic unchanged)
-    if (isFirstMessage) {
-        let newTitle;
-        if (fileToDisplay) {
-            imageAnalysisCounter++;
-            newTitle = `Image Analysis ${imageAnalysisCounter}`;
-        } else {
-            newTitle = truncateText(userText);
-        }
-               
-        updateChatTitle(currentChatId, newTitle); 
-        renderSidebar(); 
-    }
-    // ==========================================================
-
-
-    // 2. Add AI Placeholder Message
-    const aiMessageElement = addMessage('ai', 'Thinking...'); 
-    
-    // CRITICAL FIX STEP 1: Get references to the elements we need to update
-    const aiContentContainer = aiMessageElement.querySelector('.message-content');
-    const aiCopyButton = aiMessageElement.querySelector('.copy-button'); // Get the copy button
-
-    let assistantResponse = "Sorry, I received an empty response from the API."; // Initialize response variable
-
-    try {
-        const response = await fetch(GROQ_ENDPOINT, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${GROQ_API_KEY}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                model: CURRENT_MODEL.id, 
-                messages: currentHistory, 
-                temperature: 0.7,
-                max_tokens: 3600,
-                top_p: 0.9
-            })
-        });
-
-        if (!response.ok) {
-            let errorText = `HTTP Error: ${response.status} ${response.statusText}`;
-            try {
-                const errorData = await response.json();
-                if (errorData.error && errorData.error.message) errorText = errorData.error.message;
-            } catch (e) {}
-
-            const match = errorText.match(/Please try again in (\d+\.?\d*)s/);
-            if (match) throw new Error(`Rate Limit Exceeded. Try again in ${match[1]} seconds.`);
-            else throw new Error(errorText);
-        }
-
-        const data = await response.json();
-               
-        // CRITICAL: Store the final response in the variable
-        assistantResponse = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content
-            ? data.choices[0].message.content
-            : assistantResponse;
-               
-        const renderedHtml = (typeof marked !== 'undefined' && typeof marked.parse === 'function')
-            ? marked.parse(assistantResponse) 
-            : assistantResponse.replace(/\n/g, '<br>'); 
-               
-        // 3. Update AI Placeholder with final response
-        // CRITICAL FIX STEP 2: ONLY update the INNER content container
-        if (aiContentContainer) {
-            aiContentContainer.innerHTML = renderedHtml;
-        } else {
-             // Fallback: This will destroy the button, but at least the text updates
-             aiMessageElement.innerHTML = renderedHtml; 
-        }
-
-        // CRITICAL FIX STEP 3: Update the copy button's data attribute with the final text
-        if (aiCopyButton) {
-            aiCopyButton.setAttribute('data-text', assistantResponse);
-        }
-
-        currentHistory.push({ "role": "assistant", "content": assistantResponse });
-               
-        scrollToBottom();
-        saveStateToLocalStorage();
-
-    } catch (error) {
-        console.error('Groq API Call Failed:', error);
-        
-        // Update the content container with the error message
-        const errorHtml = `<span style="color:red;">${error.message}</span>`;
-        if (aiContentContainer) {
-            aiContentContainer.innerHTML = errorHtml;
-        } else {
-            aiMessageElement.innerHTML = errorHtml;
-        }
-        
-    } finally {
-        toggleModelSelectorLock();
-        sendButton.disabled = false;
-        userInput.disabled = false;
-        fileUploadButton.disabled = false;
-        userInput.focus();
-        setupMainInputCounter();
-    }
-}
-
-        // --- Setup Event Listeners ---
-        document.addEventListener('DOMContentLoaded', () => {
+        async function sendMessage() {
+            const userText = userInput.value.trim();
+            if ((!userText && !selectedFile) || !GROQ_API_KEY) return;
             
-            newChatButton.addEventListener('click', startNewChat);
+            const currentChatObject = allChatHistories[currentChatId];
+            const currentHistory = currentChatObject.history;
+            const isFirstMessage = currentHistory.length === 1; 
 
-            // Context menu handlers
-            if (contextMenu) {
-                contextMenu.addEventListener('click', (event) => {
-                    event.stopPropagation(); 
-                    const button = event.target.closest('button');
-                    if (!button) return; 
-                    
-                    const action = button.dataset.action;
-                    
-                    if (action === 'edit') {
-                        handleEditChatTitle();
-                    } else if (action === 'delete') {
-                        handleDeleteChat();
-                    }
-                    
-                    hideContextMenu();
-                });
-            }
+            userInput.value = '';
+            sendButton.disabled = true;
+            userInput.disabled = true;
+            modelSelectDropdown.disabled = true;
+            fileUploadButton.disabled = true;
+            mathButton.disabled = true; // Disable math button while sending
 
-            document.addEventListener('click', hideContextMenu);
-            document.addEventListener('contextmenu', (e) => {
-                if (!e.target.closest('.chat-item')) {
-                     hideContextMenu();
+            let finalUserMessageContent;
+            let fileToDisplay = selectedFile; 
+
+            if (fileToDisplay) {
+                if (!CURRENT_MODEL.multimodal) {
+                    alert("Cannot send image. Please select a Multimodal model.");
+                    clearSelectedFile(); 
+                    sendButton.disabled = false; userInput.disabled = false; fileUploadButton.disabled = false; mathButton.disabled = false;
+                    return;
                 }
-            });
-            
-            // 💡 File Input Listeners
-            if (fileUploadButton) fileUploadButton.addEventListener('click', () => {
-                imageFileInput.click();
-            });
+                try {
+                    const base64Url = selectedFile.base64; // Already loaded
+                    finalUserMessageContent = [];
+                    if (userText) finalUserMessageContent.push({ "type": "text", "text": userText });
+                    finalUserMessageContent.push({ "type": "image_url", "image_url": { "url": base64Url } });
+                } catch (e) {
+                    addMessage('ai', `Error: ${e.message}`, chatBox);
+                    return;
+                }
+            } else {
+                finalUserMessageContent = userText; 
+            }
 
+            const displayContent = fileToDisplay ? `${userText} [Image: ${fileToDisplay.name}]` : userText;
+            addMessage('user', displayContent);
+            if(fileToDisplay) {
+                const imgPreview = document.createElement('img');
+                imgPreview.src = selectedFile.base64;
+                imgPreview.style.maxWidth = '200px';
+                chatBox.lastElementChild.querySelector('.message-content').appendChild(imgPreview);
+            }
+
+            currentHistory.push({ "role": "user", "content": finalUserMessageContent });
+            clearSelectedFile();
+
+            if (isFirstMessage) {
+                let newTitle = fileToDisplay ? `Image Analysis ${++imageAnalysisCounter}` : truncateText(userText);
+                updateChatTitle(currentChatId, newTitle); 
+                renderSidebar(); 
+            }
+
+            const aiMessageElement = addMessage('ai', 'Thinking...'); 
+            const aiContentContainer = aiMessageElement.querySelector('.message-content');
+            const aiCopyButton = aiMessageElement.querySelector('.copy-button');
+
+            try {
+                // Prepare messages (remove objects if model doesn't support them, though we enforce multimodal check)
+                const response = await fetch(GROQ_ENDPOINT, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${GROQ_API_KEY}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        model: CURRENT_MODEL.id, 
+                        messages: currentHistory, 
+                        stream: true
+                    })
+                });
+
+                if (!response.ok) throw new Error(`API Error: ${response.status}`);
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder("utf-8");
+                let fullAiResponse = "";
+                aiContentContainer.innerHTML = ""; // Clear typing indicator
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    const chunk = decoder.decode(value);
+                    const lines = chunk.split("\n");
+                    for (const line of lines) {
+                        if (line.startsWith("data: ") && line !== "data: [DONE]") {
+                            try {
+                                const json = JSON.parse(line.substring(6));
+                                const content = json.choices[0]?.delta?.content || "";
+                                fullAiResponse += content;
+                                aiContentContainer.innerHTML = marked.parse(fullAiResponse);
+                                scrollToBottom();
+                            } catch (e) {}
+                        }
+                    }
+                }
+
+                if(aiCopyButton) aiCopyButton.setAttribute('data-text', fullAiResponse);
+                currentHistory.push({ "role": "assistant", "content": fullAiResponse });
+                saveStateToLocalStorage();
+
+            } catch (error) {
+                aiContentContainer.innerHTML = `<span style="color:red;">Error: ${error.message}</span>`;
+            } finally {
+                toggleModelSelectorLock();
+                sendButton.disabled = false;
+                userInput.disabled = false;
+                fileUploadButton.disabled = false;
+                mathButton.disabled = false;
+                userInput.focus();
+                setupMainInputCounter();
+            }
+        }
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            initLatexPicker(); // Initialize Math Buttons
+
+            // Event Listeners
+            newChatButton.addEventListener('click', startNewChat);
+            if (contextMenu) contextMenu.addEventListener('click', (e) => {
+                 const btn = e.target.closest('button');
+                 if(!btn) return;
+                 if(btn.dataset.action === 'edit') handleEditChatTitle();
+                 else if(btn.dataset.action === 'delete') handleDeleteChat();
+                 hideContextMenu();
+            });
+            document.addEventListener('click', hideContextMenu);
+            document.addEventListener('contextmenu', (e) => { if(!e.target.closest('.chat-item')) hideContextMenu(); });
+
+            if (fileUploadButton) fileUploadButton.addEventListener('click', () => imageFileInput.click());
             if (imageFileInput) imageFileInput.addEventListener('change', handleFileSelect);
-            
             if (clearFileButton) clearFileButton.addEventListener('click', clearSelectedFile);
             
-            // Send message listener
-            userInput.addEventListener('keydown', function(event) {
-                if (event.key === 'Enter') {
-                    if (!event.shiftKey && !sendButton.disabled) {
-                        event.preventDefault(); 
-                        sendMessage();
-                    } 
+            // New Math Listeners
+            if (mathButton) mathButton.addEventListener('click', () => {
+                latexModal.style.display = 'flex';
+                hideFractionBuilder(); // Reset to grid view
+            });
+            if (closeLatexBtn) closeLatexBtn.addEventListener('click', () => latexModal.style.display = 'none');
+            
+            // Fraction Builder Listeners
+            if (insertFracBtn) insertFracBtn.addEventListener('click', insertFraction);
+            if (cancelFracBtn) cancelFracBtn.addEventListener('click', hideFractionBuilder);
+
+            userInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey && !sendButton.disabled) {
+                    e.preventDefault();
+                    sendMessage();
                 }
             });
-
             sendButton.addEventListener('click', sendMessage);
+
+            // Modal Closes
+            window.onclick = function(event) {
+                if (event.target == latexModal) latexModal.style.display = "none";
+                if (event.target == confirmModal) confirmModal.style.display = "none";
+                if (event.target == promptModal) promptModal.style.display = "none";
+            }
 
             loadApiKey();
         });
-    </script></body>
+    </script>
+</body>
 </html>
