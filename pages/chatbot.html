@@ -30,7 +30,7 @@
           clearTimeout(mathTimeout);
           mathTimeout = setTimeout(() => {
             MathJax.typesetPromise().catch((err) => console.log('MathJax error:', err));
-          }, 250);
+          }, 750);
         }
       }
       const observer = new MutationObserver(() => safeRefreshMath());
