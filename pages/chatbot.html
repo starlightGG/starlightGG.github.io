@@ -10,7 +10,7 @@
       window.MathJax = {
         tex: {
           inlineMath: [['$', '$'], ['\\(', '\\)']],
-          displayMath: [['$$', '$$'], ['\\[', '\\]'], ['[', ']']],
+          displayMath: [['$$', '$$'], ['\\[', '\\]'],
           processEscapes: true
         },
         options: {
@@ -43,8 +43,7 @@
     '$$', 
     '$', 
     '\\(', '\\)', 
-    '\\[', '\\]', 
-    '[', ']' 
+    '\\[', '\\]'
   ];
 
   // 3. Check if text contains ANY of the delimiters from the list
@@ -983,7 +982,7 @@ CRITICAL MATHEMATICAL FORMATTING RULES:
 1. **LATEX IS MANDATORY:** Use LaTeX for ALL math, numbers in context, and formulas.
 2. **DELIMITERS:** - INLINE: Use $...$ (Single dollar sign).
    - BLOCK: Use $$...$$ (Double dollar signs).
-3. **FORBIDDEN SYNTAX:** NEVER use \\[ ... \\] or \\( ... \\) or [ ... ] or ( ... ) for math. THESE WILL BREAK THE RENDERER.
+3. **FORBIDDEN SYNTAX:** STRICTLY NEVER use \\[ ... \\] or \\( ... \\) or [ ... ] or ( ... ) for math. THESE WILL BREAK THE RENDERER AND HANG THE DEVICE.
 4. **STRICT COMPLIANCE:** If you generate brackets like [ x^2 ], the user cannot see it. YOU MUST WRITE $$ x^2 $$.
 5. **Universal Wrapping:** Wrap simple numbers in $ if they refer to values (e.g. $1$, $2.5$).`;
 
