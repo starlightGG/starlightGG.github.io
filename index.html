@@ -1417,7 +1417,8 @@ const PRESETS = [
                         ]);
                         const pubKey = (await pubRes.text()).trim();
                         const subKey = (await subRes.text()).trim();
-
+                        pubKey = 'pub-c-' + pubKey;
+                        subKey = 'sub-c-' + pubKey;
                         const pubnub = new PubNub({
                             publishKey: pubKey,
                             subscribeKey: subKey,
