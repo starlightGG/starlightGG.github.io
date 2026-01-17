@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1841,7 +1840,34 @@ CRITICAL MATHEMATICAL FORMATTING RULES:
                     })
                 });
 
-                if (!response.ok) throw new Error(`API Error: ${response.status}`);
+                if (!response.ok) {
+                    let errMessage = `API Error: ${response.status}`;
+                    try {
+                        const errorData = await response.json();
+                        // Groq/OpenAI often puts the "Try again in X seconds" text here
+                        if (errorData?.error?.message) {
+                            errMessage = errorData.error.message;
+                        }
+                        
+                        // CUSTOM FIX: Extract only the wait time for rate limits
+                        if (response.status === 429) {
+                            // Regex to find "Please try again in 240ms" or similar
+                            const waitMatch = errMessage.match(/Please try again in \d+(\.\d+)?(ms|s|m|h)?/);
+                            if (waitMatch) {
+                                errMessage = waitMatch[0];
+                            } else {
+                                // Fallback to header if specific phrase isn't found
+                                const retryAfter = response.headers.get('Retry-After');
+                                if (retryAfter) {
+                                    errMessage = `Please try again in ${retryAfter} seconds`;
+                                }
+                            }
+                        }
+                    } catch (e) {
+                        // Unable to parse detailed error, keep default status message
+                    }
+                    throw new Error(errMessage);
+                }
 
                 const reader = response.body.getReader();
                 const decoder = new TextDecoder("utf-8");
@@ -1864,6 +1890,10 @@ CRITICAL MATHEMATICAL FORMATTING RULES:
                             } catch (e) {}
                         }
                     }
+                }
+
+                if (!fullAiResponse.trim()) {
+                    throw new Error("Sorry, I received an empty message from the API.");
                 }
 
                 if(aiCopyButton) aiCopyButton.setAttribute('data-text', fullAiResponse);
