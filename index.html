@@ -1415,10 +1415,10 @@ const PRESETS = [
                             fetch('https://starlightgg.github.io/txt/pub.txt'),
                             fetch('https://starlightgg.github.io/txt/sub.txt')
                         ]);
-                        const pubKey = (await pubRes.text()).trim();
-                        const subKey = (await subRes.text()).trim();
+                        let pubKey = (await pubRes.text()).trim();
+                        let subKey = (await subRes.text()).trim();
                         pubKey = 'pub-c-' + pubKey;
-                        subKey = 'sub-c-' + pubKey;
+                        subKey = 'sub-c-' + subKey;
                         const pubnub = new PubNub({
                             publishKey: pubKey,
                             subscribeKey: subKey,
