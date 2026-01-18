@@ -620,6 +620,20 @@
             color: var(--primary-color); font-size: 1.2em; font-weight: bold;
             font-family: var(--font-stack);
         }
+        /* Add this to your <style> tag or CSS file */
+.fade-out {
+    opacity: 0;
+    transition: opacity 0.8s ease; /* Adjust 0.8s to change fade speed */
+    pointer-events: none;         /* Prevents further clicks during the fade */
+}
+                #Dbclick {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-color); z-index: 19999;
+            display:flex; /* Hidden by default, toggle with JS */
+            flex-direction: column; justify-content: center; align-items: center;
+            color: var(--primary-color); font-size: 1.2em; font-weight: bold;
+            font-family: var(--font-stack);
+        }
         .hidden { display: none !important; }
         .visible { display: flex !important; }
         
@@ -720,6 +734,10 @@
     </div>
   </a>
 </noscript>
+    <!-- External Cloaking Alert Element -->
+    <div id="Dbclick">
+        <div>Click screen twice to mask window!</div>
+    </div>
     <!-- External Cloaking Alert Element -->
     <div id="CloakingAlert">
         <div class="loader-circle" style="margin-bottom: 20px;"></div>
@@ -1029,70 +1047,88 @@ const PRESETS = [
             };
 
             // INITIAL LOAD (Cloak & Quote)
-            useEffect(() => {
-                document.documentElement.setAttribute('data-theme', theme);
-                                setTimeout(() => {
-                // RESTORE CLOAK FROM STORAGE
-                const storedTitle = localStorage.getItem('customPageTitle');
-                const storedFavicon = localStorage.getItem('customFaviconURL');
-                
-                if (storedTitle) {
-                    document.title = storedTitle;
-                } else {
-                    // Default to Google if nothing saved AND save it
-                    document.title = "Google";
-                    localStorage.setItem('customPageTitle', "Google");
-                }
+ useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
 
-                if (storedFavicon) {
-                    updateFavicon(storedFavicon);
-                } else {
-                    // Default to Google if nothing saved AND save it
-                    const defaultFavicon = "https://google.com/favicon.ico";
-                    updateFavicon(defaultFavicon);
-                    localStorage.setItem('customFaviconURL', defaultFavicon);
-                }
-                                      }, 800);
-                setTimeout(() => setIsLoading(false), 800);
+    setTimeout(() => {
+        // Target the element by ID
+        const targetElement = document.getElementById('Dbclick');
 
-                const timer = setInterval(() => {
-                    const now = new Date();
-                    setTime(`${now.toLocaleDateString([], {weekday:'short'})} | ${now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}`);
-                }, 1000);
+        if (targetElement) {
+            // Attached to targetElement so 'this' refers to the element for removal
+            targetElement.addEventListener('dblclick', function() {
+                // 1. Add the CSS class to start the fade
+                this.classList.add('fade-out');
 
-              // Quote Logic with Non-Repeating Rotation and Transition
-                let quoteInterval;
-                fetch('txt/quotes.txt').then(r => r.text()).then(t => {
-                    const allQuotes = t.split('\n').filter(l => l.trim());
-                    if (allQuotes.length === 0) return setQuote('Welcome to StarlightGG');
-                    
-                    let currentPool = [...allQuotes];
+                // 2. Wait for the transition to finish (matching the 0.8s in CSS)
+                setTimeout(() => {
+                    this.remove();
 
-                    const rotate = () => {
-                        // 1. Fade Out
-                        setIsQuoteFading(true);
-                        
-                        setTimeout(() => {
-                            // 2. Change Text (while invisible)
-                            if (currentPool.length === 0) currentPool = [...allQuotes];
-                            const randomIndex = Math.floor(Math.random() * currentPool.length);
-                            setQuote(currentPool[randomIndex]);
-                            currentPool.splice(randomIndex, 1);
-                            
-                            // 3. Fade In
-                            setIsQuoteFading(false);
-                        }, 500); // Wait for fade-out duration
-                    };
+                    // RESTORE CLOAK FROM STORAGE
+                    const storedTitle = localStorage.getItem('customPageTitle');
+                    const storedFavicon = localStorage.getItem('customFaviconURL');
 
-                    rotate(); // Initial set (no fade for first one ideally, but handles state)
-                    quoteInterval = setInterval(rotate, 5000); 
-                }).catch(() => setQuote('Welcome to StarlightGG'));
+                    if (storedTitle) {
+                        document.title = storedTitle;
+                    } else {
+                        // Default to Google if nothing saved AND save it
+                        document.title = "Google";
+                        localStorage.setItem('customPageTitle', "Google");
+                    }
 
-                return () => {
-                    clearInterval(timer);
-                    if (quoteInterval) clearInterval(quoteInterval);
-                };
-            }, []);
+                    if (storedFavicon) {
+                        updateFavicon(storedFavicon);
+                    } else {
+                        // Default to Google if nothing saved AND save it
+                        const defaultFavicon = "https://google.com/favicon.ico";
+                        updateFavicon(defaultFavicon);
+                        localStorage.setItem('customFaviconURL', defaultFavicon);
+                    }
+                }, 800);
+            });
+        }
+    }, 800);
+
+    setTimeout(() => setIsLoading(false), 800);
+
+    const timer = setInterval(() => {
+        const now = new Date();
+        setTime(`${now.toLocaleDateString([], {weekday:'short'})} | ${now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}`);
+    }, 1000);
+
+    // Quote Logic with Non-Repeating Rotation and Transition
+    let quoteInterval;
+    fetch('txt/quotes.txt').then(r => r.text()).then(t => {
+        const allQuotes = t.split('\n').filter(l => l.trim());
+        if (allQuotes.length === 0) return setQuote('Welcome to StarlightGG');
+
+        let currentPool = [...allQuotes];
+
+        const rotate = () => {
+            // 1. Fade Out
+            setIsQuoteFading(true);
+
+            setTimeout(() => {
+                // 2. Change Text (while invisible)
+                if (currentPool.length === 0) currentPool = [...allQuotes];
+                const randomIndex = Math.floor(Math.random() * currentPool.length);
+                setQuote(currentPool[randomIndex]);
+                currentPool.splice(randomIndex, 1);
+
+                // 3. Fade In
+                setIsQuoteFading(false);
+            }, 500); // Wait for fade-out duration
+        };
+
+        rotate(); // Initial set
+        quoteInterval = setInterval(rotate, 5000);
+    }).catch(() => setQuote('Welcome to StarlightGG'));
+
+    return () => {
+        clearInterval(timer);
+        if (quoteInterval) clearInterval(quoteInterval);
+    };
+}, []);
             
             // --- NEW: HEXAGONAL & SNOW PARTICLE SYSTEM ---
             useEffect(() => {
