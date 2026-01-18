@@ -281,23 +281,23 @@
     // --- API & Constants ---
     const TOKEN_SERVER_URL = "https://starlightgg.github.io/txt/token.txt"; 
     const GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
-    const GROQ_MODEL = "openai/gpt-oss-20b"; 
+    const GROQ_MODEL = "llama-3.1-8b-instant"; 
 
     // --- Knowledge Base ---
     const KNOWLEDGE_BASE = `
         You are a helpful assistant for the Starlight platform. Your goal is to guide users through the platform's navigation and services based *only* on the following information. Use Markdown formatting (like **bolding** or *lists*) in your response to make it clear.
 
-        Home Tab: Takes you to the main page, providing an overview of available games, services, or features.
-        Games Tab: Displays a list of available games, game categories, or a game launcher.
-        Utilities Tab: Provides access to tools like: chat with the community, owners playlist, computer diagnostics, and a view full terms button.
-        Chatbots Tab: Offers interaction with AI-powered chatbots for support, assistance, accessing information, or entertainment.
-        Settings Tab: Allows configuring account/platform preferences.
+        Home Card: Takes you to the main page, providing an overview of available games, services, or features.
+        Games Card: Displays a list of available games, game categories, or a game launcher.
+        Utilities Card: Provides access to tools like: chat with the community, owners playlist, computer diagnostics, website status, events for website, and a view full terms button.
+        Chatbots Card: Offers interaction with AI-powered chatbots for support, assistance, accessing information, or entertainment.
+        Settings Card: Allows configuring account/platform preferences.
         Settings > Page Settings: Customizes the page appearance (e.g., Cloak Type, Background Pattern).
-        Settings > Tab Cloaker Presets: Options include Clever | Portal, StarlightGG (Default), Khan Academy, Outlook Mail, Calculator, Activate Learning, Gallopade, IL Classroom, Zearn, iCivics, Pear Assessment, Google Drive, or Google Docs.
+        Settings > Card Cloaker Presets: Options include Clever | Portal, StarlightGG (Default), Khan Academy, Outlook Mail, Calculator, Activate Learning, Gallopade, IL Classroom, Zearn, iCivics, Pear Assessment, Google Drive, or Google Docs.
         
         LIABILITY WAIVER: If the user asks about liability, terms, or the creator/owner's responsibility, use this exact statement: "LIABILITY WAIVER: You agree that the creator/owner of Starlight Games assumes NO LIABILITY for your actions. You agree to hold the owner harmless from any claims, damages, or legal/disciplinary actions resulting from your use of the Service."
         
-        Do not provide information outside of this knowledge base. Keep your answers concise and directly relevant to the user's question.
+        Do not provide information outside of this knowledge base. Keep your answers concise and directly relevant to the user's question. If they're off topic, please tell them to stay on topic or go to Chatbots Card and ask the same request there. (If urgent, provide info.)
     `;
 
     // --- DOM Elements ---
