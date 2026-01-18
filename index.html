@@ -1032,8 +1032,6 @@ const PRESETS = [
             useEffect(() => {
                 document.documentElement.setAttribute('data-theme', theme);
                                 setTimeout(() => {
-const isBot = /Googlebot|Google-InspectionTool|Chrome-Lighthouse|Mediapartners-Google/i.test(navigator.userAgent);
-                                      if (!isBot) {
                 // RESTORE CLOAK FROM STORAGE
                 const storedTitle = localStorage.getItem('customPageTitle');
                 const storedFavicon = localStorage.getItem('customFaviconURL');
@@ -1054,9 +1052,6 @@ const isBot = /Googlebot|Google-InspectionTool|Chrome-Lighthouse|Mediapartners-G
                     updateFavicon(defaultFavicon);
                     localStorage.setItem('customFaviconURL', defaultFavicon);
                 }
-                                      }else{
-                                          console.log("Search engine detected. Maintaining original metadata for SEO.");
-                                      }
                                       }, 800);
                 setTimeout(() => setIsLoading(false), 800);
 
