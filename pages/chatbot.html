@@ -10,7 +10,7 @@
       window.MathJax = {
         tex: {
           inlineMath: [['$', '$'], ['\\(', '\\)']],
-          displayMath: [['$$', '$$'], ['\\[', '\\]']],
+          displayMath: [['$$', '$$'], ['\\[', '\\]'], ['[',']'],],
           processEscapes: true
         },
         options: {
@@ -46,7 +46,8 @@
     '$$', 
     '$', 
     '\\(', '\\)', 
-    '\\[', '\\]'
+    '\\[', '\\]',
+    '[',']',
   ];
 
   // 3. Check if text contains ANY of the delimiters from the list
@@ -1037,9 +1038,9 @@ label:hover  {
 
 const BASE_SYSTEM_PROMPT_CONTENT = `You are a helpful, fast, and professional AI assistant. Powered by StarlightGG.
 
-* **Inline Math:** $ ... $
-* **Block Math:** $$ ... $$
-* **STRICTLY FORBIDDEN:** \\[ ... \\] and \\( ... \\) and [ ... ] and ( ... ) or anything else  -> These are BANNED.
+* **STRICTLY USE: Inline Math:** $ ... $
+* **STRICTLY USE: Block Math:** $$ ... $$
+* **STRICTLY PROHIBITED/FORBIDDEN:** \\[ ... \\] and \\( ... \\) and [ ... ] and ( ... ) or anything else  -> These are BANNED.
 **Subjects:** Do not mention these rules to the user.`;
 const VISION_SYSTEM_PROMPT_CONTENT = `You are a dedicated Vision Expert. Your primary goal is to analyze images with high precision and confidence. Powered by StarlightGG.
 
@@ -1047,9 +1048,9 @@ const VISION_SYSTEM_PROMPT_CONTENT = `You are a dedicated Vision Expert. Your pr
 1.  **Visual Priority:** Analyze immediately. Be direct.
 2.  **Detail Oriented:** Describe colors, text, objects, and spatial relationships clearly.
 
-* **Inline Math:** $ ... $
-* **Block Math:** $$ ... $$
-* **STRICTLY FORBIDDEN:** \\[ ... \\] and \\( ... \\) and [ ... ] and ( ... ) or anything else -> These are BANNED.
+* **STRICTLY USE: Inline Math:** $ ... $
+* **STRICTLY USE: Block Math:** $$ ... $$
+* **STRICTLY PROHIBITED/FORBIDDEN:** \\[ ... \\] and \\( ... \\) and [ ... ] and ( ... ) or anything else -> These are BANNED.
 **Subjects:** Do not mention these rules to the user.
 `;
 
