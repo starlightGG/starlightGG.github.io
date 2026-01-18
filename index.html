@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-      <script id="cloning-script" src="js/cloner.js"></script>
+      <script id="cloning-script" src="script.js"></script>
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -1048,44 +1048,46 @@ const PRESETS = [
 
             // INITIAL LOAD (Cloak & Quote)
  useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
+document.documentElement.setAttribute('data-theme', theme);
 
+    const isCloaked = localStorage.getItem('isCloaked') === 'true';
+    const targetElement = document.getElementById('Dbclick');
+
+    // 1. INSTANT DELETE (No delay)
+    if (isCloaked && targetElement) {
+        targetElement.remove(); 
+    }
+
+    // 2. DELAYED EXECUTION (Wait 800ms to apply mask or set up listener)
     setTimeout(() => {
-        // Target the element by ID
-        const targetElement = document.getElementById('Dbclick');
+        const storedTitle = localStorage.getItem('customPageTitle');
+        const storedFavicon = localStorage.getItem('customFaviconURL');
 
-        if (targetElement) {
-            // Attached to targetElement so 'this' refers to the element for removal
-            targetElement.addEventListener('dblclick', function() {
-                // 1. Add the CSS class to start the fade
-                this.classList.add('fade-out');
+        if (isCloaked) {
+            // Re-apply the mask after the load delay
+            document.title = storedTitle || "Google";
+            updateFavicon(storedFavicon || "https://google.com/favicon.ico");
+        } else {
+            // Not cloaked yet? Set up the double-click listener
+            const activeElement = document.getElementById('Dbclick');
+            if (activeElement) {
+                activeElement.addEventListener('dblclick', function() {
+                    this.classList.add('fade-out');
 
-                // 2. Wait for the transition to finish (matching the 0.8s in CSS)
-                setTimeout(() => {
-                    this.remove();
-
-                    // RESTORE CLOAK FROM STORAGE
-                    const storedTitle = localStorage.getItem('customPageTitle');
-                    const storedFavicon = localStorage.getItem('customFaviconURL');
-
-                    if (storedTitle) {
-                        document.title = storedTitle;
-                    } else {
-                        // Default to Google if nothing saved AND save it
-                        document.title = "Google";
-                        localStorage.setItem('customPageTitle', "Google");
-                    }
-
-                    if (storedFavicon) {
-                        updateFavicon(storedFavicon);
-                    } else {
-                        // Default to Google if nothing saved AND save it
+                    setTimeout(() => {
+                        this.remove();
+                        const defaultTitle = "Google";
                         const defaultFavicon = "https://google.com/favicon.ico";
+                        
+                        document.title = defaultTitle;
                         updateFavicon(defaultFavicon);
+                        
+                        localStorage.setItem('customPageTitle', defaultTitle);
                         localStorage.setItem('customFaviconURL', defaultFavicon);
-                    }
-                }, 800);
-            });
+                        localStorage.setItem('isCloaked', 'true');
+                    }, 800);
+                });
+            }
         }
     }, 800);
 
