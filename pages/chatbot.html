@@ -26,12 +26,15 @@
   let mathTimeout;
 
   // 1. The Debounced Render Function
-  function safeRefreshMath() {
+  function safeRefreshMath(content) {
+    // Only activate if the provided content contains items from the math text list
+    if (content && !containsMath(content)) return;
+
     if (window.MathJax && window.MathJax.typesetPromise) {
       clearTimeout(mathTimeout);
       mathTimeout = setTimeout(() => {
         MathJax.typesetPromise().catch((err) => console.log('MathJax error:', err));
-      }, 750);
+      }, 100);
     }
   }
 
@@ -134,6 +137,13 @@
             box-sizing: border-box;
         }
 
+        /* NEW: Universal transitions for smooth UI updates */
+        body, .sidebar, .input-area, .chat-box, .message, .chat-item,
+        button, input, textarea, select, .modal-content, .latex-btn {
+            transition: background-color 0.3s ease, color 0.3s ease, 
+                        border-color 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease;
+        }
+
         /* Dark Theme */
         [data-theme="dark"] {
             --bg-color: #212529; /* Slightly darker for better contrast */
@@ -203,6 +213,22 @@
 /* LaTeX Picker Modal Specifics */
 .latex-picker { width: 450px; }
 .latex-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin: 15px 0; max-height: 300px; overflow-y: auto; padding-right: 5px; }
+
+/* NEW: Image Modal Styles */
+.image-modal-img {
+    max-width: 90vw;
+    max-height: 90vh;
+    border-radius: 12px;
+    box-shadow: 0 0 30px rgba(0,0,0,0.8);
+    animation: fadeIn 0.3s ease;
+    object-fit: contain;
+}
+
+/* NEW: Stop Button Style */
+.stop-mode {
+    background-color: var(--danger-color) !important;
+    animation: fadeIn 0.2s ease;
+}
 
 .latex-btn { 
     background: var(--bg-color); 
@@ -463,6 +489,12 @@ label:hover  {
     color: var(--text-secondary); 
 }
 
+/* Added Fade In Animation */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
 .message { 
     margin-bottom: 15px; 
     padding: 12px 18px; 
@@ -470,6 +502,15 @@ label:hover  {
     line-height: 1.5; 
     max-width: 80%; 
     font-size: 1em;
+    animation: fadeIn 0.4s ease-out backwards; /* Smoother animation */
+    transition: all 0.3s ease;
+}
+
+/* Strong tag styling for AI responses */
+.message-content strong {
+    color: var(--primary-color);
+    font-weight: 700;
+    text-shadow: 0 0 1px rgba(0,0,0,0.1);
 }
 
 .user-message {
@@ -478,7 +519,7 @@ label:hover  {
     color: white; 
     margin-left: auto; 
     border-bottom-right-radius: 4px; 
-    box-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
     overflow-x: auto;
     max-width: 100vh;
 }
@@ -489,8 +530,15 @@ label:hover  {
     max-width: 100vh;
     margin-right: auto; 
     border-bottom-left-radius: 4px; 
+    /* Soft UI Mix: Enhanced border and shadows */
+    border: 1px solid rgba(127, 127, 127, 0.2); 
     box-shadow: var(--shadow-light-bottom), var(--shadow-light-top);
     overflow-x: auto;
+}
+
+/* Animating other elements */
+.chat-item, .modal-content {
+    animation: fadeIn 0.3s ease-out;
 }
 
 /* --- 3. Copy Button Specific Neumorphism Styles --- */
@@ -693,17 +741,24 @@ label:hover  {
 }
 
 /* --- MODAL STYLES --- */
-#custom-confirm-modal, #custom-prompt-modal, #latex-modal {
+/* FIX: Added #image-modal to this list so it floats correctly */
+#custom-confirm-modal, #custom-prompt-modal, #latex-modal, #image-modal {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.4);
+    background-color: rgba(0, 0, 0, 0.85); /* Darker background for better image viewing */
     display: none;
     justify-content: center;
     align-items: center;
     z-index: 2000;
+    backdrop-filter: blur(5px); /* Nice blur effect */
+}
+
+/* Ensure Image Modal is on top of everything */
+#image-modal {
+    z-index: 2500 !important;
 }
 
 #custom-confirm-modal, #custom-prompt-modal {
@@ -841,6 +896,11 @@ label:hover  {
                 <button class="confirm-btn" data-prompt-response="true">Save</button>
             </div>
         </div>
+    </div>
+
+    <!-- NEW: Image Magnification Modal -->
+    <div id="image-modal" class="modal" onclick="this.style.display='none'">
+        <img class="image-modal-img" id="img-modal-content">
     </div>
 
         <!-- New LaTeX Picker Modal Structure -->
@@ -1019,6 +1079,7 @@ CRITICAL MATHEMATICAL FORMATTING RULES:
         let imageAnalysisCounter = 0; 
         let contextMenuTargetChatId = null; 
         let selectedFile = null; 
+        let abortController = null; // NEW: Controller for stopping generation
 
         // --- DOM Elements ---
         const startPage = document.getElementById('start-page');
@@ -1044,6 +1105,10 @@ CRITICAL MATHEMATICAL FORMATTING RULES:
         const confirmModal = document.getElementById('custom-confirm-modal');
         const promptModal = document.getElementById('custom-prompt-modal');
         const promptInput = document.getElementById('prompt-input');
+
+        // NEW: Image Modal Elements
+        const imageModal = document.getElementById('image-modal');
+        const imgModalContent = document.getElementById('img-modal-content');
 
         // NEW: Math Modal Elements
         const mathButton = document.getElementById('math-button');
@@ -1368,6 +1433,12 @@ CRITICAL MATHEMATICAL FORMATTING RULES:
             modelDisplay.textContent = CURRENT_MODEL.name;
             modelSelectDropdown.value = modelKey;
             
+            // FIX: Save the selected model to the current chat history object immediately
+            if (allChatHistories[currentChatId]) {
+                allChatHistories[currentChatId].modelKey = modelKey;
+                saveStateToLocalStorage();
+            }
+            
             if (fileUploadButton) { 
                 if (CURRENT_MODEL.multimodal) {
                     fileUploadButton.style.display = 'flex'; 
@@ -1467,6 +1538,7 @@ CRITICAL MATHEMATICAL FORMATTING RULES:
             if (!history || history.length <= 1) { 
                 const promptDiv = document.createElement('div');
                 promptDiv.className = 'welcome-prompt';
+                // FIX: Update the Welcome Prompt to show the current model name dynamically
                 promptDiv.innerHTML = `<h1>Starlighter</h1><p>Using ${CURRENT_MODEL.name}. Ask a question to start.</p>`;
                 chatBox.appendChild(promptDiv);
             } else {
@@ -1477,8 +1549,15 @@ CRITICAL MATHEMATICAL FORMATTING RULES:
         }
 
         function createNewChatObject(id, initialTitle) {
+            // FIX: Capture the current model key when creating a new chat
+            const currentModelKey = Object.keys(MODELS).find(key => MODELS[key].id === CURRENT_MODEL.id) || Object.keys(MODELS)[0];
             const newHistory = [getModelSystemPrompt(CURRENT_MODEL.name, CURRENT_MODEL.multimodal)];
-            allChatHistories[id] = { history: newHistory, title: initialTitle };
+            
+            allChatHistories[id] = { 
+                history: newHistory, 
+                title: initialTitle,
+                modelKey: currentModelKey // Save it
+            };
             saveStateToLocalStorage();
             return newHistory;
         }
@@ -1509,14 +1588,17 @@ CRITICAL MATHEMATICAL FORMATTING RULES:
         function loadChat(chatId) {
             if (currentChatId === chatId) { renderCurrentChat(); return; } 
             currentChatId = chatId;
-            saveStateToLocalStorage();
+            // Removed: saveStateToLocalStorage(); // Not needed just for switching ID, selectModel will handle updates
             clearSelectedFile(); 
 
             const chatObject = allChatHistories[chatId];
             const history = chatObject ? chatObject.history : [];
-            let modelKeyToLoad = Object.keys(MODELS)[0]; 
+            
+            // FIX: Load model from the specific chat object, fallback to default if missing
+            let modelKeyToLoad = chatObject.modelKey; 
 
-            if (history && history.length > 0 && history[0].role === 'system') {
+            // Legacy Fallback: Try to guess from system prompt if modelKey is missing
+            if (!modelKeyToLoad && history && history.length > 0 && history[0].role === 'system') {
                 const promptContent = history[0].content;
                 const match = promptContent.match(/running on the (.*?) model/); 
                 if (match && match[1]) {
@@ -1526,9 +1608,14 @@ CRITICAL MATHEMATICAL FORMATTING RULES:
                 }
             }
             
+            // If still no key, default to the first available model
+            if (!modelKeyToLoad) modelKeyToLoad = Object.keys(MODELS)[0];
+
             modelSelectDropdown.value = modelKeyToLoad; 
             const modelObject = MODELS[modelKeyToLoad] || MODELS[Object.keys(MODELS)[0]];
             modelDisplay.textContent = modelObject.name;
+            
+            // Pass true to avoid re-saving the model key redundantly, but ensure UI updates
             selectModel(modelKeyToLoad, false); 
 
             document.querySelectorAll('.chat-item').forEach(item => item.classList.remove('active'));
@@ -1687,14 +1774,21 @@ CRITICAL MATHEMATICAL FORMATTING RULES:
             msgDiv.className = `message ${safeRole}-message`;
             
             let contentToParse;
+            let imagesToRender = []; // Store URLs to render
+
             if (Array.isArray(content)) {
                 let displayParts = [];
-                let hasImage = false;
                 content.forEach(part => {
-                    if (part.type === 'text' && part.text) displayParts.push(part.text.trim());
-                    else if (part.type === 'image_url') hasImage = true;
+                    if (part.type === 'text' && part.text) {
+                        displayParts.push(part.text.trim());
+                    } else if (part.type === 'image_url') {
+                         if (part.image_url && part.image_url.url) {
+                             imagesToRender.push(part.image_url.url);
+                         } else {
+                             displayParts.push('**[Image attached]**');
+                         }
+                    }
                 });
-                if (hasImage) displayParts.push('**Image Attached**');
                 contentToParse = displayParts.join('\n');
             } else {
                 contentToParse = content && typeof content === 'string' ? content : '...';
@@ -1705,7 +1799,10 @@ CRITICAL MATHEMATICAL FORMATTING RULES:
                 : contentToParse;
 
             let renderedHtml;
-            if (typeof marked !== 'undefined') {
+            // NEW: Check for stopped status to apply specific styling
+            if (contentToParse === '(Stopped by user)') {
+                renderedHtml = '<span style="color:var(--text-secondary); font-style:italic;">(Stopped by user)</span>';
+            } else if (typeof marked !== 'undefined') {
                 renderedHtml = marked.parse(contentToParse);
             } else {
                 renderedHtml = contentToParse.replace(/\n/g, '<br>');
@@ -1714,6 +1811,38 @@ CRITICAL MATHEMATICAL FORMATTING RULES:
             const contentContainer = document.createElement('div');
             contentContainer.className = 'message-content';
             contentContainer.innerHTML = renderedHtml;
+
+            // Render collected images
+            imagesToRender.forEach(url => {
+                const img = document.createElement('img');
+                img.src = url;
+                img.style.maxWidth = '100%';
+                img.style.maxHeight = '400px'; // Prevent excessively tall images
+                img.style.borderRadius = '12px';
+                img.style.marginTop = '10px';
+                img.style.display = 'block';
+                img.style.cursor = 'zoom-in'; // Ensure cursor shows zoom capability
+                
+                // Fix: Scroll to bottom once image loads to prevent layout shift ("spawning up")
+                img.onload = () => scrollToBottom();
+
+                // NEW: Add zoom capability
+                img.onclick = () => {
+                    imgModalContent.src = url;
+                    imageModal.style.display = "flex";
+                };
+
+                img.onerror = () => {
+                    const fallback = document.createElement('div');
+                    fallback.style.marginTop = '10px';
+                    fallback.style.fontWeight = 'bold';
+                    fallback.style.color = 'var(--text-secondary)';
+                    fallback.textContent = '[Image attached]';
+                    img.replaceWith(fallback);
+                };
+                contentContainer.appendChild(img);
+            });
+
             msgDiv.appendChild(contentContainer); 
 
             if (safeRole === 'ai') {
@@ -1761,7 +1890,8 @@ CRITICAL MATHEMATICAL FORMATTING RULES:
                 }
             } catch (error) {
                 console.error('API Key Error:', error);
-                apiStatus.innerHTML = `<span style="color:red;">Error: ${error.message}</span>`;
+                // Updated to use primary color (blue) instead of red
+                apiStatus.innerHTML = `<span style="color:var(--primary-color); font-weight:bold;">Error: ${error.message}</span>`;
             }
             toggleModelSelectorLock();
             renderCurrentChat();
@@ -1776,11 +1906,15 @@ CRITICAL MATHEMATICAL FORMATTING RULES:
             const isFirstMessage = currentHistory.length === 1; 
 
             userInput.value = '';
-            sendButton.disabled = true;
+            
+            // UPDATED: Switch to Stop Mode instead of disabling
+            sendButton.textContent = 'Stop';
+            sendButton.classList.add('stop-mode');
+            
             userInput.disabled = true;
             modelSelectDropdown.disabled = true;
             fileUploadButton.disabled = true;
-            mathButton.disabled = true; // Disable math button while sending
+            mathButton.disabled = true; 
 
             let finalUserMessageContent;
             let fileToDisplay = selectedFile; 
@@ -1807,11 +1941,30 @@ CRITICAL MATHEMATICAL FORMATTING RULES:
 
             const displayContent = fileToDisplay ? `${userText} **Image: ${fileToDisplay.name}**` : userText;
             addMessage('user', displayContent);
+            
             if(fileToDisplay) {
+                // CAPTURE DATA LOCAL: Fixes the "Error" on click by capturing base64 before clearSelectedFile()
+                const localBase64 = selectedFile.base64; 
+                
                 const imgPreview = document.createElement('img');
-                imgPreview.src = selectedFile.base64;
+                imgPreview.src = localBase64;
                 imgPreview.style.maxWidth = '200px';
+                imgPreview.style.maxHeight = '200px';
+                // FIX: Styling to prevent floating/layout issues
+                imgPreview.style.display = 'block';
+                imgPreview.style.marginTop = '10px';
+                imgPreview.style.borderRadius = '12px';
+                
+                // FIX: Add click-to-magnify for the local preview immediately
+                imgPreview.style.cursor = 'zoom-in';
+                imgPreview.onclick = () => {
+                    imgModalContent.src = localBase64;
+                    imageModal.style.display = "flex";
+                };
+                
+                // Append to the message content container we just created
                 chatBox.lastElementChild.querySelector('.message-content').appendChild(imgPreview);
+                scrollToBottom(); // Ensure we see the new image
             }
 
             currentHistory.push({ "role": "user", "content": finalUserMessageContent });
@@ -1827,6 +1980,10 @@ CRITICAL MATHEMATICAL FORMATTING RULES:
             const aiContentContainer = aiMessageElement.querySelector('.message-content');
             const aiCopyButton = aiMessageElement.querySelector('.copy-button');
 
+            // NEW: Init AbortController
+            abortController = new AbortController();
+            let fullAiResponse = "";
+
             try {
                 // Prepare messages (remove objects if model doesn't support them, though we enforce multimodal check)
                 const response = await fetch(GROQ_ENDPOINT, {
@@ -1836,7 +1993,8 @@ CRITICAL MATHEMATICAL FORMATTING RULES:
                         model: CURRENT_MODEL.id, 
                         messages: currentHistory, 
                         stream: true
-                    })
+                    }),
+                    signal: abortController.signal // NEW: Connect signal
                 });
 
                 if (!response.ok) {
@@ -1870,8 +2028,7 @@ CRITICAL MATHEMATICAL FORMATTING RULES:
 
                 const reader = response.body.getReader();
                 const decoder = new TextDecoder("utf-8");
-                let fullAiResponse = "";
-                aiContentContainer.innerHTML = ""; // Clear typing indicator
+                // removed: let fullAiResponse = ""; // (Moved up)
 
                 while (true) {
                     const { done, value } = await reader.read();
@@ -1884,8 +2041,8 @@ CRITICAL MATHEMATICAL FORMATTING RULES:
                                 const json = JSON.parse(line.substring(6));
                                 const content = json.choices[0]?.delta?.content || "";
                                 fullAiResponse += content;
-                                aiContentContainer.innerHTML = marked.parse(fullAiResponse);
-                                scrollToBottom();
+                                // REMOVED: Streaming update (aiContentContainer.innerHTML = ...)
+                                // We wait until the loop is finished to show text
                             } catch (e) {}
                         }
                     }
@@ -1895,14 +2052,45 @@ CRITICAL MATHEMATICAL FORMATTING RULES:
                     throw new Error("Sorry, I received an empty message from the API.");
                 }
 
+                // Update UI all at once after generation is complete
+                aiContentContainer.innerHTML = marked.parse(fullAiResponse);
+                
+                // Re-apply LaTeX rendering to the new content
+                if (window.safeRefreshMath) {
+                    safeRefreshMath(fullAiResponse);
+                }
+                scrollToBottom();
+
                 if(aiCopyButton) aiCopyButton.setAttribute('data-text', fullAiResponse);
                 currentHistory.push({ "role": "assistant", "content": fullAiResponse });
                 saveStateToLocalStorage();
 
             } catch (error) {
-                aiContentContainer.innerHTML = `<span style="color:red;">Error: ${error.message}</span>`;
+                // NEW: Handle Abort
+                if (error.name === 'AbortError') {
+                    // FIX: Replace partial text with specific stop message
+                    const stopMsg = '(Stopped by user)';
+                    aiContentContainer.innerHTML = `<span style="color:var(--text-secondary); font-style:italic;">${stopMsg}</span>`;
+                    
+                    // FIX: Save to history so it persists on reload
+                    currentHistory.push({ "role": "assistant", "content": stopMsg });
+                    saveStateToLocalStorage();
+                    
+                    // Remove the stop button styling immediately so user knows it stopped
+                    sendButton.classList.remove('stop-mode');
+                    sendButton.textContent = 'Send';
+                } else {
+                    // Updated to use primary color (blue) instead of red
+                    aiContentContainer.innerHTML = `<span style="color:var(--primary-color); font-weight:bold;">Error: ${error.message}</span>`;
+                }
             } finally {
+                abortController = null;
                 toggleModelSelectorLock();
+                
+                // Restore Button State
+                sendButton.textContent = 'Send';
+                sendButton.classList.remove('stop-mode');
+                
                 sendButton.disabled = false;
                 userInput.disabled = false;
                 fileUploadButton.disabled = false;
@@ -1981,16 +2169,28 @@ CRITICAL MATHEMATICAL FORMATTING RULES:
             userInput.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter' && !e.shiftKey && !sendButton.disabled) {
                     e.preventDefault();
+                    // If button is in stop mode (controller exists), do nothing or trigger stop.
+                    // But usually Enter just sends. We'll route it through the button click logic.
+                    if (!abortController) sendMessage();
+                }
+            });
+            
+            // UPDATED: Send Button Listener handles Stop logic
+            sendButton.addEventListener('click', () => {
+                if (abortController) {
+                    abortController.abort();
+                    abortController = null;
+                } else {
                     sendMessage();
                 }
             });
-            sendButton.addEventListener('click', sendMessage);
 
             // Modal Closes
             window.onclick = function(event) {
                 if (event.target == latexModal) latexModal.style.display = "none";
                 if (event.target == confirmModal) confirmModal.style.display = "none";
                 if (event.target == promptModal) promptModal.style.display = "none";
+                if (event.target == imageModal) imageModal.style.display = "none"; // Close Image Modal
             }
 
             loadApiKey();
