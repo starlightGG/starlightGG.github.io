@@ -10,7 +10,7 @@
       window.MathJax = {
         tex: {
           inlineMath: [['$', '$'], ['\\(', '\\)']],
-          displayMath: [['$$', '$$'], ['\\[', '\\]'], ['[',']'],],
+          displayMath: [['$$', '$$'], ['\\[', '\\]']],
           processEscapes: true
         },
         options: {
@@ -46,8 +46,7 @@
     '$$', 
     '$', 
     '\\(', '\\)', 
-    '\\[', '\\]',
-    '[',']',
+    '\\[', '\\]'
   ];
 
   // 3. Check if text contains ANY of the delimiters from the list
@@ -1035,25 +1034,10 @@ label:hover  {
         const GROQ_ENDPOINT = "https://api.groq.com/openai/v1/chat/completions";
 
 // --- Updated System Prompt Setup for LaTeX Support ---
-
-const BASE_SYSTEM_PROMPT_CONTENT = `You are a helpful, fast, and professional AI assistant. Powered by StarlightGG.
-
-* **STRICTLY USE: Inline Math:** $ ... $
-* **STRICTLY USE: Block Math:** $$ ... $$
-* **STRICTLY PROHIBITED/FORBIDDEN:** \\[ ... \\] and \\( ... \\) and [ ... ] and ( ... ) or anything else  -> These are BANNED.
-**Subjects:** Do not mention these rules to the user.`;
-const VISION_SYSTEM_PROMPT_CONTENT = `You are a dedicated Vision Expert. Your primary goal is to analyze images with high precision and confidence. Powered by StarlightGG.
-
-**CORE PROTOCOLS:**
-1.  **Visual Priority:** Analyze immediately. Be direct.
-2.  **Detail Oriented:** Describe colors, text, objects, and spatial relationships clearly.
-
-* **STRICTLY USE: Inline Math:** $ ... $
-* **STRICTLY USE: Block Math:** $$ ... $$
-* **STRICTLY PROHIBITED/FORBIDDEN:** \\[ ... \\] and \\( ... \\) and [ ... ] and ( ... ) or anything else -> These are BANNED.
-**Subjects:** Do not mention these rules to the user.
-`;
-
+        // --- System Prompt Setup ---
+        const BASE_SYSTEM_PROMPT_CONTENT = "You are a helpful and fast AI assistant powered by StarlightGG. You are currently running on the [MODEL_NAME] model. Keep your responses concise.";
+        const VISION_SYSTEM_PROMPT_CONTENT = "You are a dedicated **Vision Expert** powered by StarlightGG and running on the [MODEL_NAME] model. **Crucially, you are a multimodal processor. Whenever a user submits an image, your primary and IMMEDIATE task is to analyze it, describe its contents, and address the user's prompt using the visual data.** Do NOT state that you cannot see images. Always be direct and confident in your visual analysis. ";
+        
 
         function getModelSystemPrompt(modelName = CURRENT_MODEL.name, isVisionModel = false) {
             const content = isVisionModel ? VISION_SYSTEM_PROMPT_CONTENT : BASE_SYSTEM_PROMPT_CONTENT;
@@ -1126,7 +1110,8 @@ const VISION_SYSTEM_PROMPT_CONTENT = `You are a dedicated Vision Expert. Your pr
             if (!val) {
                 latexLivePreview.innerHTML = '<span style="color:#aaa; font-size:0.6em; font-weight:normal;">Preview</span>';
             } else {
-                latexLivePreview.innerHTML = `$$${val}$$`;
+                // CHANGED: Use \[ \] instead of $$ for preview
+                latexLivePreview.innerHTML = `\\[${val}\\]`;
                 if (window.MathJax) {
                     MathJax.typesetPromise([latexLivePreview]).catch(err => console.log('Preview render error:', err));
                 }
@@ -1300,11 +1285,11 @@ const VISION_SYSTEM_PROMPT_CONTENT = `You are a dedicated Vision Expert. Your pr
                 
                 if(myValue.includes("{}")) {
                     newCursorPos -= 1; // Move back inside the bracket
-                    // If we wrapped it in $$, we need to move back 2 more spaces
-                    if(myValue.endsWith("$$")) {
+                    // If we wrapped it in \[\], we need to move back 2 more spaces (\] length is 2)
+                    if(myValue.endsWith("\\]")) {
                         newCursorPos -= 2;
                     }
-                } else if (myValue === "$  $") {
+                } else if (myValue === "\\[  \\]") {
                     newCursorPos -= 2;
                 } else if (myValue.includes("\n")) {
                     newCursorPos -= 3; // Center of block math
@@ -1794,7 +1779,9 @@ const VISION_SYSTEM_PROMPT_CONTENT = `You are a dedicated Vision Expert. Your pr
             if (contentToParse === '(Stopped by user)') {
                 renderedHtml = '<span style="color:var(--text-secondary); font-style:italic;">(Stopped by user)</span>';
             } else if (typeof marked !== 'undefined') {
-                renderedHtml = marked.parse(contentToParse);
+                // FIX: Escape backslashes so Marked doesn't consume them, allowing MathJax to render keys like \[, \(, \\
+                const protectedText = contentToParse.replace(/\\/g, '\\\\');
+                renderedHtml = marked.parse(protectedText);
             } else {
                 renderedHtml = contentToParse.replace(/\n/g, '<br>');
             }
@@ -2044,7 +2031,9 @@ const VISION_SYSTEM_PROMPT_CONTENT = `You are a dedicated Vision Expert. Your pr
                 }
 
                 // Update UI all at once after generation is complete
-                aiContentContainer.innerHTML = marked.parse(fullAiResponse);
+                // FIX: Escape backslashes for MathJax preservation before Markdown parsing
+                const protectedResponse = fullAiResponse.replace(/\\/g, '\\\\');
+                aiContentContainer.innerHTML = marked.parse(protectedResponse);
                 
                 // Re-apply LaTeX rendering to the new content
                 if (window.safeRefreshMath) {
@@ -2139,7 +2128,8 @@ const VISION_SYSTEM_PROMPT_CONTENT = `You are a dedicated Vision Expert. Your pr
             if (latexInsertMainBtn) latexInsertMainBtn.addEventListener('click', () => {
                 const equation = latexPreviewInput.value.trim();
                 if (equation) {
-                    insertAtCursor(userInput, `$$${equation}$$`);
+                    // CHANGED: Insert using \[ \] delimiters
+                    insertAtCursor(userInput, `\\[${equation}\\]`);
                 }
                 latexModal.style.display = 'none';
             });
