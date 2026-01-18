@@ -615,7 +615,7 @@
         #CloakingAlert {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: var(--bg-color); z-index: 20000;
-            display:flex; /* Hidden by default, toggle with JS */
+            display:none; /* Hidden by default, toggle with JS */
             flex-direction: column; justify-content: center; align-items: center;
             color: var(--primary-color); font-size: 1.2em; font-weight: bold;
             font-family: var(--font-stack);
@@ -736,7 +736,7 @@
 </noscript>
     <!-- External Cloaking Alert Element -->
     <div id="Dbclick">
-        <div>Click screen twice to mask window!</div>
+        <div>Move cursor to mask window!</div>
     </div>
     <!-- External Cloaking Alert Element -->
     <div id="CloakingAlert">
@@ -1068,10 +1068,10 @@ document.documentElement.setAttribute('data-theme', theme);
             document.title = storedTitle || "Google";
             updateFavicon(storedFavicon || "https://google.com/favicon.ico");
         } else {
-            // Not cloaked yet? Set up the double-click listener
+
             const activeElement = document.getElementById('Dbclick');
             if (activeElement) {
-                activeElement.addEventListener('dblclick', function() {
+                activeElement.addEventListener('mousemove', function() {
                     this.classList.add('fade-out');
 
                     setTimeout(() => {
