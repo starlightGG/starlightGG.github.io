@@ -683,6 +683,14 @@
         transform: scale(0.98);
     }
 }
+
+        /* --- MOBILE RESPONSIVENESS --- */
+        @media (max-width: 600px) {
+            #iframe-nav button span { display: none; } /* Hide text labels on small screens */
+            #iframe-nav button { padding: 10px; justify-content: center; } /* Icon only mode */
+            .dashboard-container { padding: 20px 10px; }
+            .hero-section h2 { font-size: 2em; }
+        }
     </style>
 </head>
 <body>
@@ -736,7 +744,7 @@
 </noscript>
     <!-- External Cloaking Alert Element -->
     <div id="Dbclick">
-        <div>Move cursor to mask window!</div>
+        <div>Move cursor/click to mask window!</div>
     </div>
     <!-- External Cloaking Alert Element -->
     <div id="CloakingAlert">
@@ -768,7 +776,7 @@ const PRESETS = [
     { name: "Outlook", title: "Outlook Mail", favicon: "https://outlook.live.com/owa/favicon.ico", link: "https://outlook.live.com" },
     { name: "Pear Assessment", title: "Pear Assessment", favicon: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y+mAAAAY1BMVEVHcEwrOkIsO0I0QkMoN0InNkIiMUEnNUImNUEqOEIwPkI0QkMzQEMxP0IyQEMxP0PI21fL3lfQ5FjO4Vi4ylR2hUphcEVNXEKer1CnuVFqekbU6FmAlTmvwVNbaUdATkQAF0B9mIX1AAAAEHRSTlMApyf621LnZv7HHJjFfLc+PB2r8AAAALxJREFUKJHFkEkWgzAMQwljAg+I7cxhuv8pC3RHwrbV9luS7aL4q/qpHothyqGRVWGxVTXk4GCXZTHiJVVYY6v5rXPumDhb37zGe1PnWbdFgLh1WdiuICWsbY41FuUptE0GcgUXBMVTxjTJW6RZarxtBOdIYm0MXdtoFYDMs7W7UkEFFYj085obKocgHSaw3FGCPFbUIe7ls7R2JMHzYyOXfrDnHgEQo+d9emjJjVPKGZ6EfpcSbSvyf/+dPiDkDIV9PRLKAAAAAElFTkSuQmCC", link: "https://app.edulastic.com/home/assignments" },
     { name: "StarlightGG (Default)", title: "StarlightGG", favicon: "https://starlightgg.github.io/favicon.ico", link: "https://classroom.google.com" },
-    { name: "Zearn", title: "Student Home - Zearn", favicon: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y+mAAAAYFBMVEVHcExFvdM6utGKxq8/u9I8utFIvtM8utFFvNM+u9JJvdNAu9Jnxdg/u9E9utFIvtQ/u9E8utFxydolutn1z0D+0Cr1z0H1zj/1z0H31GD1z0H10EovluFDAAAAIHRSTlMA2P8Vrf8v9EuXcci5auP/XGR9wLmh4v9CW5Vod9EfI0NLlVAAAACgSURBVHgBddDFAcRADATBRTMzO/8ojyTzXH9rUeKUVFKLPxllrXUEzrXfPIy+/RVglaQ+1lD91GCNSENxLk5cm34jvKhnP6lvlvMf7zyVHJhh5HzXdS+Yi2eFIjPAPLYQmGMpCUyDx+yVVIisqilkTUt1wCq2HtjANgKb2CZgXcvNc1VV9TAMJ2wfNbvp9tmyK8B1x/5hlThaur4fT/Ek3sqLEwwJ2FthAAAAAElFTkSuQmCC", link: "https://zearn.org" }
+    { name: "Zearn", title: "Student Home - Zearn", favicon: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y+mAAAAYFBMVEVHcExFvdM6utGKxq8/u9I8utFIvtM8utFFvNM+u9JJvdNAu9Jnxdg/u9E8utFIvtQ/u9E8utFxydolutn1z0D+0Cr1z0H1zj/1z0H31GD1z0H10EovluFDAAAAIHRSTlMA2P8Vrf8v9EuXcci5auP/XGR9wLmh4v9CW5Vod9EfI0NLlVAAAACgSURBVHgBddDFAcRADATBRTMzO/8ojyTzXH9rUeKUVFKLPxllrXUEzrXfPIy+/RVglaQ+1lD91GCNSENxLk5cm34jvKhnP6lvlvMf7zyVHJhh5HzXdS+Yi2eFIjPAPLYQmGMpCUyDx+yVVIisqilkTUt1wCq2HtjANgKb2CZgXcvNc1VV9TAMJ2wfNbvp9tmyK8B1x/5hlThaur4fT/Ek3sqLEwwJ2FthAAAAAElFTkSuQmCC", link: "https://zearn.org" }
 ];
 
         // --- MODAL COMPONENT ---
@@ -856,15 +864,20 @@ const PRESETS = [
                 return 'text-bad';
             };
 
-            // Drag Logic - FIXED CLICK VS DRAG
-            const handleMouseDown = (e) => {
-                e.preventDefault();
-                const startX = e.clientX;
-                const startY = e.clientY;
+            // Drag Logic - FIXED CLICK VS DRAG & ADDED TOUCH SUPPORT
+            const handleStart = (e) => {
+                // Determine input type
+                const isTouch = e.type === 'touchstart';
+                if (!isTouch) e.preventDefault(); // Prevent text selection on mouse
+
+                const clientX = isTouch ? e.touches[0].clientX : e.clientX;
+                const clientY = isTouch ? e.touches[0].clientY : e.clientY;
+                
+                const startX = clientX;
+                const startY = clientY;
                 const startRight = pos.right;
                 const startBottom = pos.bottom;
                 
-                // Track if movement occurred
                 let hasMoved = false;
 
                 // Create Overlay for Dragging
@@ -879,25 +892,26 @@ const PRESETS = [
                 overlay.style.cursor = 'grabbing';
                 document.body.appendChild(overlay);
 
-                const onMouseMove = (moveEvent) => {
-                    const deltaX = startX - moveEvent.clientX;
-                    const deltaY = startY - moveEvent.clientY;
+                const onMove = (moveEvent) => {
+                    const moveClientX = moveEvent.type === 'touchmove' ? moveEvent.touches[0].clientX : moveEvent.clientX;
+                    const moveClientY = moveEvent.type === 'touchmove' ? moveEvent.touches[0].clientY : moveEvent.clientY;
 
-                    // Threshold: Only drag if moved > 3 pixels
+                    const deltaX = startX - moveClientX;
+                    const deltaY = startY - moveClientY;
+
                     if (Math.abs(deltaX) > 3 || Math.abs(deltaY) > 3) {
                         hasMoved = true;
                     }
 
                     if (hasMoved) {
+                        if (moveEvent.cancelable) moveEvent.preventDefault(); // Prevent scrolling while dragging
+
                         let newRight = startRight + deltaX;
                         let newBottom = startBottom + deltaY;
 
-                        // Modified: Allow full range (0 margin)
-                        // Button size is 30px, so max range is InnerWidth - 30
                         const maxX = window.innerWidth - 30;
                         const maxY = window.innerHeight - 30;
                         
-                        // Changed min to 0 to allow touching the edge
                         newRight = Math.max(0, Math.min(maxX, newRight));
                         newBottom = Math.max(0, Math.min(maxY, newBottom));
 
@@ -908,21 +922,27 @@ const PRESETS = [
                     }
                 };
 
-                const onMouseUp = () => {
-                    document.removeEventListener('mousemove', onMouseMove);
-                    document.removeEventListener('mouseup', onMouseUp);
+                const onEnd = () => {
+                    document.removeEventListener('mousemove', onMove);
+                    document.removeEventListener('mouseup', onEnd);
+                    document.removeEventListener('touchmove', onMove);
+                    document.removeEventListener('touchend', onEnd);
                     
                     const ov = document.getElementById('drag-overlay');
                     if(ov) ov.remove();
 
-                    // If NOT dragged, it was a click -> Toggle Menu
                     if (!hasMoved) {
                         setIsOpen(prev => !prev);
                     }
                 };
 
-                document.addEventListener('mousemove', onMouseMove);
-                document.addEventListener('mouseup', onMouseUp);
+                if (isTouch) {
+                    document.addEventListener('touchmove', onMove, { passive: false });
+                    document.addEventListener('touchend', onEnd);
+                } else {
+                    document.addEventListener('mousemove', onMove);
+                    document.addEventListener('mouseup', onEnd);
+                }
             };
 
             if (!visible) return null;
@@ -969,7 +989,8 @@ const PRESETS = [
                 ),
                 e('div', { 
                     id: 'info-btn', 
-                    onMouseDown: handleMouseDown,
+                    onMouseDown: handleStart,
+                    onTouchStart: handleStart, // Added Touch Listener
                     style: { bottom: `${pos.bottom}px`, right: `${pos.right}px` }
                 }, e('i', { className: 'fas fa-info', style: { fontSize: '0.9rem' } })) 
             );
@@ -1068,10 +1089,10 @@ document.documentElement.setAttribute('data-theme', theme);
             document.title = storedTitle || "Google";
             updateFavicon(storedFavicon || "https://google.com/favicon.ico");
         } else {
-
             const activeElement = document.getElementById('Dbclick');
             if (activeElement) {
-                activeElement.addEventListener('mousemove', function() {
+                // Unified handler for Mouse and Touch
+                const dismissCloak = function() {
                     this.classList.add('fade-out');
 
                     setTimeout(() => {
@@ -1086,7 +1107,12 @@ document.documentElement.setAttribute('data-theme', theme);
                         localStorage.setItem('customFaviconURL', defaultFavicon);
                         localStorage.setItem('isCloaked', 'true');
                     }, 800);
-                });
+                };
+                
+                // Add listeners for both PC (MouseMove) and Mobile (Touch/Click)
+                activeElement.addEventListener('mousemove', dismissCloak);
+                activeElement.addEventListener('touchstart', dismissCloak);
+                activeElement.addEventListener('click', dismissCloak);
             }
         }
     }, 800);
@@ -1599,9 +1625,6 @@ document.documentElement.setAttribute('data-theme', theme);
                             return showModal("Invalid URL format.<br><br>Please include <b>https://</b> or <b>http://</b> at the start of your Tab Key URL.");
                         }
                         localStorage.setItem('LINKTAB_KEY', customUrl);
-                    } else {
-                        // If empty, set to Google (Default)
-                        localStorage.setItem('LINKTAB_KEY', 'https://google.com');
                     }
 
                     if (customTitle) {
