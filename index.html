@@ -809,6 +809,7 @@ const PRESETS = [
             const [isOpen, setIsOpen] = useState(false);
             // REVERTED: Default position back to bottom corner (20px)
             const [pos, setPos] = useState({ bottom: 20, right: 20 });
+            const lastTouchTime = useRef(0); // Added ref for ghost click prevention
             
             // FPS Loop
             useEffect(() => {
@@ -873,8 +874,16 @@ const PRESETS = [
             const handleStart = (e) => {
                 // Determine input type
                 const isTouch = e.type === 'touchstart';
-                if (!isTouch) e.preventDefault(); // Prevent text selection on mouse
 
+                // Fix for double-firing on mobile (Touch -> Mouse emulation)
+                if (isTouch) {
+                    lastTouchTime.current = Date.now();
+                } else {
+                    // If mouse event is within 500ms of last touch, ignore it (it's a ghost event)
+                    if (Date.now() - lastTouchTime.current < 500) return;
+                    e.preventDefault(); // Prevent text selection on mouse
+                }
+                
                 const clientX = isTouch ? e.touches[0].clientX : e.clientX;
                 const clientY = isTouch ? e.touches[0].clientY : e.clientY;
                 
