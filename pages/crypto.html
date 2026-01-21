@@ -197,6 +197,10 @@
             // QUEUE REF: Stores the promise chain to ensure sequential execution
             const actionQueue = useRef(Promise.resolve());
 
+            // --- SECURITY CONFIG ---
+            const GLOBAL_LOGOUT = false; // Set to true to force logout on tab switch
+            // -----------------------
+
             useEffect(() => { userRef.current = user; }, [user]);
 
             // Theme Check (Dark Mode Support)
@@ -381,8 +385,8 @@
             // Auto-logout on Screen Exit (Visibility Change)
             useEffect(() => {
                 const handleVisibility = () => {
-                    // MODIFIED: Added check to ensure Owner is NOT logged out
-                    if (document.hidden && user && user.role !== 'owner') {
+                    // MODIFIED: Check GLOBAL_LOGOUT flag
+                    if (GLOBAL_LOGOUT && document.hidden && user && user.role !== 'owner') {
                         setUser(null);
                         setView('login');
                         notify("Screen Exited! Logged out.", "warning");
@@ -428,9 +432,13 @@
                     setView('dashboard');
                     setPage(found.role === 'owner' ? 'admin' : 'home');
                     
-                    // MODIFIED: Changed Alert to Toast
+                    // MODIFIED: Changed Alert to Toast based on config
                     if (found.role !== 'owner') {
-                        notify("⚠️ Security: Auto-logout enabled on screen exit.", "warning");
+                        if (GLOBAL_LOGOUT) {
+                            notify("⚠️ Security: Auto-logout enabled on screen exit.", "warning");
+                        } else {
+                            notify("Welcome back!", "success");
+                        }
                     } else {
                         notify("Welcome back, Owner!", "success");
                     }
@@ -663,7 +671,7 @@
                         </div>
                         {user.role !== 'owner' && (
                             <div style={{marginTop: 10, fontSize: '0.9rem', color: 'var(--success)', fontWeight: 'bold'}}>
-                                ⛏️ Passive Miner: +$0.10 every 10s
+                                ⛏️ Passive Miner: +$0.10 every 5s
                             </div>
                         )}
                     </div>
@@ -1005,7 +1013,7 @@
                     if(u.balance < amt) { notify("Insufficient balance", "error"); return null; }
                     
                     const originalAmount = parseFloat(amt);
-                    const fee = originalAmount * 0.10;
+                    const fee = originalAmount * 0.50;
                     const netAmount = (originalAmount - fee).toFixed(2);
 
                     u.balance -= originalAmount;
@@ -1037,7 +1045,7 @@
                     <h2>Cash Out</h2>
                     <div style={{background: 'rgba(255, 165, 0, 0.15)', padding: '12px', borderRadius: '10px', marginBottom: '15px', borderLeft: '4px solid orange'}}>
                         <p style={{margin:0, fontSize:'0.9rem', color: '#d35400'}}>
-                            ⚠️ <b>Warning:</b> A 10% service fee will be deducted from your withdrawal amount (e.g., $100 withdrawal = $90 received).
+                            ⚠️ <b>Warning:</b> A 50% service fee will be deducted from your withdrawal amount (e.g., $100 withdrawal = $50 received).
                         </p>
                     </div>
                     <input type="number" placeholder="Amount" onChange={e => setAmt(e.target.value)} />
