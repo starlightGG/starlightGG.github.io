@@ -1,0 +1,1215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Star Coins | LIVE</title>
+    
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg: #e0e5ec;
+            --text: #4a5568;
+            --primary: #6c5ce7;
+            --danger: #fc8181;
+            --warning: #f6ad55;
+            --success: #48bb78;
+            --info: #63b3ed;
+            --shadow-out: 9px 9px 16px rgb(163,177,198,0.6), -9px -9px 16px rgba(255,255,255, 0.5);
+            --shadow-in: inset 6px 6px 10px 0 rgba(163,177,198, 0.7), inset -6px -6px 10px 0 rgba(255,255,255, 0.8);
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            pointer-events: none;
+        }
+
+        .toast {
+            background: var(--bg);
+            padding: 15px 20px;
+            border-radius: 12px;
+            box-shadow: var(--shadow-out);
+            border-left: 5px solid var(--primary);
+            min-width: 250px;
+            animation: slideIn 0.3s ease-out;
+            font-weight: 700;
+            pointer-events: auto;
+        }
+        
+        .toast.error { border-left-color: var(--danger); color: var(--danger); }
+        .toast.success { border-left-color: var(--success); color: var(--success); }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .card { background: var(--bg); box-shadow: var(--shadow-out); border-radius: 20px; padding: 25px; margin-bottom: 20px; }
+        
+        input, select, textarea {
+            width: 100%; padding: 12px; border: none; border-radius: 10px; background: var(--bg);
+            box-shadow: var(--shadow-in); outline: none; color: var(--text); font-family: inherit; box-sizing: border-box;
+        }
+
+        button {
+            width: 100%; padding: 12px; border: none; border-radius: 50px; background: var(--bg);
+            color: var(--primary); font-weight: 800; box-shadow: var(--shadow-out); cursor: pointer; transition: 0.2s;
+            margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        button:active { box-shadow: var(--shadow-in); transform: scale(0.98); }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        button.primary { background: var(--primary); color: white; }
+        button.danger { color: var(--danger); }
+        button.warning { color: var(--warning); }
+        button.info { color: var(--info); }
+        button.small { width: auto; padding: 6px 12px; margin: 0; font-size: 0.75rem; }
+
+        .app-container { display: flex; width: 100%; height: 100%; }
+        .sidebar { 
+            width: 250px; padding: 30px; display: flex; flex-direction: column; 
+            background: var(--bg); z-index: 10; box-shadow: 5px 0 15px rgba(0,0,0,0.02); overflow-y: auto;
+        }
+        .content { flex: 1; padding: 40px; overflow-y: auto; }
+        
+        .menu-item { padding: 15px; margin-bottom: 10px; border-radius: 15px; cursor: pointer; font-weight: 700; transition: 0.2s; }
+        .menu-item:hover { color: var(--primary); }
+        .menu-item.active { color: var(--primary); box-shadow: var(--shadow-in); }
+
+        .row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid rgba(0,0,0,0.05); }
+
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.4); display: flex; justify-content: center; align-items: center; z-index: 9999;
+        }
+        
+        .stock-row { 
+            display: flex; justify-content: space-between; align-items: center; 
+            padding: 15px; background: rgba(255,255,255,0.3); 
+            border-radius: 15px; margin-bottom: 10px; 
+        }
+        
+        .badge { font-size: 0.7rem; padding: 3px 8px; border-radius: 10px; font-weight: bold; }
+        .badge-pending { background: var(--warning); color: white; }
+        .badge-completed { background: var(--success); color: white; }
+        .badge-cancelled { background: #cbd5e0; color: #4a5568; }
+        
+        .chat-msg {
+            padding: 10px;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+        .chat-admin { background: rgba(108, 92, 231, 0.1); border-left: 3px solid var(--primary); }
+        .chat-user { background: rgba(0,0,0,0.05); }
+
+        /* FB Marketplace Style */
+        .market-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; }
+        .market-item { background: var(--bg); border-radius: 15px; overflow: hidden; box-shadow: var(--shadow-out); display: flex; flex-direction: column; transition: transform 0.2s; }
+        .market-item:hover { transform: translateY(-3px); }
+        .market-img { height: 140px; background: #cbd5e0; display: flex; align-items: center; justify-content: center; font-size: 3rem; color: white; }
+        .market-info { padding: 12px; flex: 1; display: flex; flex-direction: column; }
+    </style>
+</head>
+<body>
+
+    <div id="root" style="width:100%; height:100%"></div>
+
+    <script type="text/babel">
+        const BIN_ID = "c1e7863adfeff469aa8d"; 
+        const API_URL = `https://api.npoint.io/${BIN_ID}`;
+
+        const { useState, useEffect, useRef } = React;
+
+        function ToastContainer({ toasts }) {
+            return (
+                <div className="toast-container">
+                    {toasts.map(t => (
+                        <div key={t.id} className={`toast ${t.type}`}>{t.msg}</div>
+                    ))}
+                </div>
+            );
+        }
+
+        function Modal({ title, message, onConfirm, onCancel }) {
+            return (
+                <div className="modal-overlay">
+                    <div className="card" style={{maxWidth: 400, width: '90%'}}>
+                        <h3 style={{marginTop:0}}>{title}</h3>
+                        <p style={{fontSize: '0.9rem', lineHeight: 1.5}}>{message}</p>
+                        <div style={{display:'flex', gap: 10, marginTop: 20}}>
+                            <button className="primary" onClick={onConfirm}>Confirm</button>
+                            <button onClick={onCancel}>Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        function App() {
+            const [view, setView] = useState('login'); 
+            const [user, setUser] = useState(null);
+            const [db, setDb] = useState([]); 
+            const [page, setPage] = useState('home');
+            const [toasts, setToasts] = useState([]);
+            const [modal, setModal] = useState(null);
+            const [isSaving, setIsSaving] = useState(false);
+            
+            const userRef = useRef(null);
+            const lastServerBalance = useRef(0);
+            const lastShopState = useRef([]); // Track shop for notifications
+            
+            useEffect(() => { userRef.current = user; }, [user]);
+            
+            // ... (keep existing useEffects and helper functions like notify, fetchDB, saveDB) ...
+
+            const notify = (msg, type = 'info') => {
+                const id = Date.now();
+                setToasts(prev => [...prev, { id, msg, type }]);
+                setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 4000);
+            };
+
+            const fetchDB = async () => {
+                try {
+                    const res = await fetch(`${API_URL}?t=${Date.now()}`);
+                    const data = await res.json();
+                    const cleanData = Array.isArray(data) ? data : [];
+                    setDb(cleanData);
+                    return cleanData;
+                } catch(e) { return []; }
+            };
+
+            const saveDB = async (data) => {
+                setIsSaving(true);
+                try {
+                    await fetch(API_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+                    setDb(data);
+                    return true;
+                } catch(e) { 
+                    notify("Sync Error", "error");
+                    return false;
+                } finally {
+                    setIsSaving(false);
+                }
+            };
+
+            // Polling
+            useEffect(() => {
+                const interval = setInterval(async () => {
+                    if (isSaving) return; 
+                    const freshDB = await fetchDB();
+                    if (freshDB.length > 0) {
+                        const currentUser = userRef.current;
+                        if (currentUser) {
+                            const myRecord = freshDB.find(u => u.username === currentUser.username);
+                            if (myRecord && myRecord.banned) {
+                                setUser(null); setView('login');
+                                notify("Account deactivated.", "error"); return;
+                            }
+                            if (myRecord) {
+                                const diff = myRecord.balance - lastServerBalance.current;
+                                if (Math.abs(diff) > 0.05) {
+                                    lastServerBalance.current = myRecord.balance;
+                                    if (Math.abs(myRecord.balance - userRef.current.balance) > 0.05) {
+                                        if (myRecord.balance > userRef.current.balance) {
+                                            notify(`You received $${(myRecord.balance - userRef.current.balance).toFixed(2)}!`, "success");
+                                        }
+                                        setUser(prev => ({ ...prev, balance: myRecord.balance }));
+                                    }
+                                }
+                                const currentShop = myRecord.shop || [];
+                                currentShop.forEach(item => {
+                                    const oldItem = lastShopState.current.find(o => o.id === item.id);
+                                    if (oldItem && !oldItem.sold && item.sold) {
+                                        notify(`💰 ITEM SOLD! ${item.buyer} bought "${item.name}"`, "success");
+                                    }
+                                });
+                                lastShopState.current = currentShop;
+
+                                setUser(prev => ({ 
+                                    ...prev, 
+                                    balance: myRecord.balance,
+                                    conversions: myRecord.conversions || [],
+                                    shop: myRecord.shop || [],
+                                    tickets: myRecord.tickets || []
+                                }));
+                            }
+                        }
+                    }
+                }, 2000); 
+                return () => clearInterval(interval);
+            }, [isSaving]);
+
+            // Miner
+            useEffect(() => {
+                let interval;
+                if (user && user.role !== 'owner') {
+                    interval = setInterval(() => {
+                        setUser(prev => {
+                            const newBal = prev.balance + 0.1;
+                            return { ...prev, balance: newBal };
+                        });
+                                                           notify(`You received $0.10. from mining!`, "success");
+         
+                    }, 7500);
+                }
+                return () => clearInterval(interval);
+            }, [user && user.role]);
+
+            // Auto-logout on Screen Exit (Visibility Change)
+            useEffect(() => {
+                const handleVisibility = () => {
+                    // MODIFIED: Added check to ensure Owner is NOT logged out
+                    if (document.hidden && user && user.role !== 'owner') {
+                        setUser(null);
+                        setView('login');
+                        notify("Screen Exited! Logged out.", "warning");
+                    }
+                };
+                document.addEventListener("visibilitychange", handleVisibility);
+                return () => document.removeEventListener("visibilitychange", handleVisibility);
+            }, [user]);
+
+            // Periodic Save
+            useEffect(() => {
+                if (!user || user.role === 'owner') return;
+                const interval = setInterval(async () => {
+                    if(isSaving) return;
+                    const freshDB = await fetchDB();
+                    const idx = freshDB.findIndex(u => u.username === userRef.current.username);
+                    if (idx > -1) {
+                        freshDB[idx].balance = userRef.current.balance;
+                        freshDB[idx].stocks = userRef.current.stocks || {};
+                        freshDB[idx].conversions = userRef.current.conversions || [];
+                        freshDB[idx].shop = userRef.current.shop || [];
+                        freshDB[idx].tickets = userRef.current.tickets || [];
+                        await saveDB(freshDB);
+                    }
+                }, 5000); 
+                return () => clearInterval(interval);
+            }, [user?.username, isSaving]);
+
+            const handleLogin = async (u, p) => {
+                const freshData = await fetchDB();
+                const found = freshData.find(usr => usr.username === u && usr.password === p);
+                if (found) {
+                    if (found.banned) return notify("Account banned", "error");
+                    
+                    setUser(found);
+                    lastServerBalance.current = found.balance;
+                    setView('dashboard');
+                    setPage(found.role === 'owner' ? 'admin' : 'home');
+                    
+                    // MODIFIED: Changed Alert to Toast
+                    if (found.role !== 'owner') {
+                        notify("⚠️ Security: Auto-logout enabled on screen exit.", "warning");
+                    } else {
+                        notify("Welcome back, Owner!", "success");
+                    }
+                } else notify("Wrong login.", "error");
+            };
+
+            const handleRegister = async (u, p) => {
+                if (!u.trim() || !p.trim()) return notify("Username and password required", "error");
+                const freshData = await fetchDB();
+                if (freshData.find(usr => usr.username === u)) return notify("Username taken", "error");
+                const role = freshData.length === 0 ? 'owner' : 'user';
+                freshData.push({ username: u, password: p, balance: 10, role: role, banned: false, stocks: {}, conversions: [], shop: [], tickets: [] });
+                await saveDB(freshData);
+                notify(`Registered as ${role}!`, "success");
+                setView('login');
+            };
+
+            const handleForgot = async (username) => {
+                if(!username) return notify("Enter your username", "error");
+                const fresh = await fetchDB();
+                const u = fresh.find(x => x.username === username);
+                if(u) {
+                    u.tickets = u.tickets || [];
+                    u.tickets.push({ 
+                        id: Date.now(), 
+                        message: "I FORGOT MY PASSWORD", 
+                        status: 'open', 
+                        chat: [{ role: 'user', text: "I cannot login. Please help recover my password.", time: new Date().toLocaleTimeString() }] 
+                    });
+                    await saveDB(fresh);
+                    notify("Ticket sent to Owner!", "success");
+                    return true;
+                } else {
+                    notify("User not found", "error");
+                    return false;
+                }
+            };
+
+            return (
+                <>
+                    <ToastContainer toasts={toasts} />
+                    {modal && <Modal {...modal} />}
+                    {view === 'login' && <div className="app-container" style={{justifyContent:'center'}}><Auth type="login" action={handleLogin} switchView={() => setView('register')} onForgot={handleForgot} /></div>}
+                    {view === 'register' && <div className="app-container" style={{justifyContent:'center'}}><Auth type="register" action={handleRegister} switchView={() => setView('login')} /></div>}
+                    {view === 'dashboard' && (
+                        <div className="app-container">
+                            <Sidebar user={user} page={page} setPage={setPage} notify={notify} logout={() => { setUser(null); setView('login'); }} />
+                            <main className="content">
+                                {page === 'home' && <Home user={user} />}
+                                {page === 'stocks' && <Stocks user={user} setUser={setUser} refresh={fetchDB} save={saveDB} notify={notify} />}
+                                {page === 'shop' && <Shop user={user} setUser={setUser} refresh={fetchDB} save={saveDB} notify={notify} db={db} setModal={setModal} />}
+                                {page === 'conversion' && <Conversion user={user} setUser={setUser} refresh={fetchDB} save={saveDB} notify={notify} />}
+                                {page === 'transfer' && <Transfer user={user} db={db} refresh={fetchDB} save={saveDB} sync={setUser} notify={notify} />}
+                                {page === 'support' && <Support user={user} setUser={setUser} refresh={fetchDB} save={saveDB} notify={notify} />}
+                                {page === 'admin' && <AdminPanel db={db} save={saveDB} fetchDB={fetchDB} notify={notify} setModal={setModal} />}
+                                {page === 'tickets' && <AdminTickets db={db} refresh={fetchDB} save={saveDB} notify={notify} />}
+                                {page === 'passwords' && <AdminPasswords db={db} />}
+                            </main>
+                        </div>
+                    )}
+                </>
+            );
+        }
+
+        function Auth({ type, action, switchView, onForgot }) {
+            const [u, setU] = useState('');
+            const [p, setP] = useState('');
+            const [isForgot, setIsForgot] = useState(false);
+            const [recUser, setRecUser] = useState('');
+            const isRegister = type === 'register';
+
+            if (isForgot) {
+                return (
+                    <div className="card" style={{width: 380, textAlign: 'center', padding: '40px'}}>
+                         <h2 style={{color:'var(--primary)'}}>Recovery</h2>
+                         <p style={{marginBottom:20}}>Enter your username to send a help request to the Owner.</p>
+                         <input 
+                            placeholder="Your Username" 
+                            value={recUser} 
+                            onChange={e => setRecUser(e.target.value)} 
+                            style={{background: '#f8f9fa', border: 'none', padding: '15px', marginBottom: 10}}
+                         />
+                         <button className="primary" onClick={async () => {
+                             const success = await onForgot(recUser);
+                             if(success) setIsForgot(false);
+                         }}>Send Request</button>
+                         <button onClick={() => setIsForgot(false)}>Back to Login</button>
+                    </div>
+                );
+            }
+
+            return (
+                <div className="card" style={{
+                    width: 380, 
+                    textAlign: 'center', 
+                    padding: '40px',
+                    borderTop: isRegister ? '6px solid var(--success)' : '6px solid var(--primary)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '15px'
+                }}>
+                    <div style={{marginBottom: 10, animation: 'slideIn 0.5s ease-out'}}>
+                        <svg width="80" height="80" viewBox="0 0 24 24" fill={isRegister ? "var(--success)" : "var(--warning)"} stroke={isRegister ? "var(--success)" : "var(--warning)"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                        </svg>
+                    </div>
+                    
+                    <div>
+                        <h1 style={{color: 'var(--text)', margin: 0, fontSize: '2rem'}}>Starlight RTX</h1>
+                        <p style={{opacity: 0.6, margin: '5px 0 20px 0', fontSize: '0.9rem'}}>
+                            {isRegister ? 'Join the economy! Use real name or initials.' : 'Welcome back, trader.'}
+                        </p>
+                    </div>
+
+                    <div className="input-group">
+                        <input 
+                            placeholder="Username" 
+                            value={u} 
+                            onChange={e => setU(e.target.value)} 
+                            style={{background: '#f8f9fa', border: '2px solid transparent', padding: '15px'}}
+                            onFocus={e => e.target.style.borderColor = isRegister ? 'var(--success)' : 'var(--primary)'}
+                            onBlur={e => e.target.style.borderColor = 'transparent'}
+                        />
+                    </div>
+                    <div className="input-group">
+                        <input 
+                            type="password" 
+                            placeholder="Password" 
+                            value={p} 
+                            onChange={e => setP(e.target.value)}
+                            style={{background: '#f8f9fa', border: '2px solid transparent', padding: '15px'}}
+                            onFocus={e => e.target.style.borderColor = isRegister ? 'var(--success)' : 'var(--primary)'}
+                            onBlur={e => e.target.style.borderColor = 'transparent'} 
+                        />
+                    </div>
+                    
+                    <button 
+                        className="primary" 
+                        onClick={() => action(u, p)}
+                        style={{
+                            marginTop: 10, 
+                            background: isRegister ? 'var(--success)' : 'var(--primary)',
+                            padding: '15px',
+                            fontSize: '1rem'
+                        }}
+                    >
+                        {isRegister ? 'CREATE ACCOUNT' : 'LOGIN'}
+                    </button>
+                    
+                    {!isRegister && (
+                        <div style={{fontSize: '0.85rem', color: 'var(--primary)', cursor: 'pointer', textDecoration:'underline'}} onClick={() => setIsForgot(true)}>
+                            Forgot Password?
+                        </div>
+                    )}
+
+                    <div style={{marginTop: 20, fontSize: '0.9rem', opacity: 0.8}}>
+                        {isRegister ? 'Already have an account?' : 'Need an account?'} <br/>
+                        <span 
+                            onClick={switchView} 
+                            style={{
+                                color: isRegister ? 'var(--success)' : 'var(--primary)', 
+                                fontWeight: 'bold', 
+                                cursor: 'pointer', 
+                                textDecoration: 'underline'
+                            }}
+                        >
+                            {isRegister ? 'Login here' : 'Register here'}
+                        </span>
+                    </div>
+                </div>
+            );
+        }
+
+        function Sidebar({ user, page, setPage, logout, notify }) {
+            return (
+                <div className="sidebar">
+                    <h2 style={{color: 'var(--primary)', margin:'0 0 20px 10px'}}>Starlight RTX Wallet</h2>
+                    <div className={`menu-item ${page === 'home' ? 'active' : ''}`} onClick={() => setPage('home')}>🏠 Dashboard</div>
+                    {user.role !== 'owner' && <>
+                        <div className={`menu-item ${page === 'transfer' ? 'active' : ''}`} onClick={() => setPage('transfer')}>💸 Transfer</div>
+                        <div className={`menu-item ${page === 'shop' ? 'active' : ''}`} onClick={() => setPage('shop')}>🛍️ Shop</div>
+                        <div className={`menu-item ${page === 'stocks' ? 'active' : ''}`} onClick={() => setPage('stocks')}>📈 Stocks</div>
+                        <div className={`menu-item ${page === 'conversion' ? 'active' : ''}`} onClick={() => setPage('conversion')}>🏧 Cash Out</div>
+                    </>}
+                    {user.role === 'owner' && <>
+                        <div className={`menu-item ${page === 'shop' ? 'active' : ''}`} onClick={() => setPage('shop')}>🛍️ Shop</div>
+                        <div className={`menu-item ${page === 'admin' ? 'active' : ''}`} onClick={() => setPage('admin')}>👑 Admin Panel</div>
+                        <div className={`menu-item ${page === 'tickets' ? 'active' : ''}`} onClick={() => setPage('tickets')}>🎟️ Tickets</div>
+                        <div className={`menu-item ${page === 'passwords' ? 'active' : ''}`} onClick={() => setPage('passwords')}>🔑 Passwords</div>
+                    </>}
+                    <div style={{flex:1, minHeight: '50px'}}></div>
+                    {user.role !== 'owner' && (
+                        <div className={`menu-item ${page === 'support' ? 'active' : ''}`} style={{color: 'var(--info)'}} onClick={() => setPage('support')}>📞 Contact Owner</div>
+                    )}
+                    <div className="menu-item" style={{color: 'var(--danger)'}} onClick={logout}>🚪 Logout</div>
+                </div>
+            );
+        }
+
+        function AdminPasswords({ db }) {
+            return (
+                <div className="card">
+                    <h2>User Credentials</h2>
+                    <p style={{fontSize:'0.8rem', color:'var(--danger)', marginBottom:20}}>CONFIDENTIAL: Only visible to Owner.</p>
+                    <div style={{maxHeight: '70vh', overflowY: 'auto'}}>
+                        {db.map(u => (
+                            <div key={u.username} className="row" style={{justifyContent: 'flex-start', gap: 20}}>
+                                <div style={{width: 150}}><b>{u.username}</b></div>
+                                <div style={{fontFamily: 'monospace', background: '#eee', padding: '5px 10px', borderRadius: 5}}>
+                                    {u.password}
+                                </div>
+                                <div style={{marginLeft: 'auto', fontSize: '0.8rem', opacity: 0.6}}>
+                                    {u.role.toUpperCase()}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            );
+        }
+
+        // ... (Keep existing Home, Stocks, Shop, Conversion, Support, Transfer, AdminPanel, AdminTickets, GlobalChat) ...
+        
+        function Home({ user }) {
+            return (
+                <div>
+                    <h1>Hi, {user.username}</h1>
+                    <div className="card">
+                        <p style={{fontWeight:'bold', opacity: 0.6}}>MY BALANCE</p>
+                        <div style={{fontSize: '3.5rem', fontWeight: 900, color: 'var(--primary)'}}>
+                            {user.role === 'owner' ? '∞' : `$${user.balance.toFixed(2)}`}
+                        </div>
+                        {user.role !== 'owner' && (
+                            <div style={{marginTop: 10, fontSize: '0.9rem', color: 'var(--success)', fontWeight: 'bold'}}>
+                                ⛏️ Passive Miner: +$0.10 every 7.5s
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        }
+
+        function Stocks({ user, setUser, refresh, save, notify }) {
+            const API_KEY = "d5nvsnhr01qma2b6n4fgd5nvsnhr01qma2b6n4g0"; 
+            const [market, setMarket] = useState([
+                { ticker: 'AAPL', name: 'Apple Inc.', price: 245.00 },
+                { ticker: 'NVDA', name: 'NVIDIA Corp', price: 142.50 },
+                { ticker: 'GOOGL', name: 'Alphabet Inc.', price: 185.50 },
+                { ticker: 'TSLA', name: 'Tesla, Inc.', price: 310.20 },
+                { ticker: 'AMZN', name: 'Amazon.com', price: 210.80 },
+                { ticker: 'MSFT', name: 'Microsoft', price: 480.40 }
+            ]);
+            const [isLocked, setIsLocked] = useState(false);
+
+            useEffect(() => {
+                const update = async () => {
+                    if (API_KEY && API_KEY !== "YOUR_FINNHUB_KEY_HERE") {
+                        try {
+                            const promises = market.map(async (s) => {
+                                const r = await fetch(`https://finnhub.io/api/v1/quote?symbol=${s.ticker}&token=${API_KEY}`);
+                                const d = await r.json();
+                                return d.c ? { ...s, price: d.c } : s;
+                            });
+                            const results = await Promise.all(promises);
+                            setMarket(results);
+                            setIsLocked(false);
+                        } catch(e) { setIsLocked(true); }
+                    } else {
+                        setMarket(prev => prev.map(s => ({ ...s, price: s.price + (Math.random()-0.5) })));
+                    }
+                };
+                update();
+                const i = setInterval(update, 5000);
+                return () => clearInterval(i);
+            }, []);
+
+            const trade = async (ticker, action, price) => {
+                const fresh = await refresh();
+                const u = fresh.find(x => x.username === user.username);
+                if(action === 'buy' && u.balance >= price) {
+                    u.balance -= price; u.stocks = u.stocks || {}; u.stocks[ticker] = (u.stocks[ticker] || 0) + 1;
+                } else if(action === 'sell' && u.stocks?.[ticker] > 0) {
+                    u.balance += price; u.stocks[ticker] -= 1;
+                } else { return notify("Cant do that", "error"); }
+                await save(fresh);
+                setUser(u);
+            };
+
+            if(isLocked) return <div className="card"><h2>🔒 Stocks Offline</h2><p>The stock API is currently down. Please check back later.</p></div>;
+
+            return (
+                <div className="card">
+                    <h2>Stock Market</h2>
+                    {market.map(s => (
+                        <div key={s.ticker} className="stock-row">
+                            <div><b>{s.ticker}</b><br/><small>{s.name}</small></div>
+                            <div style={{textAlign:'right', marginRight:20}}><b>${s.price.toFixed(2)}</b><br/><small>Owned: {user.stocks?.[s.ticker] || 0}</small></div>
+                            <div style={{display:'flex', gap:5}}>
+                                <button className="primary small" onClick={() => trade(s.ticker, 'buy', s.price)}>BUY</button>
+                                <button className="warning small" onClick={() => trade(s.ticker, 'sell', s.price)}>SELL</button>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            );
+        }
+
+        function Shop({ user, setUser, refresh, save, notify, db, setModal }) {
+            const [tab, setTab] = useState('browse');
+            const [item, setItem] = useState({ name: '', price: '', contact: '', location: '' });
+            const [activeChat, setActiveChat] = useState(null); 
+            const [chatMsg, setChatMsg] = useState('');
+            const [replyTo, setReplyTo] = useState(''); 
+
+            const items = db.reduce((acc, u) => {
+                if(u.shop) acc.push(...u.shop.map(i => ({...i, seller: u.username})));
+                return acc;
+            }, []);
+
+            const hostItem = async () => {
+                if(!item.name || !item.price) return notify("Name & Price required", "error");
+                const fresh = await refresh();
+                const u = fresh.find(x => x.username === user.username);
+                u.shop = u.shop || [];
+                u.shop.push({ 
+                    id: Date.now(), 
+                    name: item.name, 
+                    price: parseFloat(item.price), 
+                    contact: item.contact, 
+                    location: item.location,
+                    sold: false,
+                    buyer: null,
+                    chat: []
+                });
+                await save(fresh);
+                setUser(u);
+                setTab('browse');
+                notify("Item Listed!", "success");
+            };
+
+            const removeItem = async (itemId, sellerName) => {
+                const fresh = await refresh();
+                const targetUser = fresh.find(x => x.username === sellerName);
+                if(targetUser && targetUser.shop) {
+                    targetUser.shop = targetUser.shop.filter(i => i.id !== itemId);
+                    await save(fresh);
+                    if(sellerName === user.username) setUser(targetUser); 
+                    notify("Item removed", "info");
+                }
+            };
+
+            const executeBuy = async (targetItem) => {
+                const fresh = await refresh();
+                const me = fresh.find(x => x.username === user.username);
+                const seller = fresh.find(x => x.username === targetItem.seller);
+                const price = parseFloat(targetItem.price);
+                
+                if (me.role !== 'owner' && me.balance < price) { 
+                    if(setModal) setModal(null); return notify("Low balance", "error"); 
+                }
+                
+                if(seller && seller.shop) {
+                    const shopItem = seller.shop.find(i => i.id === targetItem.id);
+                    if(shopItem) {
+                        shopItem.sold = true;
+                        shopItem.buyer = me.username;
+                        seller.balance += price;
+                    }
+                }
+                
+                if (me.role !== 'owner') me.balance -= price;
+                
+                await save(fresh);
+                setUser(me);
+                if(setModal) setModal(null);
+                notify(`Bought!`, "success");
+            };
+
+            const buyItem = (targetItem) => {
+                if(user.role === 'owner') {
+                    executeBuy(targetItem);
+                } else {
+                    setModal({
+                        title: `Buy ${targetItem.name}?`,
+                        message: `WARNING: If you pay and do not receive the item from ${targetItem.seller}, please open a Support Ticket to contact the Admin immediately. Do you want to proceed?`,
+                        onConfirm: () => executeBuy(targetItem),
+                        onCancel: () => setModal(null)
+                    });
+                }
+            };
+
+            const sendItemChat = async () => {
+                if(!chatMsg.trim() || !activeChat) return;
+                const fresh = await refresh();
+                const seller = fresh.find(u => u.username === activeChat.seller);
+                
+                if (!seller) return notify("Seller user not found", "error");
+
+                const shopItem = seller.shop.find(i => i.id === activeChat.id);
+                if (!shopItem) {
+                    notify("Item no longer exists", "error");
+                    setActiveChat(null);
+                    return;
+                }
+
+                let recipient = activeChat.seller;
+                if (user.username === activeChat.seller) {
+                    if(!replyTo) return notify("Select a buyer to reply to", "warning");
+                    recipient = replyTo;
+                }
+
+                shopItem.chat = shopItem.chat || [];
+                shopItem.chat.push({ 
+                    sender: user.username, 
+                    text: chatMsg, 
+                    time: new Date().toLocaleTimeString(),
+                    recipient: recipient
+                });
+                await save(fresh);
+                setActiveChat({...shopItem, seller: activeChat.seller}); 
+                setChatMsg('');
+            };
+
+            const refreshChat = (itemId, sellerName) => {
+                const updatedItem = db.find(u => u.username === sellerName)?.shop.find(i => i.id === itemId);
+                if(updatedItem && activeChat && activeChat.id === itemId) return {...updatedItem, seller: sellerName};
+                return activeChat;
+            };
+
+            const currentModalItem = activeChat ? refreshChat(activeChat.id, activeChat.seller) : null;
+            const isMyItem = currentModalItem?.seller === user.username;
+
+            const buyers = isMyItem && currentModalItem ? [...new Set((currentModalItem.chat || []).map(m => m.sender).filter(s => s !== user.username))] : [];
+
+            useEffect(() => {
+                if(isMyItem && buyers.length > 0 && !replyTo) setReplyTo(buyers[0]);
+            }, [isMyItem, buyers.length]);
+
+            const filteredChat = (currentModalItem?.chat || []).filter(m => {
+                if(isMyItem) {
+                    return m.sender === replyTo || m.recipient === replyTo;
+                } else {
+                    return m.sender === user.username || m.recipient === user.username || (m.sender === currentModalItem.seller && !m.recipient);
+                }
+            });
+
+            return (
+                <div>
+                    {currentModalItem && (
+                        <div className="modal-overlay" style={{zIndex:10001}}>
+                            <div className="card" style={{width: 350, height: 500, display:'flex', flexDirection:'column'}}>
+                                <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
+                                    <b>💬 {currentModalItem.name}</b>
+                                    <button className="danger small" style={{width:'auto', margin:0}} onClick={() => {setActiveChat(null); setReplyTo('');}}>X</button>
+                                </div>
+                                
+                                {isMyItem && (
+                                    <div style={{marginTop:10, padding:5, background:'rgba(0,0,0,0.05)', borderRadius:8}}>
+                                        <small>Talking to:</small>
+                                        <select style={{marginTop:5, padding:5}} value={replyTo} onChange={e => setReplyTo(e.target.value)}>
+                                            <option value="">Select Buyer...</option>
+                                            {buyers.map(b => <option key={b} value={b}>{b}</option>)}
+                                        </select>
+                                        {buyers.length === 0 && <div style={{fontSize:'0.7rem', color:'var(--danger)'}}>No inquiries yet.</div>}
+                                    </div>
+                                )}
+
+                                <div className="chat-window" style={{flex:1, marginTop:10, background:'rgba(0,0,0,0.03)'}}>
+                                    {filteredChat.map((m, i) => (
+                                        <div key={i} className={`msg-bubble ${m.sender === user.username ? 'msg-mine' : 'msg-other'}`}>
+                                            <small style={{fontSize:'0.65rem', opacity:0.7}}>{m.sender}</small> <br/> {m.text}
+                                        </div>
+                                    ))}
+                                    {filteredChat.length === 0 && <p style={{textAlign:'center', opacity:0.5, fontSize:'0.8rem'}}>No messages in this conversation.</p>}
+                                </div>
+                                <div style={{display:'flex', gap:5, marginTop:10}}>
+                                    <input placeholder="Message..." value={chatMsg} onChange={e => setChatMsg(e.target.value)} />
+                                    <button className="primary small" style={{width:'auto'}} onClick={sendItemChat} disabled={isMyItem && !replyTo}>Send</button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    <div style={{display:'flex', gap:10, marginBottom:20}}>
+                        <button className={tab === 'browse' ? 'primary' : ''} onClick={() => setTab('browse')}>Browse</button>
+                        <button className={tab === 'host' ? 'primary' : ''} onClick={() => setTab('host')}>Sell</button>
+                    </div>
+
+                    {tab === 'browse' ? (
+                        <div className="market-grid">
+                            {items.map(i => {
+                                if (i.sold && i.seller !== user.username && user.role !== 'owner') return null;
+                                const hasMessages = i.chat && i.chat.length > 0;
+                                const showChat = i.seller !== user.username || hasMessages;
+
+                                return (
+                                <div key={i.id} className="market-item" style={{opacity: i.sold ? 0.7 : 1}}>
+                                    <div className="market-img">{i.sold ? '✅' : '🛍️'}</div>
+                                    <div className="market-info">
+                                        <b style={{fontSize:'1.1rem'}}>${i.price}</b>
+                                        <div style={{fontWeight:'bold', marginBottom:5}}>{i.name}</div>
+                                        <div style={{fontSize:'0.8rem', opacity:0.7, marginBottom:5}}>
+                                            {i.location ? `📍 ${i.location}` : 'No location'}
+                                        </div>
+                                        <div style={{fontSize:'0.7rem', opacity:0.6}}>
+                                            Seller: {i.seller}
+                                        </div>
+                                        {i.contact && <div style={{fontSize:'0.7rem', color:'var(--primary)', marginTop:2}}>📞 {i.contact}</div>}
+                                        <div style={{flex:1}}></div>
+                                        <div style={{marginTop:10, display:'flex', gap:5}}>
+                                            {showChat && (
+                                                <button className="info small" style={{flex:1}} onClick={() => setActiveChat(i)}>
+                                                    {i.seller === user.username ? 'Messages' : '💬'}
+                                                </button>
+                                            )}
+                                            {!i.sold && i.seller !== user.username && (
+                                                <button className="primary small" style={{flex:1}} onClick={() => buyItem(i)}>BUY</button>
+                                            )}
+                                            {(i.seller === user.username || user.role === 'owner') && (
+                                                <button 
+                                                    className="danger small" 
+                                                    style={{width:'auto'}} 
+                                                    disabled={i.sold && user.role !== 'owner'}
+                                                    title={i.sold && user.role !== 'owner' ? "Sold items cannot be deleted" : "Delete Item"}
+                                                    onClick={() => removeItem(i.id, i.seller)}
+                                                >
+                                                    {i.sold && user.role !== 'owner' ? 'SOLD' : 'DEL'}
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            )})}
+                        </div>
+                    ) : (
+                        <div className="card">
+                            <h3>Create Listing</h3>
+                            <input placeholder="Item Name" onChange={e => setItem({...item, name: e.target.value})} />
+                            <input style={{marginTop:10}} type="number" placeholder="Price" onChange={e => setItem({...item, price: e.target.value})} />
+                            <input style={{marginTop:10}} placeholder="Location (City, Zip, etc)" onChange={e => setItem({...item, location: e.target.value})} />
+                            <input style={{marginTop:10}} placeholder="Contact Info" onChange={e => setItem({...item, contact: e.target.value})} />
+                            <button className="primary" onClick={hostItem}>Post Item</button>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        function Conversion({ user, setUser, refresh, save, notify }) {
+            const [amt, setAmt] = useState('');
+            const [method, setMethod] = useState('');
+            
+            const request = async () => {
+                if(!amt) return notify("Please enter an amount", "error");
+                if(!method) return notify("Please enter a payment method", "error");
+                
+                const fresh = await refresh();
+                const u = fresh.find(x => x.username === user.username);
+                if(u.balance < amt) return notify("Insufficient balance", "error");
+                
+                const originalAmount = parseFloat(amt);
+                const fee = originalAmount * 0.10;
+                const netAmount = (originalAmount - fee).toFixed(2);
+
+                u.balance -= originalAmount;
+                u.conversions = u.conversions || [];
+                u.conversions.push({ id: Date.now(), amount: netAmount, originalRequest: originalAmount, method, status: 'pending' });
+                await save(fresh);
+                setUser(u);
+                notify(`Request Sent! You will receive $${netAmount}`, "success");
+            };
+
+            const cancelRequest = async (id) => {
+                const fresh = await refresh();
+                const u = fresh.find(x => x.username === user.username);
+                const idx = u.conversions.findIndex(c => c.id === id);
+                if(idx > -1 && u.conversions[idx].status === 'pending') {
+                    const refundAmt = u.conversions[idx].originalRequest || u.conversions[idx].amount;
+                    u.balance += parseFloat(refundAmt);
+                    u.conversions.splice(idx, 1);
+                    await save(fresh);
+                    setUser(u);
+                    notify("Cancelled & Refunded", "info");
+                }
+            };
+
+            return (
+                <div className="card">
+                    <h2>Cash Out</h2>
+                    <div style={{background: 'rgba(255, 165, 0, 0.15)', padding: '12px', borderRadius: '10px', marginBottom: '15px', borderLeft: '4px solid orange'}}>
+                        <p style={{margin:0, fontSize:'0.9rem', color: '#d35400'}}>
+                            ⚠️ <b>Warning:</b> A 10% service fee will be deducted from your withdrawal amount (e.g., $100 withdrawal = $90 received).
+                        </p>
+                    </div>
+                    <input type="number" placeholder="Amount" onChange={e => setAmt(e.target.value)} />
+                    <input style={{marginTop:10}} placeholder="Method (PayPal, etc)" onChange={e => setMethod(e.target.value)} />
+                    <button className="primary" onClick={request}>SUBMIT</button>
+
+                    <div style={{marginTop: 20}}>
+                        <h3>My Requests</h3>
+                        {user.conversions?.slice().reverse().map(c => (
+                            <div key={c.id} className="row">
+                                <div><b>${c.amount}</b> <span className={`badge badge-${c.status}`}>{c.status}</span></div>
+                                {c.status === 'pending' && <button className="danger small" onClick={() => cancelRequest(c.id)}>Cancel</button>}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            );
+        }
+
+        function Support({ user, setUser, refresh, save, notify }) {
+            const [msg, setMsg] = useState('');
+            const [replyMap, setReplyMap] = useState({});
+
+            const sendTicket = async () => {
+                if(!msg.trim()) return notify("Message cannot be empty", "error");
+                const fresh = await refresh();
+                const u = fresh.find(x => x.username === user.username);
+                u.tickets = u.tickets || [];
+                u.tickets.push({ id: Date.now(), message: msg, status: 'open', chat: [{ role: 'user', text: msg, time: new Date().toLocaleTimeString() }] });
+                await save(fresh);
+                setUser(u);
+                setMsg('');
+                notify("Ticket Sent!", "success");
+            };
+
+            const sendReply = async (ticketId) => {
+                const txt = replyMap[ticketId];
+                if(!txt || !txt.trim()) return notify("Reply cannot be empty", "error");
+                const fresh = await refresh();
+                const u = fresh.find(x => x.username === user.username);
+                u.tickets.find(t => t.id === ticketId).chat.push({ role: 'user', text: txt, time: new Date().toLocaleTimeString() });
+                await save(fresh);
+                setUser(u);
+                setReplyMap({...replyMap, [ticketId]: ''});
+            };
+
+            const closeTicket = async (ticketId) => {
+                const fresh = await refresh();
+                const u = fresh.find(x => x.username === user.username);
+                u.tickets.find(t => t.id === ticketId).status = 'closed';
+                await save(fresh);
+                setUser(u);
+                notify("Ticket Closed", "info");
+            };
+
+            return (
+                <div className="card">
+                    <h2>Contact Support</h2>
+                    <textarea placeholder="How can we help?" style={{height: 100, marginBottom: 10}} value={msg} onChange={e => setMsg(e.target.value)} />
+                    <button className="primary" onClick={sendTicket}>Send Ticket</button>
+                    <div style={{marginTop: 20}}>
+                        <h3>Your Tickets</h3>
+                        {user.tickets?.slice().reverse().map(t => (
+                            <div key={t.id} className="card" style={{padding: 15, fontSize: '0.85rem', boxShadow:'none', border:'1px solid #ddd'}}>
+                                <div style={{display:'flex', justifyContent:'space-between'}}>
+                                    <b>Ticket #{t.id.toString().slice(-4)}</b>
+                                    <div style={{display:'flex', gap:5}}>
+                                        <span className={`badge badge-${t.status === 'open' ? 'pending' : 'completed'}`}>{t.status.toUpperCase()}</span>
+                                        {t.status === 'open' && <button className="danger small" style={{padding:'2px 6px'}} onClick={() => closeTicket(t.id)}>Close</button>}
+                                    </div>
+                                </div>
+                                <div style={{marginTop:10, maxHeight: 200, overflowY:'auto'}}>
+                                    {t.chat.map((c, i) => (
+                                        <div key={i} className={`chat-msg ${c.role === 'admin' ? 'chat-admin' : 'chat-user'}`}>
+                                            <b>{c.role === 'admin' ? 'Owner' : 'You'}:</b> {c.text}
+                                        </div>
+                                    ))}
+                                </div>
+                                {t.status === 'open' && <div style={{display:'flex', gap:5, marginTop:10}}>
+                                    <input placeholder="Reply..." value={replyMap[t.id]||''} onChange={e => setReplyMap({...replyMap, [t.id]: e.target.value})} />
+                                    <button className="primary small" onClick={() => sendReply(t.id)}>Send</button>
+                                </div>}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            );
+        }
+
+        function Transfer({ user, db, refresh, save, sync, notify }) {
+            const [to, setTo] = useState('');
+            const [amt, setAmt] = useState('');
+            const send = async () => {
+                if(!to) return notify("Select a recipient", "error");
+                if(!amt) return notify("Enter an amount", "error");
+
+                const fresh = await refresh();
+                const me = fresh.find(x => x.username === user.username);
+                const them = fresh.find(x => x.username === to);
+                
+                if(!them) return notify("Recipient not found", "error");
+                if(me.balance < amt) return notify("Insufficient funds", "error");
+                
+                me.balance -= parseFloat(amt);
+                them.balance += parseFloat(amt);
+                await save(fresh);
+                sync(me);
+                notify("Sent!", "success");
+            };
+            return (
+                <div className="card">
+                    <h2>Transfer</h2>
+                    <select onChange={e => setTo(e.target.value)}>
+                        <option>Recipient...</option>
+                        {db.filter(u => u.username !== user.username && u.role !== 'owner').map(u => <option key={u.username}>{u.username}</option>)}
+                    </select>
+                    <input style={{marginTop:10}} type="number" placeholder="Amount" onChange={e => setAmt(e.target.value)} />
+                    <button className="primary" onClick={send}>SEND</button>
+                </div>
+            );
+        }
+
+        function AdminPanel({ db, save, fetchDB, notify, setModal }) {
+            const [target, setTarget] = useState('');
+            const [amt, setAmt] = useState('');
+            
+            const handleFunds = async (type) => {
+                if(!target) return notify("Select a user", "error");
+                if(!amt) return notify("Enter an amount", "error");
+                const fresh = await fetchDB();
+                const u = fresh.find(x => x.username === target);
+                if(u) {
+                    const val = parseFloat(amt);
+                    if(type === 'grant') u.balance += val;
+                    if(type === 'take') u.balance = Math.max(0, u.balance - val);
+                    if(type === 'set') u.balance = val;
+                    await save(fresh);
+                    notify(`${type.toUpperCase()} Success`, "success");
+                }
+            };
+
+            const toggleBan = async (username) => {
+                const fresh = await fetchDB();
+                const u = fresh.find(x => x.username === username);
+                if(u) {
+                    u.banned = !u.banned;
+                    await save(fresh);
+                    notify(`User ${u.banned ? 'BANNED' : 'UNBANNED'}`, "success");
+                }
+            };
+
+            const permanentDelete = (username) => {
+                setModal({
+                    title: "Delete User?",
+                    message: "This cannot be undone.",
+                    onConfirm: async () => {
+                        const fresh = await fetchDB();
+                        const newDB = fresh.filter(u => u.username !== username);
+                        await save(newDB);
+                        setModal(null);
+                        notify("Deleted", "success");
+                    },
+                    onCancel: () => setModal(null)
+                });
+            };
+
+            const handleConversion = async (username, id, action) => {
+                const fresh = await fetchDB();
+                const u = fresh.find(x => x.username === username);
+                const conv = u.conversions.find(c => c.id === id);
+                if(conv) {
+                    conv.status = action === 'approve' ? 'completed' : 'rejected';
+                    if(action === 'reject') u.balance += parseFloat(conv.amount); // Refund if rejected
+                    await save(fresh);
+                    notify(`Request ${action === 'approve' ? 'Approved' : 'Rejected'}`, action === 'approve' ? 'success' : 'info');
+                }
+            };
+
+            const pendingConversions = db.reduce((acc, u) => {
+                if(u.conversions) u.conversions.forEach(c => {
+                    if(c.status === 'pending') acc.push({...c, user: u.username});
+                });
+                return acc;
+            }, []);
+
+            return (
+                <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:20}}>
+                    <div className="card">
+                        <h2>Admin Console (Infinite)</h2>
+                        <select onChange={e => setTarget(e.target.value)}>
+                            <option value="">Select User...</option>
+                            {db.filter(u => u.role !== 'owner').map(u => <option key={u.username} value={u.username}>{u.username} (${u.balance.toFixed(0)})</option>)}
+                            {/* Make owner visible so you can grant yourself money too */}
+                            {db.filter(u => u.role === 'owner').map(u => <option key={u.username} value={u.username}>{u.username} (YOU)</option>)}
+                        </select>
+                        <div className="input-group"><input type="number" placeholder="Amount" value={amt} onChange={e => setAmt(e.target.value)} /></div>
+                        <div style={{display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:5}}>
+                            <button className="primary small" onClick={() => handleFunds('grant')}>GRANT</button>
+                            <button className="warning small" onClick={() => handleFunds('take')}>TAKE</button>
+                            <button className="info small" onClick={() => handleFunds('set')}>SET</button>
+                        </div>
+                    </div>
+                    <div className="card">
+                        <h2>User Management</h2>
+                        {db.filter(u => u.role !== 'owner').map(u => (
+                            <div key={u.username} className="row">
+                                <div><b>{u.username}</b> {u.banned && <span style={{color:'red'}}>[BANNED]</span>}<br/><small>${u.balance.toFixed(2)}</small></div>
+                                <div style={{display:'flex', gap:5}}>
+                                    <button className={u.banned ? "primary small" : "warning small"} onClick={() => toggleBan(u.username)}>{u.banned ? 'UNBAN' : 'BAN'}</button>
+                                    <button className="danger small" onClick={() => permanentDelete(u.username)}>DEL</button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                    <div className="card" style={{gridColumn:'1 / -1'}}>
+                        <h2>Conversion Requests</h2>
+                        {pendingConversions.length === 0 && <p style={{opacity:0.5}}>No pending requests.</p>}
+                        {pendingConversions.map(c => (
+                            <div key={c.id} className="row">
+                                <div>
+                                    <b>{c.user}</b> requests <b>${c.amount}</b>
+                                    <div style={{fontSize:'0.8rem', opacity:0.7}}>Method: {c.method}</div>
+                                </div>
+                                <div style={{display:'flex', gap:5}}>
+                                    <button className="primary small" onClick={() => handleConversion(c.user, c.id, 'approve')}>Approve</button>
+                                    <button className="danger small" onClick={() => handleConversion(c.user, c.id, 'reject')}>Reject</button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            );
+        }
+
+        function AdminTickets({ db, refresh, save, notify }) {
+            const [reply, setReply] = useState('');
+            const tickets = db.reduce((acc, u) => {
+                if(u.tickets) acc.push(...u.tickets.map(t => ({...t, owner: u.username})));
+                return acc;
+            }, []).filter(t => t.status === 'open');
+
+            const sendReply = async (username, ticketId) => {
+                if(!reply) return;
+                const f = await refresh();
+                const u = f.find(x => x.username === username);
+                const t = u.tickets.find(tick => tick.id === ticketId);
+                t.chat.push({ role: 'admin', text: reply, time: new Date().toLocaleTimeString() });
+                await save(f);
+                setReply('');
+                notify("Reply Sent", "success");
+            };
+
+            const closeTicket = async (username, ticketId) => {
+                const f = await refresh();
+                const u = f.find(x => x.username === username);
+                u.tickets.find(tick => tick.id === ticketId).status = 'closed';
+                await save(f);
+                notify("Ticket Closed", "info");
+            };
+
+            return (
+                <div className="card">
+                    <h2>Support Tickets</h2>
+                    {tickets.length === 0 && <p>All clear!</p>}
+                    {tickets.map(t => (
+                        <div key={t.id} className="card" style={{boxShadow: 'none', border: '1px solid rgba(0,0,0,0.1)'}}>
+                            <div style={{display:'flex', justifyContent:'space-between'}}>
+                                <b>From: {t.owner}</b>
+                                <button className="small danger" onClick={() => closeTicket(t.owner, t.id)}>Close Ticket</button>
+                            </div>
+                            <div style={{margin: '10px 0'}}>
+                                {t.chat.map((c, i) => (
+                                    <div key={i} className={`chat-msg ${c.role === 'admin' ? 'chat-admin' : 'chat-user'}`}>
+                                        <b>{c.role === 'admin' ? 'You' : t.owner}:</b> {c.text}
+                                    </div>
+                                ))}
+                            </div>
+                            <div style={{display:'flex', gap: 10}}>
+                                <input placeholder="Your reply..." value={reply} onChange={e => setReply(e.target.value)} />
+                                <button className="primary small" style={{width: 100}} onClick={() => sendReply(t.owner, t.id)}>Reply</button>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
