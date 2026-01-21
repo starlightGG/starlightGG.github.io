@@ -21,6 +21,12 @@
             --info: #63b3ed;
             --shadow-out: 9px 9px 16px rgb(163,177,198,0.6), -9px -9px 16px rgba(255,255,255, 0.5);
             --shadow-in: inset 6px 6px 10px 0 rgba(163,177,198, 0.7), inset -6px -6px 10px 0 rgba(255,255,255, 0.8);
+            
+            /* New Vars for Inputs/Panels */
+            --input-bg: #f8f9fa;
+            --panel-bg: #eee;
+            --msg-bg: white;
+            --chat-win: rgba(255,255,255,0.4);
         }
 
         body {
@@ -128,9 +134,16 @@
         /* FB Marketplace Style */
         .market-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; }
         .market-item { background: var(--bg); border-radius: 15px; overflow: hidden; box-shadow: var(--shadow-out); display: flex; flex-direction: column; transition: transform 0.2s; }
-        .market-item:hover { transform: translateY(-3px); }
+        .chat-item:hover { transform: translateY(-3px); }
         .market-img { height: 140px; background: #cbd5e0; display: flex; align-items: center; justify-content: center; font-size: 3rem; color: white; }
         .market-info { padding: 12px; flex: 1; display: flex; flex-direction: column; }
+
+        /* Global Chat (Restricted to Shop now, but keeping style) */
+        .chat-window { height: 60vh; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding: 15px; background: var(--chat-win); border-radius: 15px; margin-bottom: 15px; }
+        .msg-bubble { max-width: 80%; padding: 8px 12px; border-radius: 12px; font-size: 0.9rem; }
+        .msg-mine { align-self: flex-end; background: var(--primary); color: white; border-bottom-right-radius: 2px; }
+        .msg-other { align-self: flex-start; background: var(--msg-bg); color: var(--text); border-bottom-left-radius: 2px; }
+        .msg-owner { border: 2px solid var(--warning); background: #fffaf0; color: #d69e2e; }
     </style>
 </head>
 <body>
@@ -179,11 +192,43 @@
             
             const userRef = useRef(null);
             const lastServerBalance = useRef(0);
-            const lastShopState = useRef([]); // Track shop for notifications
+            const lastShopState = useRef([]); 
             
+            // QUEUE REF: Stores the promise chain to ensure sequential execution
+            const actionQueue = useRef(Promise.resolve());
+
             useEffect(() => { userRef.current = user; }, [user]);
-            
-            // ... (keep existing useEffects and helper functions like notify, fetchDB, saveDB) ...
+
+            // Theme Check (Dark Mode Support)
+            useEffect(() => {
+                const savedTheme = localStorage.getItem('theme');
+                const r = document.documentElement.style;
+                
+                if(savedTheme == 'dark') {
+                    r.setProperty('--bg', '#1a202c'); 
+                    r.setProperty('--text', '#e2e8f0'); 
+                    r.setProperty('--shadow-out', '6px 6px 10px rgba(0,0,0,0.6), -6px -6px 10px rgba(255,255,255,0.05)');
+                    r.setProperty('--shadow-in', 'inset 6px 6px 10px rgba(0,0,0,0.6), inset -6px -6px 10px rgba(255,255,255,0.05)');
+                    
+                    // Dark Mode Specifics
+                    r.setProperty('--input-bg', '#2d3748');
+                    r.setProperty('--panel-bg', '#2d3748');
+                    r.setProperty('--msg-bg', '#2d3748');
+                    r.setProperty('--chat-win', 'rgba(0,0,0,0.2)');
+                } else {
+                    // Else make light (Default values)
+                    r.setProperty('--bg', '#e0e5ec');
+                    r.setProperty('--text', '#4a5568');
+                    r.setProperty('--shadow-out', '9px 9px 16px rgb(163,177,198,0.6), -9px -9px 16px rgba(255,255,255, 0.5)');
+                    r.setProperty('--shadow-in', 'inset 6px 6px 10px 0 rgba(163,177,198, 0.7), inset -6px -6px 10px 0 rgba(255,255,255, 0.8)');
+                    
+                    // Light Mode Specifics
+                    r.setProperty('--input-bg', '#f8f9fa');
+                    r.setProperty('--panel-bg', '#eee');
+                    r.setProperty('--msg-bg', 'white');
+                    r.setProperty('--chat-win', 'rgba(255,255,255,0.4)');
+                }
+            }, []);
 
             const notify = (msg, type = 'info') => {
                 const id = Date.now();
@@ -201,7 +246,47 @@
                 } catch(e) { return []; }
             };
 
+            // NEW: Queued Action Handler
+            // usage: queueAction(async (freshDB) => { modify data; return modifiedDB; })
+            const queueAction = (actionFn) => {
+                const nextPromise = actionQueue.current.then(async () => {
+                    setIsSaving(true);
+                    try {
+                        // 1. Fetch latest (inside the lock)
+                        const freshDB = await fetchDB();
+                        
+                        // 2. Run the action logic
+                        const updatedDB = await actionFn(freshDB);
+                        
+                        // 3. If action returned data, save it
+                        if (updatedDB) {
+                            await fetch(API_URL, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(updatedDB)
+                            });
+                            setDb(updatedDB);
+                            
+                            // 4. Update local user state immediately
+                            const me = updatedDB.find(u => u.username === userRef.current.username);
+                            if (me) {
+                                setUser(me);
+                                lastServerBalance.current = me.balance; // Prevent polling from undoing this
+                            }
+                        }
+                    } catch (e) {
+                        console.error(e);
+                        notify("Action failed: Network busy", "error");
+                    } finally {
+                        setIsSaving(false);
+                    }
+                });
+                actionQueue.current = nextPromise;
+                return nextPromise;
+            };
+
             const saveDB = async (data) => {
+                // Fallback for non-queued calls (mostly internal/legacy)
                 setIsSaving(true);
                 try {
                     await fetch(API_URL, {
@@ -233,16 +318,28 @@
                                 notify("Account deactivated.", "error"); return;
                             }
                             if (myRecord) {
-                                const diff = myRecord.balance - lastServerBalance.current;
-                                if (Math.abs(diff) > 0.05) {
-                                    lastServerBalance.current = myRecord.balance;
-                                    if (Math.abs(myRecord.balance - userRef.current.balance) > 0.05) {
-                                        if (myRecord.balance > userRef.current.balance) {
-                                            notify(`You received $${(myRecord.balance - userRef.current.balance).toFixed(2)}!`, "success");
-                                        }
-                                        setUser(prev => ({ ...prev, balance: myRecord.balance }));
-                                    }
+                                // --- SMART SYNC LOGIC (Anti-Revert) ---
+                                const serverBal = myRecord.balance;
+                                const localBal = userRef.current.balance;
+                                const diff = serverBal - localBal;
+                                
+                                let finalBalance = localBal; // Default: Trust local (for mining)
+
+                                // Case 1: Server has MORE money (Received Transfer/Sale) -> Sync & Notify
+                                if (diff > 0.05) {
+                                    notify(`You received $${diff.toFixed(2)}!`, "success");
+                                    finalBalance = serverBal;
+                                    lastServerBalance.current = serverBal;
+                                } 
+                                // Case 2: Server has MUCH LESS money (Admin Penalty) -> Sync
+                                else if (diff < -5.0) {
+                                    notify("Balance adjusted by Admin.", "warning");
+                                    finalBalance = serverBal;
+                                    lastServerBalance.current = serverBal;
                                 }
+                                // Case 3: Server is slightly less (Mining lag) -> IGNORE Server, keep Local.
+
+                                // Check for Sales (Toast Notification)
                                 const currentShop = myRecord.shop || [];
                                 currentShop.forEach(item => {
                                     const oldItem = lastShopState.current.find(o => o.id === item.id);
@@ -254,7 +351,7 @@
 
                                 setUser(prev => ({ 
                                     ...prev, 
-                                    balance: myRecord.balance,
+                                    balance: finalBalance,
                                     conversions: myRecord.conversions || [],
                                     shop: myRecord.shop || [],
                                     tickets: myRecord.tickets || []
@@ -275,9 +372,8 @@
                             const newBal = prev.balance + 0.1;
                             return { ...prev, balance: newBal };
                         });
-                                                           notify(`You received $0.10. from mining!`, "success");
-         
-                    }, 7500);
+                        notify("Mined $0.10!", "success");
+                    }, 10000);
                 }
                 return () => clearInterval(interval);
             }, [user && user.role]);
@@ -304,12 +400,18 @@
                     const freshDB = await fetchDB();
                     const idx = freshDB.findIndex(u => u.username === userRef.current.username);
                     if (idx > -1) {
-                        freshDB[idx].balance = userRef.current.balance;
-                        freshDB[idx].stocks = userRef.current.stocks || {};
-                        freshDB[idx].conversions = userRef.current.conversions || [];
-                        freshDB[idx].shop = userRef.current.shop || [];
-                        freshDB[idx].tickets = userRef.current.tickets || [];
-                        await saveDB(freshDB);
+                        const currentData = userRef.current;
+                        freshDB[idx].balance = currentData.balance;
+                        freshDB[idx].stocks = currentData.stocks || {};
+                        freshDB[idx].conversions = currentData.conversions || [];
+                        freshDB[idx].shop = currentData.shop || [];
+                        freshDB[idx].tickets = currentData.tickets || [];
+                        
+                        if (await saveDB(freshDB)) {
+                            // FIX: Update lastServerBalance to match what we just saved.
+                            // This prevents the poller from seeing our own save as a "diff" and reverting local mining progress.
+                            lastServerBalance.current = currentData.balance;
+                        }
                     }
                 }, 5000); 
                 return () => clearInterval(interval);
@@ -340,7 +442,7 @@
                 const freshData = await fetchDB();
                 if (freshData.find(usr => usr.username === u)) return notify("Username taken", "error");
                 const role = freshData.length === 0 ? 'owner' : 'user';
-                freshData.push({ username: u, password: p, balance: 10, role: role, banned: false, stocks: {}, conversions: [], shop: [], tickets: [] });
+                freshData.push({ username: u, password: p, balance: 0, role: role, banned: false, stocks: {}, conversions: [], shop: [], tickets: [] });
                 await saveDB(freshData);
                 notify(`Registered as ${role}!`, "success");
                 setView('login');
@@ -378,13 +480,13 @@
                             <Sidebar user={user} page={page} setPage={setPage} notify={notify} logout={() => { setUser(null); setView('login'); }} />
                             <main className="content">
                                 {page === 'home' && <Home user={user} />}
-                                {page === 'stocks' && <Stocks user={user} setUser={setUser} refresh={fetchDB} save={saveDB} notify={notify} />}
-                                {page === 'shop' && <Shop user={user} setUser={setUser} refresh={fetchDB} save={saveDB} notify={notify} db={db} setModal={setModal} />}
-                                {page === 'conversion' && <Conversion user={user} setUser={setUser} refresh={fetchDB} save={saveDB} notify={notify} />}
-                                {page === 'transfer' && <Transfer user={user} db={db} refresh={fetchDB} save={saveDB} sync={setUser} notify={notify} />}
-                                {page === 'support' && <Support user={user} setUser={setUser} refresh={fetchDB} save={saveDB} notify={notify} />}
-                                {page === 'admin' && <AdminPanel db={db} save={saveDB} fetchDB={fetchDB} notify={notify} setModal={setModal} />}
-                                {page === 'tickets' && <AdminTickets db={db} refresh={fetchDB} save={saveDB} notify={notify} />}
+                                {page === 'stocks' && <Stocks user={user} setUser={setUser} refresh={fetchDB} save={saveDB} notify={notify} queueAction={queueAction} />}
+                                {page === 'shop' && <Shop user={user} setUser={setUser} refresh={fetchDB} save={saveDB} notify={notify} db={db} setModal={setModal} queueAction={queueAction} />}
+                                {page === 'conversion' && <Conversion user={user} setUser={setUser} refresh={fetchDB} save={saveDB} notify={notify} queueAction={queueAction} />}
+                                {page === 'transfer' && <Transfer user={user} db={db} refresh={fetchDB} save={saveDB} sync={setUser} notify={notify} queueAction={queueAction} />}
+                                {page === 'support' && <Support user={user} setUser={setUser} refresh={fetchDB} save={saveDB} notify={notify} queueAction={queueAction} />}
+                                {page === 'admin' && <AdminPanel db={db} save={saveDB} fetchDB={fetchDB} notify={notify} setModal={setModal} queueAction={queueAction} />}
+                                {page === 'tickets' && <AdminTickets db={db} refresh={fetchDB} save={saveDB} notify={notify} queueAction={queueAction} />}
                                 {page === 'passwords' && <AdminPasswords db={db} />}
                             </main>
                         </div>
@@ -409,7 +511,7 @@
                             placeholder="Your Username" 
                             value={recUser} 
                             onChange={e => setRecUser(e.target.value)} 
-                            style={{background: '#f8f9fa', border: 'none', padding: '15px', marginBottom: 10}}
+                            style={{background: 'var(--input-bg)', border: 'none', padding: '15px', marginBottom: 10}}
                          />
                          <button className="primary" onClick={async () => {
                              const success = await onForgot(recUser);
@@ -437,7 +539,7 @@
                     </div>
                     
                     <div>
-                        <h1 style={{color: 'var(--text)', margin: 0, fontSize: '2rem'}}>Starlight RTX</h1>
+                        <h1 style={{color: 'var(--text)', margin: 0, fontSize: '2rem'}}>Star Coins</h1>
                         <p style={{opacity: 0.6, margin: '5px 0 20px 0', fontSize: '0.9rem'}}>
                             {isRegister ? 'Join the economy! Use real name or initials.' : 'Welcome back, trader.'}
                         </p>
@@ -448,7 +550,7 @@
                             placeholder="Username" 
                             value={u} 
                             onChange={e => setU(e.target.value)} 
-                            style={{background: '#f8f9fa', border: '2px solid transparent', padding: '15px'}}
+                            style={{background: 'var(--input-bg)', border: '2px solid transparent', padding: '15px'}}
                             onFocus={e => e.target.style.borderColor = isRegister ? 'var(--success)' : 'var(--primary)'}
                             onBlur={e => e.target.style.borderColor = 'transparent'}
                         />
@@ -459,7 +561,7 @@
                             placeholder="Password" 
                             value={p} 
                             onChange={e => setP(e.target.value)}
-                            style={{background: '#f8f9fa', border: '2px solid transparent', padding: '15px'}}
+                            style={{background: 'var(--input-bg)', border: '2px solid transparent', padding: '15px'}}
                             onFocus={e => e.target.style.borderColor = isRegister ? 'var(--success)' : 'var(--primary)'}
                             onBlur={e => e.target.style.borderColor = 'transparent'} 
                         />
@@ -505,7 +607,7 @@
         function Sidebar({ user, page, setPage, logout, notify }) {
             return (
                 <div className="sidebar">
-                    <h2 style={{color: 'var(--primary)', margin:'0 0 20px 10px'}}>Starlight RTX Wallet</h2>
+                    <h2 style={{color: 'var(--primary)', margin:'0 0 20px 10px'}}>SC Wallet</h2>
                     <div className={`menu-item ${page === 'home' ? 'active' : ''}`} onClick={() => setPage('home')}>🏠 Dashboard</div>
                     {user.role !== 'owner' && <>
                         <div className={`menu-item ${page === 'transfer' ? 'active' : ''}`} onClick={() => setPage('transfer')}>💸 Transfer</div>
@@ -537,7 +639,7 @@
                         {db.map(u => (
                             <div key={u.username} className="row" style={{justifyContent: 'flex-start', gap: 20}}>
                                 <div style={{width: 150}}><b>{u.username}</b></div>
-                                <div style={{fontFamily: 'monospace', background: '#eee', padding: '5px 10px', borderRadius: 5}}>
+                                <div style={{fontFamily: 'monospace', background: 'var(--panel-bg)', padding: '5px 10px', borderRadius: 5}}>
                                     {u.password}
                                 </div>
                                 <div style={{marginLeft: 'auto', fontSize: '0.8rem', opacity: 0.6}}>
@@ -550,8 +652,6 @@
             );
         }
 
-        // ... (Keep existing Home, Stocks, Shop, Conversion, Support, Transfer, AdminPanel, AdminTickets, GlobalChat) ...
-        
         function Home({ user }) {
             return (
                 <div>
@@ -563,7 +663,7 @@
                         </div>
                         {user.role !== 'owner' && (
                             <div style={{marginTop: 10, fontSize: '0.9rem', color: 'var(--success)', fontWeight: 'bold'}}>
-                                ⛏️ Passive Miner: +$0.10 every 7.5s
+                                ⛏️ Passive Miner: +$0.10 every 10s
                             </div>
                         )}
                     </div>
@@ -571,7 +671,7 @@
             );
         }
 
-        function Stocks({ user, setUser, refresh, save, notify }) {
+        function Stocks({ user, setUser, refresh, save, notify, queueAction }) {
             const API_KEY = "d5nvsnhr01qma2b6n4fgd5nvsnhr01qma2b6n4g0"; 
             const [market, setMarket] = useState([
                 { ticker: 'AAPL', name: 'Apple Inc.', price: 245.00 },
@@ -605,16 +705,21 @@
                 return () => clearInterval(i);
             }, []);
 
-            const trade = async (ticker, action, price) => {
-                const fresh = await refresh();
-                const u = fresh.find(x => x.username === user.username);
-                if(action === 'buy' && u.balance >= price) {
-                    u.balance -= price; u.stocks = u.stocks || {}; u.stocks[ticker] = (u.stocks[ticker] || 0) + 1;
-                } else if(action === 'sell' && u.stocks?.[ticker] > 0) {
-                    u.balance += price; u.stocks[ticker] -= 1;
-                } else { return notify("Cant do that", "error"); }
-                await save(fresh);
-                setUser(u);
+            const trade = (ticker, action, price) => {
+                queueAction(async (fresh) => {
+                    const u = fresh.find(x => x.username === user.username);
+                    if(action === 'buy' && u.balance >= price) {
+                        u.balance -= price; u.stocks = u.stocks || {}; u.stocks[ticker] = (u.stocks[ticker] || 0) + 1;
+                        notify(`Bought ${ticker}`, "success");
+                    } else if(action === 'sell' && u.stocks?.[ticker] > 0) {
+                        u.balance += price; u.stocks[ticker] -= 1;
+                        notify(`Sold ${ticker}`, "success");
+                    } else { 
+                        notify("Cant do that", "error"); 
+                        return null; // Abort save
+                    }
+                    return fresh;
+                });
             };
 
             if(isLocked) return <div className="card"><h2>🔒 Stocks Offline</h2><p>The stock API is currently down. Please check back later.</p></div>;
@@ -636,7 +741,7 @@
             );
         }
 
-        function Shop({ user, setUser, refresh, save, notify, db, setModal }) {
+        function Shop({ user, setUser, refresh, save, notify, db, setModal, queueAction }) {
             const [tab, setTab] = useState('browse');
             const [item, setItem] = useState({ name: '', price: '', contact: '', location: '' });
             const [activeChat, setActiveChat] = useState(null); 
@@ -648,63 +753,70 @@
                 return acc;
             }, []);
 
-            const hostItem = async () => {
+            const hostItem = () => {
                 if(!item.name || !item.price) return notify("Name & Price required", "error");
-                const fresh = await refresh();
-                const u = fresh.find(x => x.username === user.username);
-                u.shop = u.shop || [];
-                u.shop.push({ 
-                    id: Date.now(), 
-                    name: item.name, 
-                    price: parseFloat(item.price), 
-                    contact: item.contact, 
-                    location: item.location,
-                    sold: false,
-                    buyer: null,
-                    chat: []
+                
+                queueAction(async (fresh) => {
+                    const u = fresh.find(x => x.username === user.username);
+                    u.shop = u.shop || [];
+                    u.shop.push({ 
+                        id: Date.now(), 
+                        name: item.name, 
+                        price: parseFloat(item.price), 
+                        contact: item.contact, 
+                        location: item.location,
+                        sold: false,
+                        buyer: null,
+                        chat: []
+                    });
+                    setTab('browse');
+                    notify("Item Listed!", "success");
+                    return fresh;
                 });
-                await save(fresh);
-                setUser(u);
-                setTab('browse');
-                notify("Item Listed!", "success");
             };
 
-            const removeItem = async (itemId, sellerName) => {
-                const fresh = await refresh();
-                const targetUser = fresh.find(x => x.username === sellerName);
-                if(targetUser && targetUser.shop) {
-                    targetUser.shop = targetUser.shop.filter(i => i.id !== itemId);
-                    await save(fresh);
-                    if(sellerName === user.username) setUser(targetUser); 
-                    notify("Item removed", "info");
-                }
-            };
-
-            const executeBuy = async (targetItem) => {
-                const fresh = await refresh();
-                const me = fresh.find(x => x.username === user.username);
-                const seller = fresh.find(x => x.username === targetItem.seller);
-                const price = parseFloat(targetItem.price);
-                
-                if (me.role !== 'owner' && me.balance < price) { 
-                    if(setModal) setModal(null); return notify("Low balance", "error"); 
-                }
-                
-                if(seller && seller.shop) {
-                    const shopItem = seller.shop.find(i => i.id === targetItem.id);
-                    if(shopItem) {
-                        shopItem.sold = true;
-                        shopItem.buyer = me.username;
-                        seller.balance += price;
+            const removeItem = (itemId, sellerName) => {
+                queueAction(async (fresh) => {
+                    const targetUser = fresh.find(x => x.username === sellerName);
+                    if(targetUser && targetUser.shop) {
+                        targetUser.shop = targetUser.shop.filter(i => i.id !== itemId);
+                        notify("Item removed", "info");
+                        return fresh;
                     }
-                }
-                
-                if (me.role !== 'owner') me.balance -= price;
-                
-                await save(fresh);
-                setUser(me);
-                if(setModal) setModal(null);
-                notify(`Bought!`, "success");
+                    return null;
+                });
+            };
+
+            const executeBuy = (targetItem) => {
+                queueAction(async (fresh) => {
+                    const me = fresh.find(x => x.username === user.username);
+                    const seller = fresh.find(x => x.username === targetItem.seller);
+                    const price = parseFloat(targetItem.price);
+                    
+                    if (me.role !== 'owner' && me.balance < price) { 
+                        notify("Low balance", "error"); 
+                        return null;
+                    }
+                    
+                    if(seller && seller.shop) {
+                        const shopItem = seller.shop.find(i => i.id === targetItem.id);
+                        if(shopItem) {
+                            if (shopItem.sold) {
+                                notify("Item already sold!", "error");
+                                return null;
+                            }
+                            shopItem.sold = true;
+                            shopItem.buyer = me.username;
+                            seller.balance += price;
+                        }
+                    }
+                    
+                    if (me.role !== 'owner') me.balance -= price;
+                    
+                    if(setModal) setModal(null);
+                    notify(`Bought!`, "success");
+                    return fresh;
+                });
             };
 
             const buyItem = (targetItem) => {
@@ -720,36 +832,39 @@
                 }
             };
 
-            const sendItemChat = async () => {
+            const sendItemChat = () => {
                 if(!chatMsg.trim() || !activeChat) return;
-                const fresh = await refresh();
-                const seller = fresh.find(u => u.username === activeChat.seller);
                 
-                if (!seller) return notify("Seller user not found", "error");
+                queueAction(async (fresh) => {
+                    const seller = fresh.find(u => u.username === activeChat.seller);
+                    if (!seller) { notify("Seller user not found", "error"); return null; }
 
-                const shopItem = seller.shop.find(i => i.id === activeChat.id);
-                if (!shopItem) {
-                    notify("Item no longer exists", "error");
-                    setActiveChat(null);
-                    return;
-                }
+                    const shopItem = seller.shop.find(i => i.id === activeChat.id);
+                    if (!shopItem) {
+                        notify("Item no longer exists", "error");
+                        setActiveChat(null);
+                        return null;
+                    }
 
-                let recipient = activeChat.seller;
-                if (user.username === activeChat.seller) {
-                    if(!replyTo) return notify("Select a buyer to reply to", "warning");
-                    recipient = replyTo;
-                }
+                    let recipient = activeChat.seller;
+                    if (user.username === activeChat.seller) {
+                        if(!replyTo) { notify("Select a buyer to reply to", "warning"); return null; }
+                        recipient = replyTo;
+                    }
 
-                shopItem.chat = shopItem.chat || [];
-                shopItem.chat.push({ 
-                    sender: user.username, 
-                    text: chatMsg, 
-                    time: new Date().toLocaleTimeString(),
-                    recipient: recipient
+                    shopItem.chat = shopItem.chat || [];
+                    shopItem.chat.push({ 
+                        sender: user.username, 
+                        text: chatMsg, 
+                        time: new Date().toLocaleTimeString(),
+                        recipient: recipient
+                    });
+                    
+                    // Update local chat view
+                    setActiveChat({...shopItem, seller: activeChat.seller}); 
+                    setChatMsg('');
+                    return fresh;
                 });
-                await save(fresh);
-                setActiveChat({...shopItem, seller: activeChat.seller}); 
-                setChatMsg('');
             };
 
             const refreshChat = (itemId, sellerName) => {
@@ -877,42 +992,44 @@
             );
         }
 
-        function Conversion({ user, setUser, refresh, save, notify }) {
+        function Conversion({ user, setUser, refresh, save, notify, queueAction }) {
             const [amt, setAmt] = useState('');
             const [method, setMethod] = useState('');
             
-            const request = async () => {
+            const request = () => {
                 if(!amt) return notify("Please enter an amount", "error");
                 if(!method) return notify("Please enter a payment method", "error");
                 
-                const fresh = await refresh();
-                const u = fresh.find(x => x.username === user.username);
-                if(u.balance < amt) return notify("Insufficient balance", "error");
-                
-                const originalAmount = parseFloat(amt);
-                const fee = originalAmount * 0.10;
-                const netAmount = (originalAmount - fee).toFixed(2);
+                queueAction(async (fresh) => {
+                    const u = fresh.find(x => x.username === user.username);
+                    if(u.balance < amt) { notify("Insufficient balance", "error"); return null; }
+                    
+                    const originalAmount = parseFloat(amt);
+                    const fee = originalAmount * 0.10;
+                    const netAmount = (originalAmount - fee).toFixed(2);
 
-                u.balance -= originalAmount;
-                u.conversions = u.conversions || [];
-                u.conversions.push({ id: Date.now(), amount: netAmount, originalRequest: originalAmount, method, status: 'pending' });
-                await save(fresh);
-                setUser(u);
-                notify(`Request Sent! You will receive $${netAmount}`, "success");
+                    u.balance -= originalAmount;
+                    u.conversions = u.conversions || [];
+                    u.conversions.push({ id: Date.now(), amount: netAmount, originalRequest: originalAmount, method, status: 'pending' });
+                    
+                    notify(`Request Sent! You will receive $${netAmount}`, "success");
+                    return fresh;
+                });
             };
 
-            const cancelRequest = async (id) => {
-                const fresh = await refresh();
-                const u = fresh.find(x => x.username === user.username);
-                const idx = u.conversions.findIndex(c => c.id === id);
-                if(idx > -1 && u.conversions[idx].status === 'pending') {
-                    const refundAmt = u.conversions[idx].originalRequest || u.conversions[idx].amount;
-                    u.balance += parseFloat(refundAmt);
-                    u.conversions.splice(idx, 1);
-                    await save(fresh);
-                    setUser(u);
-                    notify("Cancelled & Refunded", "info");
-                }
+            const cancelRequest = (id) => {
+                queueAction(async (fresh) => {
+                    const u = fresh.find(x => x.username === user.username);
+                    const idx = u.conversions.findIndex(c => c.id === id);
+                    if(idx > -1 && u.conversions[idx].status === 'pending') {
+                        const refundAmt = u.conversions[idx].originalRequest || u.conversions[idx].amount;
+                        u.balance += parseFloat(refundAmt);
+                        u.conversions.splice(idx, 1);
+                        notify("Cancelled & Refunded", "info");
+                        return fresh;
+                    }
+                    return null;
+                });
             };
 
             return (
@@ -931,7 +1048,12 @@
                         <h3>My Requests</h3>
                         {user.conversions?.slice().reverse().map(c => (
                             <div key={c.id} className="row">
-                                <div><b>${c.amount}</b> <span className={`badge badge-${c.status}`}>{c.status}</span></div>
+                                <div>
+                                    <b>${c.amount}</b> <span className={`badge badge-${c.status}`}>{c.status}</span>
+                                    {c.status === 'rejected' && c.reason && (
+                                        <div style={{fontSize:'0.8rem', color:'var(--danger)', marginTop:5}}>Reason: {c.reason}</div>
+                                    )}
+                                </div>
                                 {c.status === 'pending' && <button className="danger small" onClick={() => cancelRequest(c.id)}>Cancel</button>}
                             </div>
                         ))}
@@ -940,40 +1062,40 @@
             );
         }
 
-        function Support({ user, setUser, refresh, save, notify }) {
+        function Support({ user, setUser, refresh, save, notify, queueAction }) {
             const [msg, setMsg] = useState('');
             const [replyMap, setReplyMap] = useState({});
 
-            const sendTicket = async () => {
+            const sendTicket = () => {
                 if(!msg.trim()) return notify("Message cannot be empty", "error");
-                const fresh = await refresh();
-                const u = fresh.find(x => x.username === user.username);
-                u.tickets = u.tickets || [];
-                u.tickets.push({ id: Date.now(), message: msg, status: 'open', chat: [{ role: 'user', text: msg, time: new Date().toLocaleTimeString() }] });
-                await save(fresh);
-                setUser(u);
-                setMsg('');
-                notify("Ticket Sent!", "success");
+                queueAction(async (fresh) => {
+                    const u = fresh.find(x => x.username === user.username);
+                    u.tickets = u.tickets || [];
+                    u.tickets.push({ id: Date.now(), message: msg, status: 'open', chat: [{ role: 'user', text: msg, time: new Date().toLocaleTimeString() }] });
+                    setMsg('');
+                    notify("Ticket Sent!", "success");
+                    return fresh;
+                });
             };
 
-            const sendReply = async (ticketId) => {
+            const sendReply = (ticketId) => {
                 const txt = replyMap[ticketId];
                 if(!txt || !txt.trim()) return notify("Reply cannot be empty", "error");
-                const fresh = await refresh();
-                const u = fresh.find(x => x.username === user.username);
-                u.tickets.find(t => t.id === ticketId).chat.push({ role: 'user', text: txt, time: new Date().toLocaleTimeString() });
-                await save(fresh);
-                setUser(u);
-                setReplyMap({...replyMap, [ticketId]: ''});
+                queueAction(async (fresh) => {
+                    const u = fresh.find(x => x.username === user.username);
+                    u.tickets.find(t => t.id === ticketId).chat.push({ role: 'user', text: txt, time: new Date().toLocaleTimeString() });
+                    setReplyMap({...replyMap, [ticketId]: ''});
+                    return fresh;
+                });
             };
 
-            const closeTicket = async (ticketId) => {
-                const fresh = await refresh();
-                const u = fresh.find(x => x.username === user.username);
-                u.tickets.find(t => t.id === ticketId).status = 'closed';
-                await save(fresh);
-                setUser(u);
-                notify("Ticket Closed", "info");
+            const closeTicket = (ticketId) => {
+                queueAction(async (fresh) => {
+                    const u = fresh.find(x => x.username === user.username);
+                    u.tickets.find(t => t.id === ticketId).status = 'closed';
+                    notify("Ticket Closed", "info");
+                    return fresh;
+                });
             };
 
             return (
@@ -1010,25 +1132,25 @@
             );
         }
 
-        function Transfer({ user, db, refresh, save, sync, notify }) {
+        function Transfer({ user, db, refresh, save, sync, notify, queueAction }) {
             const [to, setTo] = useState('');
             const [amt, setAmt] = useState('');
-            const send = async () => {
+            const send = () => {
                 if(!to) return notify("Select a recipient", "error");
                 if(!amt) return notify("Enter an amount", "error");
 
-                const fresh = await refresh();
-                const me = fresh.find(x => x.username === user.username);
-                const them = fresh.find(x => x.username === to);
-                
-                if(!them) return notify("Recipient not found", "error");
-                if(me.balance < amt) return notify("Insufficient funds", "error");
-                
-                me.balance -= parseFloat(amt);
-                them.balance += parseFloat(amt);
-                await save(fresh);
-                sync(me);
-                notify("Sent!", "success");
+                queueAction(async (fresh) => {
+                    const me = fresh.find(x => x.username === user.username);
+                    const them = fresh.find(x => x.username === to);
+                    
+                    if(!them) { notify("Recipient not found", "error"); return null; }
+                    if(me.balance < amt) { notify("Insufficient funds", "error"); return null; }
+                    
+                    me.balance -= parseFloat(amt);
+                    them.balance += parseFloat(amt);
+                    notify("Sent!", "success");
+                    return fresh;
+                });
             };
             return (
                 <div className="card">
@@ -1043,60 +1165,94 @@
             );
         }
 
-        function AdminPanel({ db, save, fetchDB, notify, setModal }) {
+        function AdminPanel({ db, save, fetchDB, notify, setModal, queueAction }) {
             const [target, setTarget] = useState('');
             const [amt, setAmt] = useState('');
-            
-            const handleFunds = async (type) => {
+            const [rejectId, setRejectId] = useState(null);
+            const [rejectReason, setRejectReason] = useState('');
+
+            const handleFunds = (type) => {
                 if(!target) return notify("Select a user", "error");
                 if(!amt) return notify("Enter an amount", "error");
-                const fresh = await fetchDB();
-                const u = fresh.find(x => x.username === target);
-                if(u) {
-                    const val = parseFloat(amt);
-                    if(type === 'grant') u.balance += val;
-                    if(type === 'take') u.balance = Math.max(0, u.balance - val);
-                    if(type === 'set') u.balance = val;
-                    await save(fresh);
-                    notify(`${type.toUpperCase()} Success`, "success");
-                }
+                queueAction(async (fresh) => {
+                    const u = fresh.find(x => x.username === target);
+                    if(u) {
+                        const val = parseFloat(amt);
+                        if(type === 'grant') u.balance += val;
+                        if(type === 'take') u.balance = Math.max(0, u.balance - val);
+                        if(type === 'set') u.balance = val;
+                        notify(`${type.toUpperCase()} Success`, "success");
+                        return fresh;
+                    }
+                    return null;
+                });
             };
 
-            const toggleBan = async (username) => {
-                const fresh = await fetchDB();
-                const u = fresh.find(x => x.username === username);
-                if(u) {
-                    u.banned = !u.banned;
-                    await save(fresh);
-                    notify(`User ${u.banned ? 'BANNED' : 'UNBANNED'}`, "success");
-                }
+            const toggleBan = (username) => {
+                queueAction(async (fresh) => {
+                    const u = fresh.find(x => x.username === username);
+                    if(u) {
+                        u.banned = !u.banned;
+                        notify(`User ${u.banned ? 'BANNED' : 'UNBANNED'}`, "success");
+                        return fresh;
+                    }
+                    return null;
+                });
             };
 
             const permanentDelete = (username) => {
                 setModal({
                     title: "Delete User?",
                     message: "This cannot be undone.",
-                    onConfirm: async () => {
-                        const fresh = await fetchDB();
-                        const newDB = fresh.filter(u => u.username !== username);
-                        await save(newDB);
-                        setModal(null);
-                        notify("Deleted", "success");
+                    onConfirm: () => {
+                        queueAction(async (fresh) => {
+                            const newDB = fresh.filter(u => u.username !== username);
+                            notify("Deleted", "success");
+                            setModal(null);
+                            return newDB; 
+                        });
                     },
                     onCancel: () => setModal(null)
                 });
             };
 
-            const handleConversion = async (username, id, action) => {
-                const fresh = await fetchDB();
-                const u = fresh.find(x => x.username === username);
-                const conv = u.conversions.find(c => c.id === id);
-                if(conv) {
-                    conv.status = action === 'approve' ? 'completed' : 'rejected';
-                    if(action === 'reject') u.balance += parseFloat(conv.amount); // Refund if rejected
-                    await save(fresh);
-                    notify(`Request ${action === 'approve' ? 'Approved' : 'Rejected'}`, action === 'approve' ? 'success' : 'info');
+            const handleConversion = (username, id, action) => {
+                if (action === 'reject') {
+                    setRejectId(id);
+                    setRejectReason('');
+                    return;
                 }
+                
+                queueAction(async (fresh) => {
+                    const u = fresh.find(x => x.username === username);
+                    const conv = u.conversions.find(c => c.id === id);
+                    if(conv) {
+                        conv.status = 'completed';
+                        notify(`Request Approved`, 'success');
+                        return fresh;
+                    }
+                    return null;
+                });
+            };
+
+            const confirmReject = (username, id) => {
+                if(!rejectReason.trim()) return notify("Please enter a reason", "error");
+                
+                queueAction(async (fresh) => {
+                    const u = fresh.find(x => x.username === username);
+                    const conv = u.conversions.find(c => c.id === id);
+                    if(conv) {
+                        conv.status = 'rejected';
+                        conv.reason = rejectReason;
+                        const refundAmt = conv.originalRequest || conv.amount;
+                        u.balance += parseFloat(refundAmt);
+                        
+                        notify(`Request Rejected`, 'info');
+                        setRejectId(null); 
+                        return fresh;
+                    }
+                    return null;
+                });
             };
 
             const pendingConversions = db.reduce((acc, u) => {
@@ -1113,7 +1269,6 @@
                         <select onChange={e => setTarget(e.target.value)}>
                             <option value="">Select User...</option>
                             {db.filter(u => u.role !== 'owner').map(u => <option key={u.username} value={u.username}>{u.username} (${u.balance.toFixed(0)})</option>)}
-                            {/* Make owner visible so you can grant yourself money too */}
                             {db.filter(u => u.role === 'owner').map(u => <option key={u.username} value={u.username}>{u.username} (YOU)</option>)}
                         </select>
                         <div className="input-group"><input type="number" placeholder="Amount" value={amt} onChange={e => setAmt(e.target.value)} /></div>
@@ -1139,14 +1294,26 @@
                         <h2>Conversion Requests</h2>
                         {pendingConversions.length === 0 && <p style={{opacity:0.5}}>No pending requests.</p>}
                         {pendingConversions.map(c => (
-                            <div key={c.id} className="row">
+                            <div key={c.id} className="row" style={{alignItems: rejectId === c.id ? 'flex-start' : 'center'}}>
                                 <div>
                                     <b>{c.user}</b> requests <b>${c.amount}</b>
                                     <div style={{fontSize:'0.8rem', opacity:0.7}}>Method: {c.method}</div>
                                 </div>
-                                <div style={{display:'flex', gap:5}}>
-                                    <button className="primary small" onClick={() => handleConversion(c.user, c.id, 'approve')}>Approve</button>
-                                    <button className="danger small" onClick={() => handleConversion(c.user, c.id, 'reject')}>Reject</button>
+                                <div style={{display:'flex', gap:5, flexDirection: rejectId === c.id ? 'column' : 'row'}}>
+                                    {rejectId === c.id ? (
+                                        <div style={{display:'flex', flexDirection:'column', gap:5, minWidth:200}}>
+                                            <input placeholder="Reason for rejection..." value={rejectReason} onChange={e => setRejectReason(e.target.value)} autoFocus />
+                                            <div style={{display:'flex', gap:5}}>
+                                                <button className="danger small" onClick={() => confirmReject(c.user, c.id)}>Confirm Reject</button>
+                                                <button className="small" onClick={() => setRejectId(null)}>Cancel</button>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <button className="primary small" onClick={() => handleConversion(c.user, c.id, 'approve')}>Approve</button>
+                                            <button className="danger small" onClick={() => handleConversion(c.user, c.id, 'reject')}>Reject</button>
+                                        </>
+                                    )}
                                 </div>
                             </div>
                         ))}
@@ -1155,30 +1322,32 @@
             );
         }
 
-        function AdminTickets({ db, refresh, save, notify }) {
+        function AdminTickets({ db, refresh, save, notify, queueAction }) {
             const [reply, setReply] = useState('');
             const tickets = db.reduce((acc, u) => {
                 if(u.tickets) acc.push(...u.tickets.map(t => ({...t, owner: u.username})));
                 return acc;
             }, []).filter(t => t.status === 'open');
 
-            const sendReply = async (username, ticketId) => {
+            const sendReply = (username, ticketId) => {
                 if(!reply) return;
-                const f = await refresh();
-                const u = f.find(x => x.username === username);
-                const t = u.tickets.find(tick => tick.id === ticketId);
-                t.chat.push({ role: 'admin', text: reply, time: new Date().toLocaleTimeString() });
-                await save(f);
-                setReply('');
-                notify("Reply Sent", "success");
+                queueAction(async (fresh) => {
+                    const u = fresh.find(x => x.username === username);
+                    const t = u.tickets.find(tick => tick.id === ticketId);
+                    t.chat.push({ role: 'admin', text: reply, time: new Date().toLocaleTimeString() });
+                    setReply('');
+                    notify("Reply Sent", "success");
+                    return fresh;
+                });
             };
 
-            const closeTicket = async (username, ticketId) => {
-                const f = await refresh();
-                const u = f.find(x => x.username === username);
-                u.tickets.find(tick => tick.id === ticketId).status = 'closed';
-                await save(f);
-                notify("Ticket Closed", "info");
+            const closeTicket = (username, ticketId) => {
+                queueAction(async (fresh) => {
+                    const u = fresh.find(x => x.username === username);
+                    u.tickets.find(tick => tick.id === ticketId).status = 'closed';
+                    notify("Ticket Closed", "info");
+                    return fresh;
+                });
             };
 
             return (
