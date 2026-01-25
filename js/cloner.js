@@ -1,4 +1,3 @@
-<script id="cloning-script">
 // 1. Configuration
 const words = [
     'about:blank#chrome://settings',
@@ -154,4 +153,3 @@ if (document.readyState === 'loading') {
 } else {
     runInitialization();
 }
-</script>
