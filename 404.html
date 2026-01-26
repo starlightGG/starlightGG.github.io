@@ -21,6 +21,7 @@
                 font-family: 'Fira Mono', monospace;
                 justify-content: center;
                 align-items: center;
+                margin: 0; /* Reset default margin */
             }
 
             @keyframes single-shake {
@@ -31,9 +32,8 @@
                 100% { transform: translate(0, 0) rotate(0deg); }
             }
 
-
             .wisedom {
-                font-family: url(VGA.tff);
+                /* font-family: url(VGA.tff); */
                 font-weight: 400;
                 text-rendering: optimizelegibility;
                 color: #80c0ff;
@@ -42,6 +42,8 @@
                 text-align: center;
                 max-width: 80%;
                 padding-right: 3px; 
+                min-height: 1.2em; /* Keeps space reserved to prevent jumping */
+                margin-bottom: 20px;
             }
 
             .shaky-char {
@@ -62,11 +64,13 @@
                     background-color: transparent;
                 }
             }
+            
             /* --- AGGRESSIVE GLITCH CSS --- */
             .glitch {
                 font-size: 9vw;
                 position: relative;
                 color: #5e9bdb; /* Base color */
+                margin-bottom: 40px; /* Space between title and text */
             }
             .line:not(:first-child) {
                 position: absolute;
@@ -75,275 +79,115 @@
             }
             
             /* Glitch layers applied to the main text */
-            .line:nth-child(1) {
-                animation: clip 2500ms -250ms linear infinite, glitch1 300ms -100ms linear infinite; /* Faster and shorter duration */
-            }
+            .line:nth-child(1) { animation: clip 2500ms -250ms linear infinite, glitch1 300ms -100ms linear infinite; }
             @keyframes glitch1 {
                 0% { transform: translateX(0); }
                 70% { transform: translateX(0); color: #fff; }
-                75% { transform: translateX(8px); color: #ff0000; } /* Max shift 8px, using red for aggression */
+                75% { transform: translateX(8px); color: #ff0000; } 
                 80% { transform: translateX(-6px); color: #80c0ff; }
                 85% { transform: translateX(3px); color: #fff; }
                 90% { transform: translateX(-8px); color: #5e9bdb; }
                 95% { transform: translateX(5px); color: #fff; }
                 100% { transform: translateX(0); }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
             }
-            .line:nth-child(2) {
-                animation: clip 2500ms -500ms linear infinite, glitch2 300ms -700ms linear infinite;
-            }
+            .line:nth-child(2) { animation: clip 2500ms -500ms linear infinite, glitch2 300ms -700ms linear infinite; }
             @keyframes glitch2 {
                 0% { transform: translateX(0); }
                 70% { transform: translateX(0); color: #fff; }
-                75% { transform: translateX(-10px); color: #00ff00; } /* Max shift 10px, green */
+                75% { transform: translateX(-10px); color: #00ff00; } 
                 80% { transform: translateX(5px); color: #80c0ff; }
                 85% { transform: translateX(-2px); color: #fff; }
                 90% { transform: translateX(9px); color: #5e9bdb; }
                 95% { transform: translateX(-7px); color: #fff; }
                 100% { transform: translateX(0); }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
             }
-            .line:nth-child(3) {
-                animation: clip 2500ms -750ms linear infinite, glitch3 300ms -300ms linear infinite;
-            }
+            .line:nth-child(3) { animation: clip 2500ms -750ms linear infinite, glitch3 300ms -300ms linear infinite; }
             @keyframes glitch3 {
                 0% { transform: translateX(0); }
                 70% { transform: translateX(0); color: #fff; }
-                75% { transform: translateX(6px); color: #ffff00; } /* Yellow */
+                75% { transform: translateX(6px); color: #ffff00; } 
                 80% { transform: translateX(-7px); color: #80c0ff; }
                 85% { transform: translateX(4px); color: #fff; }
                 90% { transform: translateX(-9px); color: #5e9bdb; }
                 95% { transform: translateX(2px); color: #fff; }
                 100% { transform: translateX(0); }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
             }
-            .line:nth-child(4) {
-                animation: clip 2500ms -1000ms linear infinite, glitch4 300ms -700ms linear infinite;
-            }
+            .line:nth-child(4) { animation: clip 2500ms -1000ms linear infinite, glitch4 300ms -700ms linear infinite; }
             @keyframes glitch4 {
                 0% { transform: translateX(0); }
                 70% { transform: translateX(0); color: #fff; }
-                75% { transform: translateX(-8px); color: #ff00ff; } /* Magenta */
+                75% { transform: translateX(-8px); color: #ff00ff; } 
                 80% { transform: translateX(4px); color: #80c0ff; }
                 85% { transform: translateX(-5px); color: #fff; }
                 90% { transform: translateX(7px); color: #5e9bdb; }
                 95% { transform: translateX(-3px); color: #fff; }
                 100% { transform: translateX(0); }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
             }
-            .line:nth-child(5) {
-                animation: clip 2500ms -1250ms linear infinite, glitch5 300ms -800ms linear infinite;
-            }
+            .line:nth-child(5) { animation: clip 2500ms -1250ms linear infinite, glitch5 300ms -800ms linear infinite; }
             @keyframes glitch5 {
                 0% { transform: translateX(0); }
                 70% { transform: translateX(0); color: #fff; }
-                75% { transform: translateX(10px); color: #00ffff; } /* Cyan */
+                75% { transform: translateX(10px); color: #00ffff; } 
                 80% { transform: translateX(-3px); color: #80c0ff; }
                 85% { transform: translateX(6px); color: #fff; }
                 90% { transform: translateX(-7px); color: #5e9bdb; }
                 95% { transform: translateX(4px); color: #fff; }
                 100% { transform: translateX(0); }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
             }
-            .line:nth-child(6) {
-                animation: clip 2500ms -1500ms linear infinite, glitch6 300ms -800ms linear infinite;
-            }
+            .line:nth-child(6) { animation: clip 2500ms -1500ms linear infinite, glitch6 300ms -800ms linear infinite; }
             @keyframes glitch6 {
                 0% { transform: translateX(0); }
                 70% { transform: translateX(0); color: #fff; }
-                75% { transform: translateX(-6px); color: #ff4500; } /* Orange Red */
+                75% { transform: translateX(-6px); color: #ff4500; } 
                 80% { transform: translateX(8px); color: #80c0ff; }
                 85% { transform: translateX(-4px); color: #fff; }
                 90% { transform: translateX(5px); color: #5e9bdb; }
                 95% { transform: translateX(-10px); color: #fff; }
                 100% { transform: translateX(0); }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
             }
-            .line:nth-child(7) {
-                animation: clip 2500ms -1750ms linear infinite, glitch7 300ms -30ms linear infinite;
-            }
+            .line:nth-child(7) { animation: clip 2500ms -1750ms linear infinite, glitch7 300ms -30ms linear infinite; }
             @keyframes glitch7 {
                 0% { transform: translateX(0); }
                 70% { transform: translateX(0); color: #fff; }
-                75% { transform: translateX(9px); color: #ff69b4; } /* Hot Pink */
+                75% { transform: translateX(9px); color: #ff69b4; } 
                 80% { transform: translateX(-5px); color: #80c0ff; }
                 85% { transform: translateX(2px); color: #fff; }
                 90% { transform: translateX(-8px); color: #5e9bdb; }
                 95% { transform: translateX(7px); color: #fff; }
                 100% { transform: translateX(0); }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
             }
-            .line:nth-child(8) {
-                animation: clip 2500ms -2000ms linear infinite, glitch8 300ms -800ms linear infinite;
-            }
+            .line:nth-child(8) { animation: clip 2500ms -2000ms linear infinite, glitch8 300ms -800ms linear infinite; }
             @keyframes glitch8 {
                 0% { transform: translateX(0); }
                 70% { transform: translateX(0); color: #fff; }
-                75% { transform: translateX(-7px); color: #00fa9a; } /* Medium Spring Green */
+                75% { transform: translateX(-7px); color: #00fa9a; } 
                 80% { transform: translateX(3px); color: #80c0ff; }
                 85% { transform: translateX(-6px); color: #fff; }
                 90% { transform: translateX(10px); color: #5e9bdb; }
                 95% { transform: translateX(-4px); color: #fff; }
                 100% { transform: translateX(0); }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
             }
-            .line:nth-child(9) {
-                animation: clip 2500ms -2250ms linear infinite, glitch9 300ms -700ms linear infinite;
-            }
+            .line:nth-child(9) { animation: clip 2500ms -2250ms linear infinite, glitch9 300ms -700ms linear infinite; }
             @keyframes glitch9 {
                 0% { transform: translateX(0); }
                 70% { transform: translateX(0); color: #fff; }
-                75% { transform: translateX(5px); color: #8a2be2; } /* Blue Violet */
+                75% { transform: translateX(5px); color: #8a2be2; } 
                 80% { transform: translateX(-8px); color: #80c0ff; }
                 85% { transform: translateX(1px); color: #fff; }
                 90% { transform: translateX(-6px); color: #5e9bdb; }
                 95% { transform: translateX(9px); color: #fff; }
                 100% { transform: translateX(0); }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
             }
-            .line:nth-child(10) {
-                animation: clip 2500ms -2500ms linear infinite, glitch10 300ms -600ms linear infinite;
-            }
+            .line:nth-child(10) { animation: clip 2500ms -2500ms linear infinite, glitch10 300ms -600ms linear infinite; }
             @keyframes glitch10 {
                 0% { transform: translateX(0); }
                 70% { transform: translateX(0); color: #fff; }
-                75% { transform: translateX(-9px); color: #f08080; } /* Light Coral */
+                75% { transform: translateX(-9px); color: #f08080; } 
                 80% { transform: translateX(6px); color: #80c0ff; }
                 85% { transform: translateX(-3px); color: #fff; }
                 90% { transform: translateX(8px); color: #5e9bdb; }
                 95% { transform: translateX(-5px); color: #fff; }
                 100% { transform: translateX(0); }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
             }
             @keyframes clip {
                 /* Faster, more chaotic clipping */
@@ -361,6 +205,36 @@
                 align-items: center;
                 gap: 35px;
                 margin-top: 20px;
+            }
+
+            /* --- IFRAME WARNING STYLES --- */
+            /* These are hidden by default via CSS or JS, and shown only if iframe */
+            .iframe-content {
+                display: none; /* Hidden by default */
+                text-align: center;
+                flex-direction: column;
+                align-items: center;
+                max-width: 80%;
+            }
+            
+            .iframe-content h3 {
+                color: #80c0ff;
+                font-weight: 400;
+                font-size: 24px;
+                margin-bottom: 10px;
+            }
+            .iframe-content h6 {
+                color: #5e9bdb;
+                font-weight: 400;
+                font-size: 16px;
+                margin: 5px 0;
+            }
+            .iframe-content h4 {
+                color: #fff;
+                font-weight: 400;
+                font-size: 18px;
+                margin-top: 20px;
+                text-decoration: underline;
             }
 
             a {
@@ -390,6 +264,7 @@
                 filter: brightness(90%);
             }
         </style>
+        
         <div class="glitch">
             <div class="line">Error 404</div>
             <div class="line">Error 404</div>
@@ -402,167 +277,151 @@
             <div class="line">Error 404</div>
             <div class="line">Error 404</div>
         </div>
-        <span class="wisedom"></span>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        <div class="button-container">
+        <span class="wisedom" id="normal-text"></span>
+        <div class="button-container" id="normal-buttons">
             <a href="pages/chat.html" target="_blank">Contact Support</a>
             <a href="/" class="return-home">Return home?</a>
         </div>
 
+        <div class="iframe-content" id="iframe-msg">
+            <h3>Hey, it seems you have entered a iframe website that wasnt available.</h3>
+            <h6>Please contact support for troubleshooting</h6>
+            <h4>We recommend clicking the Reload button to fix page</h4>
+        </div>
+
 <script>
-const element = document.getElementsByClassName('wisedom')[0];
-const textFilePath = 'txt/wiseness.txt'; // <-- Set your text file name here
-
-let currentTextIndex = 0;
-let charIndex = 0;
-let typingTimeout;
-let deletingTimeout;
-let shuffledWiseness = []; // This will be filled later
-
-// --- Fisher-Yates Shuffle Algorithm ---
-function shuffle(array) {
-    let currentIndex = array.length, randomIndex;
-    while (currentIndex !== 0) {
-        randomIndex = Math.floor(Math.random() * currentIndex);
-        currentIndex--;
-        [array[currentIndex], array[randomIndex]] = [
-            array[randomIndex], array[currentIndex]];
-    }
-    return array;
-}
-
-// Cursor element setup
-const cursor = document.createElement('span');
-cursor.className = 'cursor';
-element.appendChild(cursor); 
-
-// 🚀 Core Logic to Fetch and Start Typing
-async function loadWiseness() {
+// --- Iframe Detection & Toggle ---
+function inIframe() {
     try {
-        const response = await fetch(textFilePath);
-        
-        // Throw an error if the file isn't found
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const text = await response.text();
-        
-        // Split the text file content into an array based on new lines
-        const wisenessArray = text.split('\n')
-            // Clean up any empty lines or lines with only whitespace
-            .map(line => line.trim())
-            .filter(line => line.length > 0);
-
-        if (wisenessArray.length === 0) {
-            // Fallback message if file is empty
-            shuffledWiseness = ["Suprising! I can't even type anything else because the txt file didn't load. Haha."];
-        } else {
-            // Use the fetched and cleaned array to initialize the shuffled list
-            shuffledWiseness = wisenessArray; 
-        }
-
-        // Shuffle the quotes once at the beginning
-        shuffle(shuffledWiseness);
-        
-        // Start the typing loop after data is loaded and shuffled
-        setTimeout(type, 2000); 
-
+        return window.self !== window.top;
     } catch (e) {
-        console.error("Failed to load wisdom file:", e);
-            shuffledWiseness = ["Suprising! I can't even type anything else because the txt file didn't load. Haha."];
-        setTimeout(type, 2000); 
+        return true;
     }
 }
 
+// Elements to toggle
+const normalText = document.getElementById('normal-text');
+const normalButtons = document.getElementById('normal-buttons');
+const iframeMsg = document.getElementById('iframe-msg');
 
-function type() {
-    // Check if we reached the end of the shuffled list
-    if (currentTextIndex >= shuffledWiseness.length) {
-        // Reset the index and re-shuffle the list for a new cycle
-        currentTextIndex = 0;
-        shuffle(shuffledWiseness);
-    }
-
-    // Use the current message from the shuffled array
-    let text = shuffledWiseness[currentTextIndex];
-    let typeSpeed = 50;
-
-    if (cursor.parentElement !== element) {
-        element.appendChild(cursor);
-    }
-
-    if (charIndex < text.length) {
-        const char = text.charAt(charIndex);
-
-        const shakySpan = document.createElement('span');
-        shakySpan.className = 'shaky-char';
-        shakySpan.textContent = char;
-
-        element.insertBefore(shakySpan, cursor);
-
-        setTimeout(() => {
-            shakySpan.outerHTML = shakySpan.innerHTML;
-        }, 100);
-
-        charIndex++;
-        typingTimeout = setTimeout(type, typeSpeed);
-    } else {
-        deletingTimeout = setTimeout(deleteText, 5000);
-    }
+if (inIframe()) {
+    // If we ARE in an iframe:
+    // 1. Hide the typing text and buttons
+    normalText.style.display = 'none';
+    normalButtons.style.display = 'none';
+    
+    // 2. Show the warning message
+    iframeMsg.style.display = 'flex';
+} else {
+    // If we are NOT in an iframe:
+    // 1. Ensure normal stuff is visible (default)
+    
+    // 2. Start the typing script
+    initTyping();
 }
 
-function deleteText() {
-    let text = shuffledWiseness[currentTextIndex]; 
-    let deleteSpeed = 25; 
+// --- ORIGINAL TYPING SCRIPT (Wrapped in function) ---
+function initTyping() {
+    const element = document.getElementsByClassName('wisedom')[0];
+    const textFilePath = 'txt/wiseness.txt'; 
 
-    if (charIndex > 0) {
-        // 1. Overwrite content with one less character
-        element.innerHTML = text.substring(0, charIndex - 1);
-        
-        // 2. RE-ATTACH the cursor
-        element.appendChild(cursor); 
+    let currentTextIndex = 0;
+    let charIndex = 0;
+    let typingTimeout;
+    let deletingTimeout;
+    let shuffledWiseness = []; 
 
-        charIndex--;
-        deletingTimeout = setTimeout(deleteText, deleteSpeed);
-    } else {
-        // Move to the next message in the shuffled list
-        currentTextIndex++; 
-        typingTimeout = setTimeout(type, 800);
+    function shuffle(array) {
+        let currentIndex = array.length, randomIndex;
+        while (currentIndex !== 0) {
+            randomIndex = Math.floor(Math.random() * currentIndex);
+            currentIndex--;
+            [array[currentIndex], array[randomIndex]] = [
+                array[randomIndex], array[currentIndex]];
+        }
+        return array;
     }
-}
 
-// 🔑 Start the entire process by loading the data
-loadWiseness();
+    const cursor = document.createElement('span');
+    cursor.className = 'cursor';
+    element.appendChild(cursor); 
+
+    async function loadWiseness() {
+        try {
+            const response = await fetch(textFilePath);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const text = await response.text();
+            const wisenessArray = text.split('\n')
+                .map(line => line.trim())
+                .filter(line => line.length > 0);
+
+            if (wisenessArray.length === 0) {
+                shuffledWiseness = ["Suprising! I can't even type anything else because the txt file didn't load. Haha."];
+            } else {
+                shuffledWiseness = wisenessArray; 
+            }
+            shuffle(shuffledWiseness);
+            setTimeout(type, 2000); 
+
+        } catch (e) {
+            console.error("Failed to load wisdom file:", e);
+                shuffledWiseness = ["Suprising! I can't even type anything else because the txt file didn't load. Haha."];
+            setTimeout(type, 2000); 
+        }
+    }
+
+    function type() {
+        if (currentTextIndex >= shuffledWiseness.length) {
+            currentTextIndex = 0;
+            shuffle(shuffledWiseness);
+        }
+
+        let text = shuffledWiseness[currentTextIndex];
+        let typeSpeed = 50;
+
+        if (cursor.parentElement !== element) {
+            element.appendChild(cursor);
+        }
+
+        if (charIndex < text.length) {
+            const char = text.charAt(charIndex);
+            const shakySpan = document.createElement('span');
+            shakySpan.className = 'shaky-char';
+            shakySpan.textContent = char;
+
+            element.insertBefore(shakySpan, cursor);
+
+            setTimeout(() => {
+                shakySpan.outerHTML = shakySpan.innerHTML;
+            }, 100);
+
+            charIndex++;
+            typingTimeout = setTimeout(type, typeSpeed);
+        } else {
+            deletingTimeout = setTimeout(deleteText, 5000);
+        }
+    }
+
+    function deleteText() {
+        let text = shuffledWiseness[currentTextIndex]; 
+        let deleteSpeed = 25; 
+
+        if (charIndex > 0) {
+            element.innerHTML = text.substring(0, charIndex - 1);
+            element.appendChild(cursor); 
+            charIndex--;
+            deletingTimeout = setTimeout(deleteText, deleteSpeed);
+        } else {
+            currentTextIndex++; 
+            typingTimeout = setTimeout(type, 800);
+        }
+    }
+
+    loadWiseness();
+}
 </script>
     </body>
 </html>
