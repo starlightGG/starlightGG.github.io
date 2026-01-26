@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
       <script id="cloning-script" src="js/cloner.js"></script>
+    <script src="js/settings.js"></script>
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -1087,6 +1088,9 @@ const PRESETS = [
             // REFS FOR CANVAS & MOUSE TRACKING (For Hexagons Only)
             const canvasRef = useRef(null);
             const mousePos = useRef({ x: 0, y: 0 });
+            
+            // NEW: File Handle Ref for Auto-Save Overwriting
+            const fileHandleRef = useRef(null);
 
             // Helpers
             // UPDATED: Added .replace(/\n/g, '<br>') to support \n newlines
@@ -1710,39 +1714,75 @@ document.documentElement.setAttribute('data-theme', theme);
             
             // --- DATA MANAGEMENT (Export/Import) ---
             
-            // AUTO SAVE EFFECT (Runs every 5 minutes if enabled)
+            // AUTO SAVE EFFECT (Runs every 1 minutes if enabled)
             useEffect(() => {
                 let interval;
                 if (autoSaveEnabled) {
                     interval = setInterval(() => {
                         handleExportData(true); // true = silent auto-save
-                    }, 300000); // 5 Minutes (300,000 ms)
+                    }, 60000); // 1 Minutes (60000 ms)
                 }
                 return () => clearInterval(interval);
             }, [autoSaveEnabled]);
 
-            // UPDATED: Export Everything (LocalStorage + Cookies)
-            const handleExportData = (isAuto = false) => {
+            // UPDATED: Export Logic with File System Access API (True Overwrite)
+            const handleExportData = async (isAuto = false) => {
                 const data = {
                     timestamp: new Date().toISOString(),
                     type: 'full-backup',
-                    localStorage: { ...localStorage }, // Dumps EVERYTHING in storage
-                    cookies: document.cookie // Dumps accessible cookies
+                    localStorage: { ...localStorage }, 
+                    cookies: document.cookie 
                 };
+                const jsonStr = JSON.stringify(data, null, 2);
 
-                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                // 1. Try File System Access API (True Overwrite)
+                if ('showSaveFilePicker' in window) {
+                    try {
+                        if (isAuto && fileHandleRef.current) {
+                            // Auto-save to existing handle
+                            const writable = await fileHandleRef.current.createWritable();
+                            await writable.write(jsonStr);
+                            await writable.close();
+                            return; 
+                        } else if (!isAuto) {
+                            // Manual Save - Open Picker
+                            const options = {
+                                suggestedName: 'starlight_save.json',
+                                types: [{
+                                    description: 'JSON Backup',
+                                    accept: { 'application/json': ['.json'] },
+                                }],
+                            };
+                            const handle = await window.showSaveFilePicker(options);
+                            fileHandleRef.current = handle; // Store handle for future auto-saves
+                            
+                            const writable = await handle.createWritable();
+                            await writable.write(jsonStr);
+                            await writable.close();
+                            
+                            showModal("Saved successfully!\n\nNote: You have granted write permission. Future auto-saves will overwrite this specific file automatically.\n(I would recommend putting this on a USB! If not, click files app, drag save to Google Drive, it should work, just keep checking to make sure it doesn't delete!)");
+                            return;
+                        }
+                    } catch (err) {
+                        // Ignore AbortError (User cancelled)
+                        if (err.name === 'AbortError') return;
+                        console.error("FS API Error:", err);
+                        // If error (not abort), fall through to download method
+                    }
+                }
+
+                // 2. Fallback: Standard Download (Creates copies if file exists)
+                const blob = new Blob([jsonStr], { type: 'application/json' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                // Auto-save filenames are distinct so they don't overwrite manual saves easily in logic
-                a.download = `starlight-${isAuto ? 'autosave' : 'backup'}-${new Date().toISOString().slice(0, 10)}.json`;
+                a.download = 'starlight_save.json';
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
                 
-                // Only show modal for manual saves to avoid interrupting gameplay
-                if (!isAuto) showModal("Full backup (Settings & Game Data) exported successfully! (I would recommend putting this on a USB! If not, click files app, drag save to Google Drive, it should work, just keep checking to make sure it doesn't delete!)");
+                if (!isAuto) showModal("Exported as download!\n\n(Browser may create duplicates like 'starlight_save (1).json' unless you use a browser that supports File System Access or manually overwrite)");
             };
 
             // UPDATED: Import Logic to handle Full Backups
@@ -2076,7 +2116,7 @@ document.documentElement.setAttribute('data-theme', theme);
                     
                     // Auto Save Toggle
                     e('div', { className: 'settings-item' },
-                        e('label', null, 'Auto-Save (5 minutes):'),
+                        e('label', null, 'Auto-Save (1 minute, export file first!):'),
                         renderSwitch('autosave-toggle-switch', autoSaveEnabled, () => handleToggle('autoSaveState', autoSaveEnabled, setAutoSaveEnabled), 'fas fa-save', 'fas fa-times')
                     ),
 
@@ -2187,6 +2227,5 @@ e('div', { id: 'loading-screen', className: isLoading ? '' : 'fade-out' },
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(e(App));
     </script>
-    <script src="js/settings.js"></script>
 </body>
 </html>
