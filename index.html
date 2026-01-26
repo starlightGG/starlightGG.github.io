@@ -1076,6 +1076,9 @@ const PRESETS = [
             const [statsEnabled, setStatsEnabled] = useState(() => localStorage.getItem('statsToggleState') === 'true');
             // NEW: Auto Save State
             const [autoSaveEnabled, setAutoSaveEnabled] = useState(() => localStorage.getItem('autoSaveState') === 'true');
+            // NEW: Save Indicator State
+            const [showSaveIndicator, setShowSaveIndicator] = useState(() => localStorage.getItem('showSaveIndicator') !== 'false');
+            const [isSaving, setIsSaving] = useState(false);
 
             // Game Loading State
             const [gameLoading, setGameLoading] = useState(false);
@@ -1727,13 +1730,30 @@ document.documentElement.setAttribute('data-theme', theme);
 
             // UPDATED: Export Logic with File System Access API (True Overwrite)
             const handleExportData = async (isAuto = false) => {
+                // TRIGGER INDICATOR IF AUTO-SAVE
+                if (isAuto && showSaveIndicator) {
+                    setIsSaving(true);
+                    setTimeout(() => setIsSaving(false), 2000);
+                }
+
                 const data = {
                     timestamp: new Date().toISOString(),
                     type: 'full-backup',
                     localStorage: { ...localStorage }, 
                     cookies: document.cookie 
                 };
-                const jsonStr = JSON.stringify(data, null, 2);
+                
+                // 1. ENCODE DATA (Base64) to prevent tampering/cheating
+                // We use encodeURIComponent to handle special characters (emojis, etc.) correctly before base64
+                const rawJson = JSON.stringify(data);
+                const encodedData = btoa(unescape(encodeURIComponent(rawJson)));
+                
+                // Wrap in a secure object
+                const finalFileContent = JSON.stringify({ 
+                    version: 2, 
+                    protected: true, 
+                    payload: encodedData 
+                }, null, 2);
 
                 // 1. Try File System Access API (True Overwrite)
                 if ('showSaveFilePicker' in window) {
@@ -1741,7 +1761,7 @@ document.documentElement.setAttribute('data-theme', theme);
                         if (isAuto && fileHandleRef.current) {
                             // Auto-save to existing handle
                             const writable = await fileHandleRef.current.createWritable();
-                            await writable.write(jsonStr);
+                            await writable.write(finalFileContent);
                             await writable.close();
                             return; 
                         } else if (!isAuto) {
@@ -1749,7 +1769,7 @@ document.documentElement.setAttribute('data-theme', theme);
                             const options = {
                                 suggestedName: 'starlight_save.json',
                                 types: [{
-                                    description: 'JSON Backup',
+                                    description: 'Starlight Save File',
                                     accept: { 'application/json': ['.json'] },
                                 }],
                             };
@@ -1757,10 +1777,11 @@ document.documentElement.setAttribute('data-theme', theme);
                             fileHandleRef.current = handle; // Store handle for future auto-saves
                             
                             const writable = await handle.createWritable();
-                            await writable.write(jsonStr);
+                            await writable.write(finalFileContent);
                             await writable.close();
                             
-                            showModal("Saved successfully!\n\nNote: You have granted write permission. Future auto-saves will overwrite this specific file automatically.\n(I would recommend putting this on a USB! If not, click files app, drag save to Google Drive, it should work, just keep checking to make sure it doesn't delete!)");
+                            // SIMPLIFIED MODAL (Since note is now on screen)
+                            showModal("Saved successfully!<br><br>You have granted write permission. Future auto-saves will overwrite this file automatically every minute.");
                             return;
                         }
                     } catch (err) {
@@ -1772,7 +1793,7 @@ document.documentElement.setAttribute('data-theme', theme);
                 }
 
                 // 2. Fallback: Standard Download (Creates copies if file exists)
-                const blob = new Blob([jsonStr], { type: 'application/json' });
+                const blob = new Blob([finalFileContent], { type: 'application/json' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
@@ -1782,10 +1803,10 @@ document.documentElement.setAttribute('data-theme', theme);
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
                 
-                if (!isAuto) showModal("Exported as download!\n\n(Browser may create duplicates like 'starlight_save (1).json' unless you use a browser that supports File System Access or manually overwrite)");
+                if (!isAuto) showModal("Exported as download!<br><br>Browser may create duplicates like 'starlight_save (1).json' unless you use a browser that supports File System Access (Chrome/Edge on PC).");
             };
 
-            // UPDATED: Import Logic to handle Full Backups
+            // UPDATED: Import Logic to handle Full Backups & Base64 Decoding
             const handleImportData = (event) => {
                 const file = event.target.files[0];
                 if (!file) return;
@@ -1793,8 +1814,14 @@ document.documentElement.setAttribute('data-theme', theme);
                 const reader = new FileReader();
                 reader.onload = (e) => {
                     try {
-                        const parsed = JSON.parse(e.target.result);
+                        let parsed = JSON.parse(e.target.result);
                         
+                        // DECODE IF PROTECTED
+                        if (parsed.protected && parsed.payload) {
+                            const decodedJson = decodeURIComponent(escape(atob(parsed.payload)));
+                            parsed = JSON.parse(decodedJson);
+                        }
+
                         let store = {};
                         let cookies = "";
 
@@ -1822,7 +1849,7 @@ document.documentElement.setAttribute('data-theme', theme);
                         showModal("Save loaded successfully! <br>Reloading page to apply changes...");
                         setTimeout(() => window.location.reload(), 1500);
                     } catch (err) {
-                        showModal("Error importing file. Make sure it is a valid JSON save file.");
+                        showModal("Error importing file. The save file might be corrupted or modified.");
                         console.error(err);
                     }
                 };
@@ -2116,11 +2143,53 @@ document.documentElement.setAttribute('data-theme', theme);
                     
                     // Auto Save Toggle
                     e('div', { className: 'settings-item' },
-                        e('label', null, 'Auto-Save (1 minute, Export file first to work!):'),
+                        e('label', null, 'Auto-Save:'),
                         renderSwitch('autosave-toggle-switch', autoSaveEnabled, () => handleToggle('autoSaveState', autoSaveEnabled, setAutoSaveEnabled), 'fas fa-save', 'fas fa-times')
                     ),
 
+                    // Save Indicator Toggle
+                    e('div', { className: 'settings-item' },
+                        e('label', null, 'Show Save Icon:'),
+                        renderSwitch('save-indicator-switch', showSaveIndicator, () => handleToggle('showSaveIndicator', showSaveIndicator, setShowSaveIndicator), 'fas fa-eye', 'fas fa-eye-slash')
+                    ),
+
                     e('div', { className: 'settings-item', style: { flexDirection: 'column', gap: '15px' } },
+                        
+                        // NEW STATIC NOTE (Moved from Modal)
+                        e('div', { style: { 
+                            background: 'var(--bg-color)', 
+                            border: '1px solid var(--line-color)', 
+                            borderRadius: '12px', 
+                            padding: '15px', 
+                            width: '100%',
+                            display: 'flex', 
+                            gap: '15px', 
+                            alignItems: 'flex-start', 
+                            textAlign: 'left', 
+                            boxShadow: 'var(--shadow-inset-light)'
+                        } },
+                            e('div', { style: { 
+                                background: 'var(--primary-color)', 
+                                color: 'white', 
+                                borderRadius: '50%', 
+                                width: '35px', 
+                                height: '35px', 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                justifyContent: 'center', 
+                                flexShrink: 0, 
+                                fontSize: '1.2em' 
+                            } }, e('i', { className: 'fas fa-lightbulb' })),
+                            e('div', { style: { fontSize: '0.9em', opacity: 0.9 } },
+                                e('strong', null, 'Starlight Tip:'), e('br'),
+                                'Auto-saves occur every ', e('strong', null, '1 minute'), '.', e('br'),
+                                'You must ', e('strong', null, 'Export Full Backup'), ' once to grant permission.', e('br'), e('br'),
+                                'If you are on a ', e('strong', null, 'Chromebook'), ', it is recommended to drag \'n drop the file into ', e('strong', null, 'My Drive'), '.', e('br'), e('br'),
+                                e('i', { className: 'fas fa-exclamation-triangle', style: { color: 'var(--text-bad)' } }), 
+                                ' Works for ', e('span', { style: { color: 'var(--primary-color)', fontWeight: 'bold' } }, 'StarlightGG Official'), ' games only.'
+                            )
+                        ),
+
                         e('button', { 
                             className: 'settings-btn', 
                             style: { width: '100%', display: 'flex', justifyContent: 'center', gap: '10px' },
@@ -2199,6 +2268,31 @@ e('div', { id: 'loading-screen', className: isLoading ? '' : 'fade-out' },
                 IframeOverlay,
                 e(Modal, { message: modalState.message, isActive: modalState.isActive, onClose: closeModal }),
                 e(PerformanceMonitor, { visible: statsEnabled }),
+
+                // NEW: Auto-Save Indicator
+                e('div', { 
+                    style: { 
+                        position: 'fixed', 
+                        top: '20px', 
+                        right: '20px', 
+                        background: 'var(--card-glass)', 
+                        backdropFilter: 'blur(10px)',
+                        padding: '10px 20px', 
+                        borderRadius: '20px', 
+                        display: isSaving ? 'flex' : 'none', 
+                        alignItems: 'center', 
+                        gap: '10px', 
+                        zIndex: 5000,
+                        boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
+                        border: '1px solid var(--primary-color)',
+                        color: 'var(--text-color)',
+                        animation: 'fadeUp 0.3s ease-out',
+                        pointerEvents: 'none' // Click through
+                    } 
+                },
+                    e('i', { className: 'fas fa-save', style: { color: 'var(--primary-color)' } }),
+                    e('span', { style: { fontSize: '0.9em', fontWeight: 'bold' } }, 'Auto-Saving...')
+                ),
 
                 // Footer
                 e('div', { id: 'bottom-bar', style: { 
