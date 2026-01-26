@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>StarlightGG</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" type="image/png" href="media/favicon.png">
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap");
+
+      :root {
+        --bg-light: #e0f7fa; 
+        --bg-medium: #ffffff;
+        --primary-color: #00bcd4;
+        --secondary-color: #00838f;
+        --text-color: #212121;
+        --text-secondary-color: #616161;
+        --text-placeholder-color: #9e9e9e;
+        --border-color: #bdbdbd;
+        --font-family: "Poppins", sans-serif;
+        --border-radius: 16px;
+        --shadow-light: #ffffff;
+        --shadow-dark: #b3d1d4;
+      }
+
+      body {
+        background-color: var(--bg-light);
+        color: var(--text-color);
+        font-family: var(--font-family);
+      }
+
+      .soft-ui {
+        border-radius: var(--border-radius);
+        background: var(--bg-medium);
+        box-shadow: 8px 8px 16px var(--shadow-dark), -8px -8px 16px var(--shadow-light);
+        transition: all 0.3s ease;
+      }
+      
+      .soft-ui-inset {
+        border-radius: var(--border-radius);
+        background: var(--bg-light);
+        box-shadow: inset 5px 5px 10px var(--shadow-dark), inset -5px -5px 10px var(--shadow-light);
+        transition: all 0.3s ease;
+      }
+
+      .soft-ui:hover {
+        transform: translateY(-2px);
+        box-shadow: 4px 4px 8px var(--shadow-dark), -4px -4px 8px var(--shadow-light);
+      }
+
+      .game-popup-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 9999;
+        backdrop-filter: blur(5px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .game-popup-container {
+        width: 95%;
+        height: 95%;
+        max-width: 1400px;
+        max-height: 900px;
+        background: var(--bg-medium);
+        border-radius: var(--border-radius);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+      }
+
+      .game-popup-header {
+        padding: 12px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: var(--bg-light);
+        border-bottom: 1px solid var(--border-color);
+      }
+
+      .game-popup-close, .game-popup-fullscreen {
+        background: var(--bg-light);
+        box-shadow: 3px 3px 6px var(--shadow-dark), -3px -3px 6px var(--shadow-light);
+        border: none;
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+      }
+
+      .game-popup-close:active, .game-popup-fullscreen:active {
+        box-shadow: inset 2px 2px 4px var(--shadow-dark), inset -2px -2px 4px var(--shadow-light);
+      }
+
+      .game-popup-loader {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 50px;
+        height: 50px;
+        border: 4px solid rgba(0, 188, 212, 0.2);
+        border-top-color: var(--primary-color);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin { to { transform: translate(-50%, -50%) rotate(360deg); } }
+      
+      select {
+        background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%2300bcd4%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E");
+        background-repeat: no-repeat;
+        background-position: right 1rem center;
+        background-size: 1em;
+      }
+    </style>
+  </head>
+
+  <body class="min-h-screen">
+    <div x-data="gamesApp()" x-init="init()">
+      <header class="p-6">
+        <img src="media/favicon.png" alt="Logo" class="w-16 h-16 mx-auto mb-4" />
+        <h1 class="text-4xl font-bold text-center">
+          <span style="color: var(--primary-color)">StarlightGG</span>
+        </h1>
+        <p class="text-center mt-2 text-sm text-gray-500">v1.1.0 (Advanced Filtering)</p>
+      </header>
+
+      <main class="container mx-auto p-4 max-w-7xl">
+        <div class="mb-6 flex flex-col md:flex-row gap-4">
+          <div class="flex-1">
+            <input
+              type="text"
+              x-model="searchQuery"
+              @input="applyFilters()"
+              :placeholder="searchPlaceholder"
+              class="soft-ui-inset w-full px-4 py-3 focus:outline-none transition"
+            />
+          </div>
+
+          <div class="w-full md:w-56">
+            <select 
+              x-model="filterCategory" 
+              @change="applyFilters()"
+              class="soft-ui-inset w-full px-4 py-3 focus:outline-none cursor-pointer appearance-none"
+            >
+              <option value="all">All Games</option>
+              <option value="top">🔥 Top Hits</option>
+              <option value="new">✨ New Releases</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="text-center text-gray-500 mb-6">
+            <span x-text="filteredGames.length"></span> games found
+        </div>
+
+        <div x-show="loading" class="text-center py-12">
+          <i class="fa-solid fa-spinner fa-spin text-4xl" style="color: var(--primary-color)"></i>
+          <p class="mt-4 text-gray-500">Syncing game libraries...</p>
+        </div>
+
+        <div x-show="!loading && filteredGames.length === 0" class="text-center py-12">
+          <i class="fa-solid fa-circle-exclamation text-4xl text-gray-400"></i>
+          <p class="mt-4 text-gray-500">No games found in this category.</p>
+        </div>
+
+        <div x-show="!loading && filteredGames.length > 0" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
+          <template x-for="(game, index) in filteredGames" :key="index">
+            <div class="soft-ui overflow-hidden cursor-pointer" @click="openGame(game)">
+              <div class="relative aspect-square bg-gray-200">
+                <img :src="getGameImage(game)" :alt="game.name" class="w-full h-full object-cover" loading="lazy" />
+                <div class="absolute top-2 left-2 flex flex-col gap-1">
+                  <template x-if="game.top"><span class="bg-red-500 text-white text-[10px] px-2 py-1 rounded font-bold shadow-sm">HOT</span></template>
+                  <template x-if="game.new"><span class="bg-green-500 text-white text-[10px] px-2 py-1 rounded font-bold shadow-sm">NEW</span></template>
+                </div>
+              </div>
+              <div class="p-3">
+                <p class="text-xs font-semibold text-center truncate" x-text="game.name"></p>
+              </div>
+            </div>
+          </template>
+        </div>
+      </main>
+
+      <div class="game-popup-overlay" x-show="popupOpen" x-cloak @click.self="closePopup()">
+        <div class="game-popup-container">
+          <div class="game-popup-header">
+            <div style="width: 36px"></div>
+            <div class="font-bold" x-text="currentGame?.name"></div>
+            <div class="flex gap-2">
+              <button class="game-popup-fullscreen" @click="refreshGame()"><i class="fa-solid fa-rotate-right"></i></button>
+              <button class="game-popup-fullscreen" @click="fullscreenPopup()"><i class="fa-solid fa-expand"></i></button>
+              <button class="game-popup-close" @click="closePopup()"><i class="fa-solid fa-times"></i></button>
+            </div>
+          </div>
+          <div class="relative flex-1 bg-black">
+            <div x-show="gameLoading" class="game-popup-loader"></div>
+            <iframe x-ref="gameFrame" class="w-full h-full border-none"></iframe>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const cdnUrl = "https://lunaar.org";
+      const PROXY_URL = "https://corsproxy.io/?";
+
+      function gamesApp() {
+        return {
+          allGames: [],
+          filteredGames: [],
+          searchQuery: "",
+          filterCategory: "all",
+          searchPlaceholder: "Loading...",
+          loading: true,
+          popupOpen: false,
+          gameLoading: false,
+          currentGame: null,
+
+          async init() {
+            try {
+              const [localRes, extraRes] = await Promise.allSettled([
+                fetch("./json/games.json").then(r => r.json()),
+                fetch("./json/extragames.json").then(r => r.json())
+              ]);
+
+              let combined = [];
+              if (localRes.status === 'fulfilled') combined = [...combined, ...localRes.value];
+              if (extraRes.status === 'fulfilled') combined = [...combined, ...extraRes.value];
+
+              this.allGames = combined.sort((a, b) => {
+                if (a.top && !b.top) return -1;
+                if (!a.top && b.top) return 1;
+                if (a.new && !b.new) return -1;
+                if (!a.new && b.new) return 1;
+                return a.name.localeCompare(b.name);
+              });
+
+              this.applyFilters();
+            } catch (e) {
+              console.error("Load failed", e);
+            } finally {
+              this.loading = false;
+            }
+          },
+
+          applyFilters() {
+            const query = this.searchQuery.toLowerCase();
+            this.filteredGames = this.allGames.filter(g => {
+              const matchesSearch = g.name.toLowerCase().includes(query);
+              let matchesCategory = true;
+              if (this.filterCategory === 'top') matchesCategory = g.top === true;
+              if (this.filterCategory === 'new') matchesCategory = g.new === true;
+              return matchesSearch && matchesCategory;
+            });
+            this.searchPlaceholder = `Search ${this.allGames.length} games...`;
+          },
+
+          getGameImage(game) {
+            if (game.image?.startsWith("http")) return game.image;
+            if (game.proxy) return `${cdnUrl}/media/games/${game.image}`;
+            const folder = game.url?.split("/")[0] || "";
+            return `${cdnUrl}/cdn/${folder}/${game.image}`;
+          },
+
+          async openGame(game) {
+            this.currentGame = game;
+            this.popupOpen = true;
+            this.gameLoading = true;
+            await this.$nextTick();
+            
+            let targetUrl = game.url;
+            if (!targetUrl.startsWith('http')) {
+               targetUrl = game.proxy ? targetUrl : `${cdnUrl}/cdn/${game.url}/`;
+            }
+            this.loadWithProxyLogic(targetUrl);
+          },
+
+          async loadWithProxyLogic(url) {
+            const frame = this.$refs.gameFrame;
+            
+            try {
+                // If it's a jsdelivr link, use direct write, otherwise proxy it
+                if (url.includes("jsdelivr")) {
+                    const res = await fetch(url);
+                    const html = await res.text();
+                    const frameDoc = frame.contentDocument || frame.contentWindow.document;
+                    frameDoc.open();
+                    frameDoc.write(html);
+                    frameDoc.close();
+                } else {
+                    const response = await fetch(PROXY_URL + encodeURIComponent(url));
+                    const html = await response.text();
+
+                    const frameDoc = frame.contentDocument || frame.contentWindow.document;
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+
+                    let base = doc.createElement('base');
+                    base.href = url;
+                    doc.head.prepend(base);
+
+                    frameDoc.open();
+                    frameDoc.write(doc.documentElement.innerHTML);
+                    frameDoc.close();
+
+                    frameDoc.querySelectorAll('a').forEach(link => {
+                        link.onclick = (e) => {
+                            if(link.href.startsWith('http')) {
+                                e.preventDefault();
+                                this.loadWithProxyLogic(link.href);
+                            }
+                        };
+                    });
+                }
+                this.gameLoading = false;
+            } catch (err) {
+                console.error("Proxy Load Error", err);
+                frame.src = PROXY_URL + encodeURIComponent(url);
+                this.gameLoading = false;
+            }
+          },
+
+          refreshGame() {
+            this.gameLoading = true;
+            let targetUrl = this.currentGame.url;
+            if (!targetUrl.startsWith('http')) {
+               targetUrl = `${cdnUrl}/cdn/${this.currentGame.url}/`;
+            }
+            this.loadWithProxyLogic(targetUrl);
+          },
+
+          closePopup() {
+            this.popupOpen = false;
+            this.$refs.gameFrame.src = "about:blank";
+          },
+
+          fullscreenPopup() {
+            this.$refs.gameFrame.requestFullscreen?.();
+          }
+        }
+      }
+    </script>
+  </body>
+</html>
