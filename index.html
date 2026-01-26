@@ -1073,6 +1073,8 @@ const PRESETS = [
             const [overlayEnabled, setOverlayEnabled] = useState(() => localStorage.getItem('overlayToggleState') === 'true');
             const [aboutBlankEnabled, setAboutBlankEnabled] = useState(() => localStorage.getItem('aboutBlankPopupState') === 'true');
             const [statsEnabled, setStatsEnabled] = useState(() => localStorage.getItem('statsToggleState') === 'true');
+            // NEW: Auto Save State
+            const [autoSaveEnabled, setAutoSaveEnabled] = useState(() => localStorage.getItem('autoSaveState') === 'true');
 
             // Game Loading State
             const [gameLoading, setGameLoading] = useState(false);
@@ -1706,6 +1708,87 @@ document.documentElement.setAttribute('data-theme', theme);
                  win.document.close();
             };
             
+            // --- DATA MANAGEMENT (Export/Import) ---
+            
+            // AUTO SAVE EFFECT (Runs every 5 minutes if enabled)
+            useEffect(() => {
+                let interval;
+                if (autoSaveEnabled) {
+                    interval = setInterval(() => {
+                        handleExportData(true); // true = silent auto-save
+                    }, 300000); // 5 Minutes (300,000 ms)
+                }
+                return () => clearInterval(interval);
+            }, [autoSaveEnabled]);
+
+            // UPDATED: Export Everything (LocalStorage + Cookies)
+            const handleExportData = (isAuto = false) => {
+                const data = {
+                    timestamp: new Date().toISOString(),
+                    type: 'full-backup',
+                    localStorage: { ...localStorage }, // Dumps EVERYTHING in storage
+                    cookies: document.cookie // Dumps accessible cookies
+                };
+
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                // Auto-save filenames are distinct so they don't overwrite manual saves easily in logic
+                a.download = `starlight-${isAuto ? 'autosave' : 'backup'}-${new Date().toISOString().slice(0, 10)}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                // Only show modal for manual saves to avoid interrupting gameplay
+                if (!isAuto) showModal("Full backup (Settings & Game Data) exported successfully! (I would recommend putting this on a USB! If not, click files app, drag save to Google Drive, it should work, just keep checking to make sure it doesn't delete!)");
+            };
+
+            // UPDATED: Import Logic to handle Full Backups
+            const handleImportData = (event) => {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const parsed = JSON.parse(e.target.result);
+                        
+                        let store = {};
+                        let cookies = "";
+
+                        // Detect format (New Full Backup vs Old Simple JSON)
+                        if (parsed.type === 'full-backup' || parsed.localStorage) {
+                            store = parsed.localStorage || {};
+                            cookies = parsed.cookies || "";
+                        } else {
+                            // Legacy format support
+                            store = parsed;
+                        }
+
+                        // 1. Restore LocalStorage
+                        Object.keys(store).forEach(key => {
+                            localStorage.setItem(key, store[key]);
+                        });
+
+                        // 2. Restore Cookies
+                        if (cookies) {
+                            cookies.split(';').forEach(c => {
+                                document.cookie = c.trim() + "; path=/; max-age=31536000"; // Set to expire in 1 year
+                            });
+                        }
+
+                        showModal("Save loaded successfully! <br>Reloading page to apply changes...");
+                        setTimeout(() => window.location.reload(), 1500);
+                    } catch (err) {
+                        showModal("Error importing file. Make sure it is a valid JSON save file.");
+                        console.error(err);
+                    }
+                };
+                reader.readAsText(file);
+            };
+
             const reloadGame = () => {
                  if(iframeState.src) {
                                        setGameLoading(true); // Start loading animation
@@ -1986,6 +2069,36 @@ document.documentElement.setAttribute('data-theme', theme);
                     e('div', { className: 'settings-item' },
                         e('label', null, 'Tab Protection:'),
                         renderSwitch('protection-toggle-switch', tabProtection, () => handleToggle('tabProtectionState', tabProtection, setTabProtection), 'fas fa-shield-alt', 'fas fa-times')
+                    ),
+
+                    // --- DATA MANAGEMENT SECTION ---
+                    e('div', { className: 'settings-group-title' }, 'Data Management'),
+                    
+                    // Auto Save Toggle
+                    e('div', { className: 'settings-item' },
+                        e('label', null, 'Auto-Save (5 minutes):'),
+                        renderSwitch('autosave-toggle-switch', autoSaveEnabled, () => handleToggle('autoSaveState', autoSaveEnabled, setAutoSaveEnabled), 'fas fa-save', 'fas fa-times')
+                    ),
+
+                    e('div', { className: 'settings-item', style: { flexDirection: 'column', gap: '15px' } },
+                        e('button', { 
+                            className: 'settings-btn', 
+                            style: { width: '100%', display: 'flex', justifyContent: 'center', gap: '10px' },
+                            onClick: () => handleExportData(false)
+                        }, e('i', { className: 'fas fa-file-export' }), 'Export Full Backup'),
+                        
+                        e('label', { 
+                            className: 'settings-btn', 
+                            style: { width: '100%', display: 'flex', justifyContent: 'center', gap: '10px', margin: 0, cursor: 'pointer' } 
+                        }, 
+                            e('i', { className: 'fas fa-file-import' }), 'Import Save Data',
+                            e('input', { 
+                                type: 'file', 
+                                accept: '.json', 
+                                style: { display: 'none' },
+                                onChange: handleImportData
+                            })
+                        )
                     )
                 )
             );
