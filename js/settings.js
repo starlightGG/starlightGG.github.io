@@ -4,7 +4,8 @@ const FADE_DURATION_CSS = `${FADE_DURATION_MS / 1000}s`;
 const LONG_PRESS_DURATION_MS = 800; 
 
 // --- GLOBAL VARIABLES ---
-let manualExitIntent = false;
+// Attached to window so index.html can modify it during imports/reloads
+window.manualExitIntent = false; 
 let timeoutHandle = null;
 
 // === HELPER: READ SETTINGS ===
@@ -141,7 +142,7 @@ function toggleContentVisibility(showContent) {
 
 function performRedirect() {
     clearTimeout(timeoutHandle);
-    manualExitIntent = true; 
+    window.manualExitIntent = true; 
     const savedUrl = localStorage.getItem('LINKTAB_KEY');
     const target = savedUrl ? savedUrl : 'https://google.com/';
     window.location.replace(target);
@@ -151,7 +152,8 @@ function performRedirect() {
 
 window.addEventListener('beforeunload', function(e) {
     const isProtected = getSetting('tabProtectionState', true); 
-    if (isProtected && !manualExitIntent) { 
+    // Check window.manualExitIntent instead of local variable
+    if (isProtected && !window.manualExitIntent) { 
         e.preventDefault(); 
         e.returnValue = ''; 
     }
@@ -193,7 +195,7 @@ document.addEventListener('keydown', (event) => {
             toggleContentVisibility(true); 
             event.preventDefault();
         }
-        if (event.key === ' ') {
+        if (event.key !== 'E') {
             performRedirect(); 
             event.preventDefault();
         }
