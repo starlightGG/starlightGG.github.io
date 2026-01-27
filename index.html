@@ -1846,8 +1846,17 @@ document.documentElement.setAttribute('data-theme', theme);
                             });
                         }
 
-                        showModal("Save loaded successfully! <br>Reload page to apply changes...");
-                        setTimeout(() => window.close(), 1500);
+                        showModal("Save loaded successfully! <br>Reloading page to apply changes...");
+                        
+                        // BYPASS TAB PROTECTION: Signal to settings.js that this exit is intentional
+                        if (typeof window.manualExitIntent !== 'undefined') {
+                            window.manualExitIntent = true;
+                        } else {
+                             // Fallback if settings.js isn't loaded yet or variables differ
+                             window.manualExitIntent = true; 
+                        }
+
+                        setTimeout(() => window.location.replace("/"), 1500);
                     } catch (err) {
                         showModal("Error importing file. The save file might be corrupted or modified.");
                         console.error(err);
