@@ -2120,7 +2120,7 @@ document.documentElement.setAttribute('data-theme', theme);
                             e('i', { 
                                 className: 'fas fa-question-circle', 
                                 style: { cursor: 'pointer', opacity: 0.7 },
-                                onClick: () => showModal("When enabled, switching tabs will instantly redirect this page to a decoy URL (Google) to hide your activity.\n\n If not enabled, the overlay can hide page if state is on, when you go off page, the screen is white, you can click 'E' to show page or 'SpaceBar' to redirect to an decoy page.")
+                                onClick: () => showModal("When enabled, switching tabs will instantly redirect this page to a decoy URL (Google) to hide your activity.\n\n If not enabled, the overlay can hide page if state is on, when you go off page, the screen is white, you can click 'E' to show page or anything else besides 'E' to redirect to an decoy page.")
                             })
                         ),
                         renderSwitch('blur-toggle-switch', redirectEnabled, () => handleToggle('redirectToggleState', redirectEnabled, setRedirectEnabled), 'fas fa-location-arrow', 'fas fa-times')
