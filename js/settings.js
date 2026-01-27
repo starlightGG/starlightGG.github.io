@@ -194,8 +194,7 @@ document.addEventListener('keydown', (event) => {
         if (key === 'E') {
             toggleContentVisibility(true); 
             event.preventDefault();
-        }
-        if (event.key !== 'E') {
+        }else{
             performRedirect(); 
             event.preventDefault();
         }
