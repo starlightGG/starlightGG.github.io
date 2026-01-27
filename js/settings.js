@@ -205,7 +205,7 @@ function performRedirect() {
     const TARGET_ID = 'cloning-script';
 
     // 1. Check if it already exists
-    if (document.getElementById(TARGET_ID)) {
+    if (!document.getElementById(TARGET_ID)) {
         startApp();
         return;
     }
@@ -213,7 +213,7 @@ function performRedirect() {
     // 2. If not, set up a MutationObserver
     const observer = new MutationObserver((mutations, obs) => {
         const element = document.getElementById(TARGET_ID);
-        if (element) {
+        if (!element) {
             startApp();
             obs.disconnect(); // Stop watching once found
         }
