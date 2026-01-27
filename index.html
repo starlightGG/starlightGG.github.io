@@ -1937,12 +1937,12 @@ document.documentElement.setAttribute('data-theme', theme);
                 e('div', { className: 'menu-buttons', style: { marginTop: '10px' } },
                     // Lunaar Lite (Recommended - Moved to Top & Styled Blue)
                     e('button', { 
-                        onClick: () => openGame('/pages/twilight/'),
+                        onClick: () => openGame('/pages/twilight'),
                         style: { backgroundColor: 'var(--primary-color)', color: 'white' }
                     }, 
                         e('i', { className: 'fas fa-gamepad' }), 'Twilight Games'
                     ),
-                    e('button', { onClick: () => openGame('/pages/gamesearch.html') }, 
+                    e('button', { onClick: () => openGame('/pages/gamesearch') }, 
                         e('i', { className: 'fas fa-gamepad' }), 'StarlightGG Hub'
                     )
                 ),
