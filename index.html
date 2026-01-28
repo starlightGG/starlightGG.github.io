@@ -1078,6 +1078,9 @@ const PRESETS = [
             const [autoSaveEnabled, setAutoSaveEnabled] = useState(() => localStorage.getItem('autoSaveState') === 'true');
             // NEW: Save Indicator State
             const [showSaveIndicator, setShowSaveIndicator] = useState(() => localStorage.getItem('showSaveIndicator') !== 'false');
+            // NEW: Lag Reducer State
+            const [lagReducerEnabled, setLagReducerEnabled] = useState(() => localStorage.getItem('lagReducerState') === 'true');
+
             const [isSaving, setIsSaving] = useState(false);
 
             // Game Loading State
@@ -1584,6 +1587,64 @@ document.documentElement.setAttribute('data-theme', theme);
                 setActiveTab('home');
                 // Removed setFooterVisible(true) so the user's preference (hidden/shown) persists
             };
+
+            // --- LAG REDUCER LOGIC ---
+            useEffect(() => {
+                if (!lagReducerEnabled) return;
+                
+                let frameCount = 0;
+                let lastTime = performance.now();
+                let lowFpsStartTime = 0; // Timestamp when low FPS started
+                let animationFrameId;
+
+                const checkLag = () => {
+                    frameCount++;
+                    const now = performance.now();
+                    
+                    // Check every second
+                    if (now - lastTime >= 1000) {
+                        const fps = frameCount;
+                        frameCount = 0;
+                        lastTime = now;
+
+                        // Only count lag if tab is visible (prevent background throttling triggers)
+                        if (document.visibilityState === 'visible') {
+                            if (fps < 5) {
+                                // Start timer if not started
+                                if (lowFpsStartTime === 0) lowFpsStartTime = Date.now();
+                                
+                                const duration = Date.now() - lowFpsStartTime;
+                                
+                                if (duration > 10000) { // 10 seconds of < 5 FPS
+                                    if (iframeState.active) {
+                                        // Action 1: Exit Game
+                                        exitGame();
+                                        showModal("⚠️ <strong>Lag Protection Triggered!</strong><br><br>The game was exited because your FPS dropped below 5 for 10 seconds.");
+                                        // Reset timer to give menu a chance to recover
+                                        lowFpsStartTime = Date.now(); 
+                                    } else {
+                                        // Action 2: Window Close (If still lagging on menu)
+                                        showModal("⚠️ <strong>Critical Lag Detected!</strong><br>Browser unresponsive. Attempting to close tab...");
+                                        setTimeout(() => {
+                                            window.close();
+                                            // Fallback text if browser blocks window.close()
+                                            document.body.innerHTML = "<div style='color:white;text-align:center;padding:50px;'><h1>Extreme Lag Detected</h1><p>Please close this tab manually to prevent your device from freezing.</p></div>";
+                                        }, 1000);
+                                    }
+                                }
+                            } else {
+                                lowFpsStartTime = 0; // Reset if FPS recovers
+                            }
+                        } else {
+                            lowFpsStartTime = 0; // Reset if user tabs out
+                        }
+                    }
+                    animationFrameId = requestAnimationFrame(checkLag);
+                };
+                
+                animationFrameId = requestAnimationFrame(checkLag);
+                return () => cancelAnimationFrame(animationFrameId);
+            }, [lagReducerEnabled, iframeState.active]); // Dependencies: Re-run if setting toggled or game state changes
 
             // URL Cloak Logic
             const handleUrlCloak = async () => {
@@ -2108,6 +2169,17 @@ document.documentElement.setAttribute('data-theme', theme);
                     e('div', { className: 'settings-item' },
                         e('label', null, 'Show Stats:'),
                         renderSwitch('stats-toggle-switch', statsEnabled, () => handleToggle('statsToggleState', statsEnabled, setStatsEnabled), 'fas fa-chart-line', 'fas fa-times')
+                    ),
+                    e('div', { className: 'settings-item' },
+                        e('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
+                            e('label', null, 'Lag Reducer:'),
+                            e('i', { 
+                                className: 'fas fa-question-circle', 
+                                style: { cursor: 'pointer', opacity: 0.7 },
+                                onClick: () => showModal("<strong>Lag Reducer Protection</strong><br><br>If FPS drops below 5 for 10 seconds:<br>1. Exits the game.<br>2. If still lagging, closes the tab.")
+                            })
+                        ),
+                        renderSwitch('lag-reducer-switch', lagReducerEnabled, () => handleToggle('lagReducerState', lagReducerEnabled, setLagReducerEnabled), 'fas fa-tachometer-alt', 'fas fa-times')
                     ),
 
                     // --- SECURITY SECTION ---
