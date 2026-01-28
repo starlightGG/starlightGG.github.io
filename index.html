@@ -1588,88 +1588,80 @@ document.documentElement.setAttribute('data-theme', theme);
                 // Removed setFooterVisible(true) so the user's preference (hidden/shown) persists
             };
 
-            // --- LAG REDUCER LOGIC ---
+            // --- LAG REDUCER LOGIC (Aggressive setInterval Version) ---
             useEffect(() => {
                 if (!lagReducerEnabled) return;
                 
-                let frameCount = 0;
-                let lastTime = performance.now();
-                let lagAccumulator = 0; // Accumulates lag time (ms)
-                let animationFrameId;
+                let lastTime = Date.now();
+                let lagAccumulator = 0; 
 
-                // Reset timers when tabbing back in to prevent false positives
+                // Reset on visibility change to prevent false positives when tabbing out
                 const handleVisibilityChange = () => {
                     if (document.visibilityState === 'visible') {
-                        lastTime = performance.now();
-                        frameCount = 0;
+                        lastTime = Date.now();
                         lagAccumulator = 0;
                     }
                 };
                 document.addEventListener('visibilitychange', handleVisibilityChange);
 
-                const checkLag = () => {
-                    frameCount++;
-                    const now = performance.now();
+                // Use setInterval instead of requestAnimationFrame
+                // This runs independently of the screen refresh rate, making it more likely
+                // to catch lag even if the graphics card is frozen.
+                const intervalId = setInterval(() => {
+                    const now = Date.now();
                     const elapsed = now - lastTime;
-                    
-                    // Check every 1s OR if a massive freeze happened (elapsed > 1.5s)
-                    if (elapsed >= 1000) {
-                        const fps = (frameCount / elapsed) * 1000;
-                        
-                        // Reset interval counters
-                        frameCount = 0;
-                        lastTime = now;
+                    lastTime = now;
 
-                        // Only process if visible
-                        if (document.visibilityState === 'visible') {
-                            // NEW: Instant Trigger for Hard Freezes (> 4 seconds)
-                            // Triggers immediately if the browser hangs and wakes up, avoiding the accumulator reset issue.
-                            if (elapsed > 4000) {
+                    // Only process if visible
+                    if (document.visibilityState === 'visible') {
+                        
+                        // 1. HARD FREEZE DETECTION (Instant Trigger)
+                        // If the browser missed the 1s interval by a huge margin (> 8s total),
+                        // it means we just woke up from a freeze. We MUST keep this because
+                        // code cannot run *during* a 100% freeze.
+                        if (elapsed > 8000) {
+                            if (iframeState.active) {
+                                exitGame();
+                                showModal("⚠️ <strong>Freeze Detected!</strong><br><br>The game was exited because the browser froze for over 4 seconds.");
+                            } else {
+                                showModal("⚠️ <strong>Browser Freeze!</strong><br>Closing tab to prevent crash...");
+                                setTimeout(() => window.close(), 500);
+                            }
+                            lagAccumulator = 0;
+                            return;
+                        }
+
+                        // 2. LAG ACCUMULATION
+                        // If the 1000ms interval took longer than 2000ms, the CPU is struggling.
+                        if (elapsed > 2000) {
+                            lagAccumulator += elapsed;
+                            
+                            // Threshold: 8 seconds of struggle
+                            if (lagAccumulator > 8000) { 
                                 if (iframeState.active) {
                                     exitGame();
-                                    showModal("⚠️ <strong>Freeze Detected!</strong><br><br>The game was exited because the browser froze for over 4 seconds.");
+                                    showModal("⚠️ <strong>High Latency Trigger!</strong><br><br>Game exited to prevent a total browser crash.");
+                                    lagAccumulator = 0; 
                                 } else {
-                                    showModal("⚠️ <strong>Browser Freeze!</strong><br>Closing tab to prevent crash...");
+                                    showModal("⚠️ <strong>Critical Lag!</strong><br>Browser unresponsive. Closing tab...");
                                     setTimeout(() => window.close(), 500);
+                                    lagAccumulator = 0;
                                 }
-                                lagAccumulator = 0;
-                                return;
-                            }
-
-                            // Condition 1: Low FPS (< 5)
-                            // Condition 2: Minor Freeze (elapsed > 1500ms)
-                            if (fps < 5 || elapsed > 1500) {
-                                lagAccumulator += elapsed;
-                                
-                                // Threshold: 8 seconds (Total accumulated lag)
-                                if (lagAccumulator > 8000) { 
-                                    if (iframeState.active) {
-                                        exitGame();
-                                        showModal("⚠️ <strong>Lag Protection Triggered!</strong><br><br>Game exited due to sustained low FPS.");
-                                        lagAccumulator = 0; 
-                                    } else {
-                                        showModal("⚠️ <strong>Critical Lag!</strong><br>Browser unresponsive. Closing tab...");
-                                        setTimeout(() => window.close(), 500);
-                                        lagAccumulator = 0;
-                                    }
-                                }
-                            } else {
-                                // Recovered (Only reset if we didn't just have a massive freeze)
-                                lagAccumulator = 0;
                             }
                         } else {
+                            // Recovered
                             lagAccumulator = 0;
                         }
+                    } else {
+                        lagAccumulator = 0;
                     }
-                    animationFrameId = requestAnimationFrame(checkLag);
-                };
-                
-                animationFrameId = requestAnimationFrame(checkLag);
+                }, 1000); // Check every 1 second (Wall Clock Time)
+
                 return () => {
-                    cancelAnimationFrame(animationFrameId);
+                    clearInterval(intervalId);
                     document.removeEventListener('visibilitychange', handleVisibilityChange);
                 };
-            }, [lagReducerEnabled, iframeState.active]); // Dependencies: Re-run if setting toggled or game state changes
+            }, [lagReducerEnabled, iframeState.active]);
 
             // URL Cloak Logic
             const handleUrlCloak = async () => {
