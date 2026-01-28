@@ -1,6 +1,6 @@
 # <p align="center">✨ STARLIGHT GAMES ✨</p>
 <p align="center">
-  <img src="favicons/favicon.png" alt="Starlight Games Logo" width="600">
+  <img src="favicons/favicon.png" alt="Starlight Games Logo" width="200">
 </p>
 
 <p align="center">
