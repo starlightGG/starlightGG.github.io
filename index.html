@@ -1622,25 +1622,39 @@ document.documentElement.setAttribute('data-theme', theme);
 
                         // Only process if visible
                         if (document.visibilityState === 'visible') {
+                            // NEW: Instant Trigger for Hard Freezes (> 4 seconds)
+                            // Triggers immediately if the browser hangs and wakes up, avoiding the accumulator reset issue.
+                            if (elapsed > 4000) {
+                                if (iframeState.active) {
+                                    exitGame();
+                                    showModal("⚠️ <strong>Freeze Detected!</strong><br><br>The game was exited because the browser froze for over 4 seconds.");
+                                } else {
+                                    showModal("⚠️ <strong>Browser Freeze!</strong><br>Closing tab to prevent crash...");
+                                    setTimeout(() => window.close(), 500);
+                                }
+                                lagAccumulator = 0;
+                                return;
+                            }
+
                             // Condition 1: Low FPS (< 5)
-                            // Condition 2: Freeze detected (elapsed > 2000ms means we lost frames)
-                            if (fps < 5 || elapsed > 2000) {
+                            // Condition 2: Minor Freeze (elapsed > 1500ms)
+                            if (fps < 5 || elapsed > 1500) {
                                 lagAccumulator += elapsed;
                                 
-                                // Threshold: 8 seconds (Total lag time)
+                                // Threshold: 8 seconds (Total accumulated lag)
                                 if (lagAccumulator > 8000) { 
                                     if (iframeState.active) {
                                         exitGame();
-                                        showModal("⚠️ <strong>Lag Protection Triggered!</strong><br><br>Game exited due to extreme lag or freezing.");
+                                        showModal("⚠️ <strong>Lag Protection Triggered!</strong><br><br>Game exited due to sustained low FPS.");
                                         lagAccumulator = 0; 
                                     } else {
-                                        showModal("⚠️ <strong>Critical Freeze!</strong><br>Browser unresponsive. Closing tab...");
+                                        showModal("⚠️ <strong>Critical Lag!</strong><br>Browser unresponsive. Closing tab...");
                                         setTimeout(() => window.close(), 500);
                                         lagAccumulator = 0;
                                     }
                                 }
                             } else {
-                                // Recovered
+                                // Recovered (Only reset if we didn't just have a massive freeze)
                                 lagAccumulator = 0;
                             }
                         } else {
