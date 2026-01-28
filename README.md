@@ -4,10 +4,13 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/github/forks/starlightgg/starlightgg.github.io?style=for-the-badge&color=7dd3fc&labelColor=0f172a" alt="Fork">
-  <img src="https://img.shields.io/github/stars/starlightgg/starlightgg.github.io?style=for-the-badge&color=7dd3fc&labelColor=0f172a" alt="Stars">
+  <a href="https://github.com/starlightgg/starlightgg.github.io/fork">
+    <img src="https://img.shields.io/github/forks/starlightgg/starlightgg.github.io?label=Fork&style=for-the-badge&color=7dd3fc&labelColor=0f172a" alt="Real-time Forks">
+  </a>
+  <a href="https://github.com/starlightgg/starlightgg.github.io/stargazers">
+    <img src="https://img.shields.io/github/stars/starlightgg/starlightgg.github.io?label=Stars&style=for-the-badge&color=7dd3fc&labelColor=0f172a" alt="Real-time Stars">
+  </a>
 </p>
-
 <p align="center">
   <strong>The ultimate browser-based escape. Free. Fast. Fun.</strong>
 </p>
