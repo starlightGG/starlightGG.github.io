@@ -3,6 +3,7 @@
 <head>
       <script id="cloning-script" src="js/cloner.js"></script>
     <script src="js/settings.js"></script>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>StarlightGG | Free Games!</title>
@@ -1615,13 +1616,13 @@ document.documentElement.setAttribute('data-theme', theme);
                     if (document.visibilityState === 'visible') {
                         
                         // 1. HARD FREEZE DETECTION (Instant Trigger)
-                        // If the browser missed the 1s interval by a huge margin (> 8s total),
-                        // it means we just woke up from a freeze. We MUST keep this because
-                        // code cannot run *during* a 100% freeze.
-                        if (elapsed > 8000) {
+                        // If the browser missed the interval by a huge margin (4x expected),
+                        // it means we just woke up from a freeze.
+                        // CHECKING EVERY 500ms. If elapsed > 2000ms (2s), it's a freeze.
+                        if (elapsed > 2000) {
                             if (iframeState.active) {
                                 exitGame();
-                                showModal("⚠️ <strong>Freeze Detected!</strong><br><br>The game was exited because the browser froze for over 4 seconds.");
+                                showModal("⚠️ <strong>Freeze Detected!</strong><br><br>The game was exited because the browser froze for over 2 seconds.");
                             } else {
                                 showModal("⚠️ <strong>Browser Freeze!</strong><br>Closing tab to prevent crash...");
                                 setTimeout(() => window.close(), 500);
@@ -1631,12 +1632,12 @@ document.documentElement.setAttribute('data-theme', theme);
                         }
 
                         // 2. LAG ACCUMULATION
-                        // If the 1000ms interval took longer than 2000ms, the CPU is struggling.
-                        if (elapsed > 2000) {
+                        // If the 500ms interval took longer than 750ms (1.5x), the CPU is struggling.
+                        if (elapsed > 750) {
                             lagAccumulator += elapsed;
                             
-                            // Threshold: 8 seconds of struggle
-                            if (lagAccumulator > 8000) { 
+                            // Threshold: 5 seconds of struggle (Lowered from 8s)
+                            if (lagAccumulator > 5000) { 
                                 if (iframeState.active) {
                                     exitGame();
                                     showModal("⚠️ <strong>High Latency Trigger!</strong><br><br>Game exited to prevent a total browser crash.");
@@ -1648,13 +1649,14 @@ document.documentElement.setAttribute('data-theme', theme);
                                 }
                             }
                         } else {
-                            // Recovered
-                            lagAccumulator = 0;
+                            // Recovered - SLOWLY DECAY instead of instant reset
+                            // This catches "stuttering" performance (Lag -> Good -> Lag)
+                            lagAccumulator = Math.max(0, lagAccumulator - 500);
                         }
                     } else {
                         lagAccumulator = 0;
                     }
-                }, 1000); // Check every 1 second (Wall Clock Time)
+                }, 500); // Check every 0.5 second (Wall Clock Time) - Increased Frequency
 
                 return () => {
                     clearInterval(intervalId);
