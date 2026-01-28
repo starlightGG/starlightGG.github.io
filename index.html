@@ -1594,56 +1594,67 @@ document.documentElement.setAttribute('data-theme', theme);
                 
                 let frameCount = 0;
                 let lastTime = performance.now();
-                let lowFpsStartTime = 0; // Timestamp when low FPS started
+                let lagAccumulator = 0; // Accumulates lag time (ms)
                 let animationFrameId;
+
+                // Reset timers when tabbing back in to prevent false positives
+                const handleVisibilityChange = () => {
+                    if (document.visibilityState === 'visible') {
+                        lastTime = performance.now();
+                        frameCount = 0;
+                        lagAccumulator = 0;
+                    }
+                };
+                document.addEventListener('visibilitychange', handleVisibilityChange);
 
                 const checkLag = () => {
                     frameCount++;
                     const now = performance.now();
+                    const elapsed = now - lastTime;
                     
-                    // Check every second
-                    if (now - lastTime >= 1000) {
-                        const fps = frameCount;
+                    // Check every 1s OR if a massive freeze happened (elapsed > 1.5s)
+                    if (elapsed >= 1000) {
+                        const fps = (frameCount / elapsed) * 1000;
+                        
+                        // Reset interval counters
                         frameCount = 0;
                         lastTime = now;
 
-                        // Only count lag if tab is visible (prevent background throttling triggers)
+                        // Only process if visible
                         if (document.visibilityState === 'visible') {
-                            if (fps < 5) {
-                                // Start timer if not started
-                                if (lowFpsStartTime === 0) lowFpsStartTime = Date.now();
+                            // Condition 1: Low FPS (< 5)
+                            // Condition 2: Freeze detected (elapsed > 2000ms means we lost frames)
+                            if (fps < 5 || elapsed > 2000) {
+                                lagAccumulator += elapsed;
                                 
-                                const duration = Date.now() - lowFpsStartTime;
-                                
-                                if (duration > 10000) { // 10 seconds of < 5 FPS
+                                // Threshold: 8 seconds (Total lag time)
+                                if (lagAccumulator > 8000) { 
                                     if (iframeState.active) {
-                                        // Action 1: Exit Game
                                         exitGame();
-                                        showModal("⚠️ <strong>Lag Protection Triggered!</strong><br><br>The game was exited because your FPS dropped below 5 for 10 seconds.");
-                                        // Reset timer to give menu a chance to recover
-                                        lowFpsStartTime = Date.now(); 
+                                        showModal("⚠️ <strong>Lag Protection Triggered!</strong><br><br>Game exited due to extreme lag or freezing.");
+                                        lagAccumulator = 0; 
                                     } else {
-                                        // Action 2: Window Close (If still lagging on menu)
-                                        showModal("⚠️ <strong>Critical Lag Detected!</strong><br>Browser unresponsive. Attempting to close tab...");
-                                        setTimeout(() => {
-                                            window.close();
-                                            // Fallback text if browser blocks window.close()
-                                            document.body.innerHTML = "<div style='color:white;text-align:center;padding:50px;'><h1>Extreme Lag Detected</h1><p>Please close this tab manually to prevent your device from freezing.</p></div>";
-                                        }, 1000);
+                                        showModal("⚠️ <strong>Critical Freeze!</strong><br>Browser unresponsive. Closing tab...");
+                                        setTimeout(() => window.close(), 500);
+                                        lagAccumulator = 0;
                                     }
                                 }
                             } else {
-                                lowFpsStartTime = 0; // Reset if FPS recovers
+                                // Recovered
+                                lagAccumulator = 0;
                             }
                         } else {
-                            lowFpsStartTime = 0; // Reset if user tabs out
+                            lagAccumulator = 0;
                         }
                     }
                     animationFrameId = requestAnimationFrame(checkLag);
                 };
                 
                 animationFrameId = requestAnimationFrame(checkLag);
-                return () => cancelAnimationFrame(animationFrameId);
+                return () => {
+                    cancelAnimationFrame(animationFrameId);
+                    document.removeEventListener('visibilitychange', handleVisibilityChange);
+                };
             }, [lagReducerEnabled, iframeState.active]); // Dependencies: Re-run if setting toggled or game state changes
 
             // URL Cloak Logic
@@ -2037,13 +2048,13 @@ document.documentElement.setAttribute('data-theme', theme);
             const LinksContent = e('div', { id: 'links-content', className: `menu-tab-content ${activeTab === 'links' ? 'active' : ''}` },
                 e(PageHeader, { title: 'Utilities', onBack: () => setActiveTab('home') }),
                 e('div', { className: 'menu-buttons' },
-                    e('button', { onClick: () => window.open('pages/chat.html') }, 
+                    e('button', { onClick: () => window.open('/pages/chat.html') }, 
                         e('i', { className: 'fas fa-comments' }), 'Chat'
                     ),
-                    e('button', { onClick: () => openGame('pages/playlist.html') }, 
+                    e('button', { onClick: () => openGame('/pages/playlist.html') }, 
                          e('i', { className: 'fas fa-music' }), 'Playlist'
                     ),
-                    e('button', { onClick: () => openGame('pages/diagnostic') }, 
+                    e('button', { onClick: () => openGame('/pages/diagnostic') }, 
                          e('i', { className: 'fas fa-chart-bar' }), 'Diagnostics'
                     ),
                     e('button', { onClick: () => window.location.href = '/pages/terms.html' }, 
@@ -2057,7 +2068,7 @@ document.documentElement.setAttribute('data-theme', theme);
                          e('i', { className: 'fas fa-dollar' }), 'Starlight Crypto'
                     ),
                     */
-                    e('button', { onClick: () => window.open('pages/aihelper.html') }, 
+                    e('button', { onClick: () => window.open('/pages/aihelper.html') }, 
                          e('i', { className: 'fas fa-robot' }), 'AI Helper'
                     ),
                      e('button', { onClick: () => openGame('/pages/status') }, 
