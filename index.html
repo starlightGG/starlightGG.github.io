@@ -1612,17 +1612,24 @@ document.documentElement.setAttribute('data-theme', theme);
                     const elapsed = now - lastTime;
                     lastTime = now;
 
+                    // NEW: Skip detection if the game is currently loading
+                    // This prevents the natural lag spike during game load from killing the iframe.
+                    if (gameLoading) {
+                        lagAccumulator = 0;
+                        return;
+                    }
+
                     // Only process if visible
                     if (document.visibilityState === 'visible') {
                         
                         // 1. HARD FREEZE DETECTION (Instant Trigger)
-                        // USER REQUEST: "If instantly hits 0, do it"
-                        // Threshold lowered to 900ms. Since interval is 500ms, any gap > 900ms 
-                        // implies the main thread was blocked for ~400ms+, effectively 0 FPS.
-                        if (elapsed > 900) {
+                        // UPDATED: Sensitivity Reduced (Balanced).
+                        // Checks every 500ms. If elapsed > 2000ms, it means the browser hung for 1.5s.
+                        // This avoids false positives from small stutters.
+                        if (elapsed > 2000) {
                             if (iframeState.active) {
                                 exitGame();
-                                showModal("⚠️ <strong>0 FPS Detected!</strong><br><br>The game was exited because 0 FPS (Freeze) was detected.");
+                                showModal("⚠️ <strong>Freeze Detected!</strong><br><br>The game was exited because the browser froze (> 1.5s).");
                             } else {
                                 showModal("⚠️ <strong>Browser Freeze!</strong><br>Closing tab to prevent crash...");
                                 setTimeout(() => window.close(), 500);
@@ -1632,12 +1639,12 @@ document.documentElement.setAttribute('data-theme', theme);
                         }
 
                         // 2. LAG ACCUMULATION
-                        // If the 500ms interval took longer than 750ms (1.5x), the CPU is struggling.
+                        // If the 500ms interval took longer than 750ms (1.5x), we are lagging.
                         if (elapsed > 750) {
                             lagAccumulator += elapsed;
                             
-                            // Threshold: 5 seconds of struggle (Lowered from 8s)
-                            if (lagAccumulator > 5000) { 
+                            // Threshold: 8 seconds of continuous struggle (Standard)
+                            if (lagAccumulator > 8000) { 
                                 if (iframeState.active) {
                                     exitGame();
                                     showModal("⚠️ <strong>High Latency Trigger!</strong><br><br>Game exited to prevent a total browser crash.");
@@ -1649,20 +1656,19 @@ document.documentElement.setAttribute('data-theme', theme);
                                 }
                             }
                         } else {
-                            // Recovered - SLOWLY DECAY instead of instant reset
-                            // This catches "stuttering" performance (Lag -> Good -> Lag)
+                            // Recovered - Decay slower for stability
                             lagAccumulator = Math.max(0, lagAccumulator - 500);
                         }
                     } else {
                         lagAccumulator = 0;
                     }
-                }, 500); // Check every 0.5 second (Wall Clock Time) - Increased Frequency
+                }, 500); // Check every 0.5 second (500ms) - BALANCED
 
                 return () => {
                     clearInterval(intervalId);
                     document.removeEventListener('visibilitychange', handleVisibilityChange);
                 };
-            }, [lagReducerEnabled, iframeState.active]);
+            }, [lagReducerEnabled, iframeState.active, gameLoading]); // Added gameLoading dependency
 
             // URL Cloak Logic
             const handleUrlCloak = async () => {
