@@ -159,19 +159,25 @@ function startApp() {
         }
     });
 
-    document.addEventListener('keydown', (event) => {
-        const overlay = document.getElementById('offscreen-overlay');
-        if (overlay && getComputedStyle(overlay).display === 'flex') {
-            const key = event.key.toUpperCase();
-            if (key === 'E') {
-                toggleContentVisibility(true); 
-                event.preventDefault();
-            } else {
-                performRedirect(); 
-                event.preventDefault();
-            }
+document.addEventListener('keydown', (event) => {
+    const overlay = document.getElementById('offscreen-overlay');
+    
+    // Regex allows A-Z, a-z, and a literal space
+    const isLetterOrSpace = /^[a-zA-Z ]$/.test(event.key);
+
+    if (overlay && getComputedStyle(overlay).display === 'flex' && isLetterOrSpace) {
+        const key = event.key.toUpperCase();
+        
+        if (key === 'E' || event.key === ' ') {
+            toggleContentVisibility(true); 
+            event.preventDefault();
+        } else {
+            performRedirect(); 
+            event.preventDefault();
         }
-    });
+    }
+});
+
 }
 
 // === CORE FUNCTIONS (Hoisted) ===
