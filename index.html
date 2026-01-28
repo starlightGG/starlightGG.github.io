@@ -1616,13 +1616,13 @@ document.documentElement.setAttribute('data-theme', theme);
                     if (document.visibilityState === 'visible') {
                         
                         // 1. HARD FREEZE DETECTION (Instant Trigger)
-                        // If the browser missed the interval by a huge margin (4x expected),
-                        // it means we just woke up from a freeze.
-                        // CHECKING EVERY 500ms. If elapsed > 2000ms (2s), it's a freeze.
-                        if (elapsed > 2000) {
+                        // USER REQUEST: "If instantly hits 0, do it"
+                        // Threshold lowered to 900ms. Since interval is 500ms, any gap > 900ms 
+                        // implies the main thread was blocked for ~400ms+, effectively 0 FPS.
+                        if (elapsed > 900) {
                             if (iframeState.active) {
                                 exitGame();
-                                showModal("⚠️ <strong>Freeze Detected!</strong><br><br>The game was exited because the browser froze for over 2 seconds.");
+                                showModal("⚠️ <strong>0 FPS Detected!</strong><br><br>The game was exited because 0 FPS (Freeze) was detected.");
                             } else {
                                 showModal("⚠️ <strong>Browser Freeze!</strong><br>Closing tab to prevent crash...");
                                 setTimeout(() => window.close(), 500);
