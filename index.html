@@ -1633,6 +1633,8 @@ document.documentElement.setAttribute('data-theme', theme);
                             } else {
                                 showModal("⚠️ <strong>Browser Freeze!</strong><br>Closing tab to prevent crash...");
                                 setTimeout(() => window.close(), 500);
+                              window.manualExitIntent = false;
+
                             }
                             lagAccumulator = 0;
                             return;
