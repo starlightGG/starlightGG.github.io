@@ -1,29 +1,42 @@
-# <p align="center">✨ STARLIGHT GAMES ✨</p>
+# <p align="center">STARLIGHTGG</p>
 <p align="center">
-  <img src="favicons/favicon.png" alt="Starlight Games Logo" width="200">
+  <img src="favicons/favicon.png" alt="Starlight Games Logo" width="120">
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/github/forks/starlightgg/starlightgg.github.io?style=for-the-badge&color=7dd3fc&labelColor=0f172a" alt="Fork">
+  <img src="https://img.shields.io/github/stars/starlightgg/starlightgg.github.io?style=for-the-badge&color=7dd3fc&labelColor=0f172a" alt="Stars">
 </p>
 
 <p align="center">
   <strong>The ultimate browser-based escape. Free. Fast. Fun.</strong>
 </p>
 
-
 ---
 
 ## 🚀 Mission Control
 Starlight Games is a curated sanctuary for gamers seeking a quick break without the hassle. No installs, no accounts—just pure play. 
 
-> [!TIP]
-> **Bypass Notice:** Using a restricted network? Our [GitHub Pages link](https://starlightgg.github.io/) is optimized for accessibility in environments with strict content filters.
+---
+
+## 🕵️ Stealth & Settings
+We know visibility matters. Use these built-in features to customize your experience and maintain privacy.
+
+### 🎭 Cloaking Features
+* **About:Blank Cloak:** Open the portal in a clean `about:blank` window. This prevents the site URL from showing up in browser history or being detected by most third-party monitoring tools.
+* **Tab Masking:** Customize the **Tab Name** and **Favicon URL** in the settings menu. Disguise your gaming session as "Google Docs" or "Canvas" with one click.
+
+### ⚙️ How to Access
+1. Navigate to the **Settings** icon on the main site.
+2. Toggle **"Stealth Mode"** to enable the `about:blank` launcher.
+3. Use the **"Tab Cloaker"** input fields to set your custom alias.
 
 ---
 
 ## 🎮 The Arcade Floor
-Explore a hand-picked library designed for instant entertainment.
-
 | 🕹️ Pick-Up-and-Play | 🌐 100% Browser Based | 💎 Premium Quality |
 | :--- | :--- | :--- |
-| Jump right in with zero learning curve. | No downloads, no storage space, no lag. | Every game is hand-tested for maximum fun. |
+| Jump right in with zero learning curve. | No downloads or storage needed. | Hand-tested for maximum fun. |
 
 ### 🛸 Featured Categories
 * **Arcade Classics:** Timeless mechanics for the modern web.
@@ -33,9 +46,8 @@ Explore a hand-picked library designed for instant entertainment.
 ---
 
 ## 🛠️ Join the Crew
-This is a community-driven project! We’re always looking for new "Astronauts" to help improve the library.
+* **Found a Bug?** [Open an Issue](https://github.com/starlightgg/starlightgg.github.io/issues).
+* **Have a Game Idea?** Join the discussion.
+* **Devs:** Fork the repo and submit a PR to add your own games!
 
-* **Found a Bug?** [Open an Issue](https://github.com/starlightgg/starlightgg.github.io/issues) and we'll squash it.
-* **Have a Game Idea?** Join the discussion and let us know what's missing.
-* **Devs:** Pull Requests are always welcome! Let's build the best portal on GitHub.
-
+<p align="center">Built with by the StarlightGG Community</p>
