@@ -31,9 +31,21 @@ We know visibility matters. Use these built-in features to customize your experi
 
 ### ⚙️ How to Access
 1. Navigate to the **Settings** icon on the main site.
-2. Toggle **"Stealth Mode"** to enable the `about:blank` launcher.
+2. Toggle **"About:Blank Popup"** to enable the `about:blank` launcher.
 3. Use the **"Tab Cloaker"** input fields to set your custom alias.
 
+## 🔗 Features
+
+-   Over 1500 games
+-   Easy to use website
+-   Easy to deploy using a proxy
+-   Customizable background
+-   Proxy
+-   Chat Bots
+-   Website chat
+-   Computer Diagnostics
+-   Saving Mechanics
+-   And More...
 ---
 
 ## 🎮 The Arcade Floor
