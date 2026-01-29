@@ -1080,6 +1080,9 @@ const PRESETS = [
             const [showSaveIndicator, setShowSaveIndicator] = useState(() => localStorage.getItem('showSaveIndicator') !== 'false');
             // NEW: Lag Reducer State
             const [lagReducerEnabled, setLagReducerEnabled] = useState(() => localStorage.getItem('lagReducerState') === 'true');
+            
+            // NEW: Track Linked Filename
+            const [saveFileName, setSaveFileName] = useState(null);
 
             const [isSaving, setIsSaving] = useState(false);
 
@@ -1636,13 +1639,12 @@ document.documentElement.setAttribute('data-theme', theme);
                     if (document.visibilityState === 'visible') {
                         
                         // 1. HARD FREEZE DETECTION (Instant Trigger)
-                        // UPDATED: Sensitivity Reduced (Balanced).
-                        // Checks every 500ms. If elapsed > 2000ms, it means the browser hung for 1.5s.
-                        // This avoids false positives from small stutters.
-                        if (elapsed > 2000) {
+                        // UPDATED: Threshold increased to 5 seconds (User Request: "freeze is 5")
+                        // Checks every 500ms. If elapsed > 5000ms, it means the browser hung for ~4.5s+
+                        if (elapsed > 5000) {
                             if (iframeState.active) {
                                 exitGame();
-                                showModal("⚠️ <strong>Freeze Detected!</strong><br><br>The game was exited because the browser froze (> 1.5s).");
+                                showModal("⚠️ <strong>Freeze Detected!</strong><br><br>The game was exited because the browser froze for > 5 seconds.");
                             } else {
                                 showModal("⚠️ <strong>Browser Freeze!</strong><br>Closing tab to prevent crash...");
                                 setTimeout(() => window.close(), 500);
@@ -1658,8 +1660,9 @@ document.documentElement.setAttribute('data-theme', theme);
                         if (elapsed > 750) {
                             lagAccumulator += elapsed;
                             
-                            // Threshold: 8 seconds of continuous struggle (Standard)
-                            if (lagAccumulator > 8000) { 
+                            // Threshold: 2.5 seconds of continuous struggle
+                            // User Request: "sustain lag 2.5"
+                            if (lagAccumulator > 2500) { 
                                 if (iframeState.active) {
                                     exitGame();
                                     showModal("⚠️ <strong>High Latency Trigger!</strong><br><br>Game exited to prevent a total browser crash.");
@@ -1828,8 +1831,12 @@ document.documentElement.setAttribute('data-theme', theme);
                 return () => clearInterval(interval);
             }, [autoSaveEnabled]);
 
-            // UPDATED: Export Logic with File System Access API (True Overwrite)
-            const handleExportData = async (isAuto = false) => {
+            // UPDATED: Export Logic to support Manual "Quick Save"
+            // arg can be boolean (isAuto) OR object { isAuto, forceLink }
+            const handleExportData = async (arg = false) => {
+                const isAuto = typeof arg === 'boolean' ? arg : (arg.isAuto || false);
+                const forceLink = typeof arg === 'object' && arg.forceLink; // New flag for manual Quick Save
+
                 // TRIGGER INDICATOR IF AUTO-SAVE
                 if (isAuto && showSaveIndicator) {
                     setIsSaving(true);
@@ -1844,7 +1851,6 @@ document.documentElement.setAttribute('data-theme', theme);
                 };
                 
                 // 1. ENCODE DATA (Base64) to prevent tampering/cheating
-                // We use encodeURIComponent to handle special characters (emojis, etc.) correctly before base64
                 const rawJson = JSON.stringify(data);
                 const encodedData = btoa(unescape(encodeURIComponent(rawJson)));
                 
@@ -1858,14 +1864,20 @@ document.documentElement.setAttribute('data-theme', theme);
                 // 1. Try File System Access API (True Overwrite)
                 if ('showSaveFilePicker' in window) {
                     try {
-                        if (isAuto && fileHandleRef.current) {
-                            // Auto-save to existing handle
+                        // Condition: Auto-save OR Manual Quick Save (forceLink)
+                        if ((isAuto || forceLink) && fileHandleRef.current) {
+                            // Write to existing handle
                             const writable = await fileHandleRef.current.createWritable();
                             await writable.write(finalFileContent);
                             await writable.close();
+                            
+                            // If it was a manual click, show confirmation
+                            if (forceLink) {
+                                showModal(`Saved to <b>${saveFileName}</b> successfully!`);
+                            }
                             return; 
                         } else if (!isAuto) {
-                            // Manual Save - Open Picker
+                            // Manual Save - Open Picker (Save As...)
                             const options = {
                                 suggestedName: 'starlight_save.json',
                                 types: [{
@@ -1875,28 +1887,32 @@ document.documentElement.setAttribute('data-theme', theme);
                             };
                             const handle = await window.showSaveFilePicker(options);
                             fileHandleRef.current = handle; // Store handle for future auto-saves
-                            
+                            setSaveFileName(handle.name); // Update UI with filename
+
                             const writable = await handle.createWritable();
                             await writable.write(finalFileContent);
                             await writable.close();
                             
-                            // SIMPLIFIED MODAL (Since note is now on screen)
-                            showModal("Saved successfully!<br><br>You have granted write permission. Future auto-saves will overwrite this file automatically every minute.");
+                            showModal(`Linked to: <b>${handle.name}</b><br><br>Future auto-saves will overwrite this file automatically every minute.`);
                             return;
                         }
                     } catch (err) {
                         // Ignore AbortError (User cancelled)
                         if (err.name === 'AbortError') return;
                         console.error("FS API Error:", err);
-                        // If error (not abort), fall through to download method
+                        
+                        // NEW: If this was a background auto-save (isAuto) that failed (e.g. permission denied),
+                        // DO NOT fall back to download. This prevents spamming the downloads folder.
+                        if (isAuto && fileHandleRef.current) return;
                     }
                 }
 
-                // 2. Fallback: Standard Download (Creates copies if file exists)
+                // 2. Fallback: Standard Download
                 const blob = new Blob([finalFileContent], { type: 'application/json' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
+                // Force .json extension if not present (though hardcoded here, it guarantees it)
                 a.download = 'starlight_save.json';
                 document.body.appendChild(a);
                 a.click();
@@ -1904,6 +1920,38 @@ document.documentElement.setAttribute('data-theme', theme);
                 URL.revokeObjectURL(url);
                 
                 if (!isAuto) showModal("Exported as download!<br><br>Browser may create duplicates like 'starlight_save (1).json' unless you use a browser that supports File System Access (Chrome/Edge on PC).");
+            };
+
+            // NEW: Select File Logic (Uses Open Picker instead of Save Picker)
+            const handleSelectAutoSaveFile = async () => {
+                if ('showOpenFilePicker' in window) {
+                    try {
+                        // Uses "Open" dialog to pick existing file
+                        const [handle] = await window.showOpenFilePicker({
+                            types: [{
+                                description: 'Starlight Save File',
+                                accept: { 'application/json': ['.json'] },
+                            }],
+                            multiple: false
+                        });
+                        
+                        fileHandleRef.current = handle;
+                        setSaveFileName(handle.name);
+                        
+                        // We trigger an auto-save immediately to establish the write permission
+                        // and ensure the file is valid/writable.
+                        await handleExportData(true);
+                        
+                        showModal(`Linked to: <b>${handle.name}</b><br><br>Future auto-saves will overwrite this file.<br><br><span style="color:var(--text-bad);font-size:0.9em;">Warning: This overwrites the selected file with your current data immediately.</span>`);
+                    } catch (err) {
+                        if (err.name !== 'AbortError') {
+                            console.error("File selection failed:", err);
+                            showModal("Error selecting file. Your browser might not support this feature.");
+                        }
+                    }
+                } else {
+                    showModal("Your browser does not support the File System Access API (needed to link files).<br>Please use Chrome or Edge on Desktop.");
+                }
             };
 
             // UPDATED: Import Logic to handle Full Backups & Base64 Decoding
@@ -2075,32 +2123,40 @@ document.documentElement.setAttribute('data-theme', theme);
             // 3. UTILITIES
             const LinksContent = e('div', { id: 'links-content', className: `menu-tab-content ${activeTab === 'links' ? 'active' : ''}` },
                 e(PageHeader, { title: 'Utilities', onBack: () => setActiveTab('home') }),
-                e('div', { className: 'menu-buttons' },
+                
+                // Section 1: Status & Events
+                e('div', { className: 'settings-group-title', style: { width: '90%', maxWidth: '800px', marginTop: '20px' } }, 'Status & Events'),
+                e('div', { className: 'menu-buttons', style: { marginTop: '10px' } },
+                    e('button', { onClick: () => openGame('/pages/status') }, 
+                         e('i', { className: 'fas fa-wifi' }), 'Status'
+                    ),
+                    e('button', { onClick: () => openGame('/pages/events') }, 
+                         e('i', { className: 'fas fa-calendar-alt' }), 'Events'
+                    )
+                ),
+
+                // Section 2: Social
+                e('div', { className: 'settings-group-title', style: { width: '90%', maxWidth: '800px', marginTop: '30px' } }, 'Social'),
+                e('div', { className: 'menu-buttons', style: { marginTop: '10px' } },
                     e('button', { onClick: () => window.open('/pages/chat.html') }, 
                         e('i', { className: 'fas fa-comments' }), 'Chat'
                     ),
                     e('button', { onClick: () => openGame('/pages/playlist.html') }, 
                          e('i', { className: 'fas fa-music' }), 'Playlist'
-                    ),
+                    )
+                ),
+
+                // Section 3: System & Tools
+                e('div', { className: 'settings-group-title', style: { width: '90%', maxWidth: '800px', marginTop: '30px' } }, 'System & Tools'),
+                e('div', { className: 'menu-buttons', style: { marginTop: '10px' } },
                     e('button', { onClick: () => openGame('/pages/diagnostic') }, 
                          e('i', { className: 'fas fa-chart-bar' }), 'Diagnostics'
                     ),
-                    e('button', { onClick: () => window.location.href = '/pages/terms.html' }, 
-                         e('i', { className: 'fas fa-file-contract' }), 'Terms'
-                    ),
-                    e('button', { onClick: () => openGame('/pages/events') }, 
-                         e('i', { className: 'fas fa-calendar-alt' }), 'Events'
-                    ),
-                  /*
-                                      e('button', { onClick: () => openGame('/pages/crypto') }, 
-                         e('i', { className: 'fas fa-dollar' }), 'Starlight Crypto'
-                    ),
-                    */
                     e('button', { onClick: () => window.open('/pages/aihelper.html') }, 
                          e('i', { className: 'fas fa-robot' }), 'AI Helper'
                     ),
-                     e('button', { onClick: () => openGame('/pages/status') }, 
-                         e('i', { className: 'fas fa-wifi' }), 'Status'
+                    e('button', { onClick: () => window.location.href = '/pages/terms.html' }, 
+                         e('i', { className: 'fas fa-file-contract' }), 'Terms'
                     )
                 )
             );
@@ -2215,7 +2271,8 @@ document.documentElement.setAttribute('data-theme', theme);
                             e('i', { 
                                 className: 'fas fa-question-circle', 
                                 style: { cursor: 'pointer', opacity: 0.7 },
-                                onClick: () => showModal("<strong>Lag Reducer Protection</strong><br><br>If FPS drops below 5 for 10 seconds:<br>1. Exits the game.<br>2. If still lagging, closes the tab.")
+                                // UPDATED: Info Text to match new logic
+                                onClick: () => showModal("<strong>Lag Reducer Protection</strong><br><br>Prevents browser crashes by monitoring performance.<br><br><b>Triggers if:</b><br>1. Browser freezes for > 5s.<br>2. Sustained lag (low FPS) for 2.5s.<br><br><b>Action:</b><br>- Exits game immediately.<br>- If still frozen, attempts to close tab.")
                             })
                         ),
                         renderSwitch('lag-reducer-switch', lagReducerEnabled, () => handleToggle('lagReducerState', lagReducerEnabled, setLagReducerEnabled), 'fas fa-tachometer-alt', 'fas fa-times')
@@ -2309,6 +2366,52 @@ document.documentElement.setAttribute('data-theme', theme);
                                 ' Works for ', e('span', { style: { color: 'var(--primary-color)', fontWeight: 'bold' } }, 'StarlightGG Official'), ' games only.'
                             )
                         ),
+
+                        // NEW: Filename Display
+                        saveFileName && e('div', { 
+                            style: { 
+                                width: '100%', 
+                                textAlign: 'center', 
+                                fontSize: '0.9em', 
+                                color: 'var(--primary-color)', 
+                                fontWeight: 'bold',
+                                padding: '5px',
+                                background: 'rgba(76, 104, 255, 0.1)',
+                                borderRadius: '8px',
+                                border: '1px solid var(--primary-color)'
+                            } 
+                        }, e('i', { className: 'fas fa-link', style: { marginRight: '8px' } }), `Linked: ${saveFileName}`),
+
+                        // NEW: Quick Save Button (Only visible if a file is linked)
+                        saveFileName && e('button', { 
+                            className: 'settings-btn', 
+                            style: { 
+                                width: '100%', 
+                                display: 'flex', 
+                                justifyContent: 'center', 
+                                gap: '10px',
+                                background: 'var(--primary-color)',
+                                color: 'white',
+                                marginBottom: '5px'
+                            },
+                            onClick: () => handleExportData({ forceLink: true })
+                        }, e('i', { className: 'fas fa-save' }), `Quick Save to ${saveFileName}`),
+
+                        // NEW: Separate Selector Button (Functionally same as Export, but clearer purpose)
+                        e('button', { 
+                            className: 'settings-btn', 
+                            style: { 
+                                width: '100%', 
+                                display: 'flex', 
+                                justifyContent: 'center', 
+                                gap: '10px',
+                                background: 'var(--secondary-bg)', // Different style to distinguish
+                                color: 'var(--text-color)',
+                                border: '1px solid var(--line-color)'
+                            },
+                            // UPDATED: Calls the new Open Picker logic
+                            onClick: handleSelectAutoSaveFile
+                        }, e('i', { className: 'fas fa-file-signature' }), 'Select Save File'),
 
                         e('button', { 
                             className: 'settings-btn', 
