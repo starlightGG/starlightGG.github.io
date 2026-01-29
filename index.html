@@ -2124,15 +2124,9 @@ document.documentElement.setAttribute('data-theme', theme);
             const LinksContent = e('div', { id: 'links-content', className: `menu-tab-content ${activeTab === 'links' ? 'active' : ''}` },
                 e(PageHeader, { title: 'Utilities', onBack: () => setActiveTab('home') }),
                 
-                // Section 1: Status & Events
-                e('div', { className: 'settings-group-title', style: { width: '90%', maxWidth: '800px', marginTop: '20px' } }, 'Status & Events'),
-                e('div', { className: 'menu-buttons', style: { marginTop: '10px' } },
-                    e('button', { onClick: () => openGame('/pages/events') }, 
-                         e('i', { className: 'fas fa-calendar-alt' }), 'Events'
-                    )
-                ),
 
-                // Section 2: Social
+
+                // Section 1: Social
                 e('div', { className: 'settings-group-title', style: { width: '90%', maxWidth: '800px', marginTop: '30px' } }, 'Social'),
                 e('div', { className: 'menu-buttons', style: { marginTop: '10px' } },
                     e('button', { onClick: () => window.open('/pages/chat.html') }, 
@@ -2141,9 +2135,13 @@ document.documentElement.setAttribute('data-theme', theme);
                     e('button', { onClick: () => openGame('/pages/playlist.html') }, 
                          e('i', { className: 'fas fa-music' }), 'Playlist'
                     )
+                    e('button', { onClick: () => openGame('/pages/events') }, 
+                         e('i', { className: 'fas fa-calendar-alt' }), 'Events'
+                    )
+                ),
                 ),
 
-                // Section 3: System & Tools
+                // Section 2: System & Tools
                 e('div', { className: 'settings-group-title', style: { width: '90%', maxWidth: '800px', marginTop: '30px' } }, 'System & Tools'),
                 e('div', { className: 'menu-buttons', style: { marginTop: '10px' } },
                     e('button', { onClick: () => openGame('/pages/diagnostic') }, 
