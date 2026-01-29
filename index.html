@@ -2127,9 +2127,6 @@ document.documentElement.setAttribute('data-theme', theme);
                 // Section 1: Status & Events
                 e('div', { className: 'settings-group-title', style: { width: '90%', maxWidth: '800px', marginTop: '20px' } }, 'Status & Events'),
                 e('div', { className: 'menu-buttons', style: { marginTop: '10px' } },
-                    e('button', { onClick: () => openGame('/pages/status') }, 
-                         e('i', { className: 'fas fa-wifi' }), 'Status'
-                    ),
                     e('button', { onClick: () => openGame('/pages/events') }, 
                          e('i', { className: 'fas fa-calendar-alt' }), 'Events'
                     )
