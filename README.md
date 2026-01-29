@@ -1,16 +1,17 @@
-# <p align="center">STARLIGHTGG</p>
+# <p align="center">Starlight<span style="color: #7dd3fc;">GG</span></p>
 <p align="center">
   <img src="favicons/favicon.png" alt="Starlight Games Logo" width="120">
 </p>
 
 <p align="center">
-  <a href="https://github.com/starlightgg/starlightgg.github.io/fork">
-    <img src="https://img.shields.io/github/forks/starlightgg/starlightgg.github.io?label=Fork&style=for-the-badge&color=7dd3fc&labelColor=0f172a" alt="Real-time Forks">
+  <a href="https://github.com/starlightgg">
+    <img src="https://img.shields.io/badge/Organization-Starlight--GG-7dd3fc?style=for-the-badge&logo=github&labelColor=0f172a" alt="Organization">
   </a>
   <a href="https://github.com/starlightgg/starlightgg.github.io/stargazers">
     <img src="https://img.shields.io/github/stars/starlightgg/starlightgg.github.io?label=Stars&style=for-the-badge&color=7dd3fc&labelColor=0f172a" alt="Real-time Stars">
   </a>
 </p>
+
 <p align="center">
   <strong>The ultimate browser-based escape. Free. Fast. Fun.</strong>
 </p>
@@ -18,7 +19,7 @@
 ---
 
 ## 🚀 Mission Control
-Starlight Games is a curated sanctuary for gamers seeking a quick break without the hassle. No installs, no accounts—just pure play. 
+Starlight Games is a curated sanctuary for gamers seeking a quick break without the hassle. We are built for **privacy first**. No installs, no accounts—just pure play.
 
 ---
 
@@ -28,32 +29,32 @@ We know visibility matters. Use these built-in features to customize your experi
 ### 🎭 Cloaking Features
 * **About:Blank Cloak:** Open the portal in a clean `about:blank` window. This prevents the site URL from showing up in browser history or being detected by most third-party monitoring tools.
 * **Tab Masking:** Customize the **Tab Name** and **Favicon URL** in the settings menu. Disguise your gaming session as "Google Docs" or "Canvas" with one click.
+* **Panic Mode:** Automatic overlay/redirect when the tab is unfocused.
 
 ### ⚙️ How to Access
 1. Navigate to the **Settings** icon on the main site.
-2. Toggle **"About:Blank Popup"** to enable the `about:blank` launcher.
+2. Toggle **"About:Blank Popup"** to enable the launcher.
 3. Use the **"Tab Cloaker"** input fields to set your custom alias.
 
-## 🔗 Features
+---
 
--   Over 1500 games
--   Easy to use website
--   Easy to deploy using a proxy
--   Customizable background (Patterns)
--   Proxy
--   Chat Bots
--   Website chat
--   Computer Diagnostics
--   Lag Protection
--   Cloaking Mechanics
--   Stats for FPS or PING
--   Faster
--   Stronger
--   Less Stress on CPU
--   Overlay/Redirect when tab unfocused
--   More features
--   Saving Mechanics
--   And More...
+## 🔗 The Feature Suite
+
+We are faster, stronger, and put less stress on your CPU.
+
+- 🎮 **Over 1500 Games**
+- ⚡ **Lag Protection** & Low CPU Usage
+- 💻 **Computer Diagnostics** (FPS/Ping Stats)
+- 🤖 **AI Chat Bots** & Website Chat
+- 🛡️ **Easy Proxy Deployment**
+- 🎨 **Customizable Backgrounds** (Patterns)
+- 💾 **Saving Mechanics** (JSON download)
+- 🏃 **Overlay/Redirect** when tab unfocused
+- 🌐 **Easy to use website**
+- 📊 **Stats for FPS or PING**
+- 🔏 **Web Proxy**
+- ➕ **And more!**
+
 ---
 
 ## 🎮 The Arcade Floor
@@ -68,9 +69,11 @@ We know visibility matters. Use these built-in features to customize your experi
 
 ---
 
-## 🛠️ Join the Crew
+## 🛠️ Join the Organization
+We are doing this for the people who want privacy in mind.
+
 * **Found a Bug?** [Open an Issue](https://github.com/starlightgg/starlightgg.github.io/issues).
 * **Have a Game Idea?** Join the discussion.
 * **Devs:** Fork the repo and submit a PR to add your own games!
 
-<p align="center">Built with by the StarlightGG Community</p>
+<p align="center">Built with 💙 by the StarlightGG Community</p>
