@@ -641,7 +641,7 @@
         #CloakingAlert {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: var(--bg-color); z-index: 20000;
-            display:flex; /* Hidden by default, toggle with JS */
+            display:flex; /* Shown by default, toggle with JS */
             flex-direction: column; justify-content: center; align-items: center;
             color: var(--primary-color); font-size: 1.2em; font-weight: bold;
             font-family: var(--font-stack);
@@ -1533,22 +1533,35 @@ document.documentElement.setAttribute('data-theme', theme);
                             subscribeKey: subKey,
                             uuid: "user-" + Math.random()
                         });
-                        pubnub.subscribe({ channels: ['counter'], withPresence: true });
-                        
-                        const updateCount = () => {
-                             pubnub.hereNow({ channels: ['counter'], includeState: true }, (status, response) => {
-                                 if(response && response.channels && response.channels.counter) {
-                                     setOnlineCount(response.channels.counter.occupancy);
-                                 }
-                             });
-                        };
-                        
+
+                        // Add listeners first to catch subscription errors
                         pubnub.addListener({
+                            status: (s) => {
+                                if (s.error || s.category === "PNAccessDeniedCategory") {
+                                     setOnlineCount('Counter Offline');
+                                }
+                            },
                             presence: (p) => {
                                 if(p.occupancy) setOnlineCount(p.occupancy);
                                 else updateCount();
                             }
                         });
+
+                        pubnub.subscribe({ channels: ['counter'], withPresence: true });
+                        
+                        const updateCount = () => {
+                             pubnub.hereNow({ channels: ['counter'], includeState: true }, (status, response) => {
+                                 // Check for error in status (e.g. limit reached)
+                                 if (status.error) {
+                                     setOnlineCount('Counter Offline');
+                                     return;
+                                 }
+
+                                 if(response && response.channels && response.channels.counter) {
+                                     setOnlineCount(response.channels.counter.occupancy);
+                                 }
+                             });
+                        };
                         
                         updateCount(); 
                         const interval = setInterval(updateCount, 10000); 
@@ -1556,7 +1569,7 @@ document.documentElement.setAttribute('data-theme', theme);
 
                     } catch (e) {
                         console.error("PubNub Init Failed", e);
-                        setOnlineCount('Offline');
+                        setOnlineCount('Counter Offline');
                     }
                 };
                 setTimeout(fetchKeysAndInit, 1000);
