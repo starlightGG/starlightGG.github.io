@@ -24,3 +24,4 @@ Follow these steps to connect your website to external services.
 > [!CAUTION]
 > **Important:** This is a manual for developers. Make sure you have your `index.html` open in a code editor like VS Code before starting.
 > **Security:** Since this is a small project and doesn't have backend servers, please rotate your PubNub and GROQ key every now and then in order to not have locked keys!
+> ## Very recommended to delete this setup.md when deploying
