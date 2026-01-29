@@ -1,5 +1,5 @@
 <h1 align="center">
-  $\textbf{\textsf{Starlight}}\color{#7dd3fc}\textbf{\textsf{GG}}$
+  $\textsf{Starlight}\color{#7dd3fc}\textsf{GG}$
 </h1>
 <p align="center">
   <img src="favicons/favicon.png" alt="Starlight Games Logo" width="120">
