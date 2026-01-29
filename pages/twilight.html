@@ -8,211 +8,293 @@
     <link rel="icon" type="image/png" href="media/favicon.png">
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
     <style>
-      @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap");
-
+      /* --- CORE VARIABLES --- */
       :root {
-        --bg-light: #e0f7fa; 
-        --bg-medium: #ffffff;
-        --primary-color: #00bcd4;
-        --secondary-color: #00838f;
-        --text-color: #212121;
-        --text-secondary-color: #616161;
-        --text-placeholder-color: #9e9e9e;
-        --border-color: #bdbdbd;
-        --font-family: "Poppins", sans-serif;
-        --border-radius: 16px;
-        --shadow-light: #ffffff;
-        --shadow-dark: #b3d1d4;
+        /* Light Theme (Default) */
+        --bg-color: #e0e5ec;
+        --text-color: #4a5568;
+        --primary-color: #4c68ff;
+        --secondary-bg: #e0e5ec;
+        --danger-color: #ff4c4c;
+        
+        /* Neumorphic Shadows (Light) */
+        --shadow-outer: 9px 9px 16px rgb(163,177,198,0.6), -9px -9px 16px rgba(255,255,255, 0.5);
+        --shadow-inner: inset 6px 6px 10px 0 rgba(163,177,198, 0.7), inset -6px -6px 10px 0 rgba(255,255,255, 0.8);
+        
+        /* Button specific */
+        --btn-shadow: 6px 6px 10px 0 rgba(163,177,198, 0.7), -6px -6px 10px 0 rgba(255,255,255, 0.8);
+        --btn-shadow-active: inset 4px 4px 8px 0 rgba(163,177,198, 0.7), inset -4px -4px 8px 0 rgba(255,255,255, 0.8);
+
+        --border-radius: 20px;
+        --font-stack: 'Inter', sans-serif;
+      }
+
+      /* Dark Mode Overrides */
+      [data-theme="dark"] {
+        --bg-color: #212529;
+        --text-color: #e2e8f0;
+        --primary-color: #6c80ff;
+        --secondary-bg: #212529;
+        --danger-color: #ff6b6b;
+
+        /* Neumorphic Shadows (Dark) */
+        --shadow-outer: 7px 7px 15px rgba(0,0,0,0.5), -7px -7px 15px rgba(255,255,255,0.05);
+        --shadow-inner: inset 5px 5px 10px rgba(0,0,0,0.5), inset -5px -5px 10px rgba(255,255,255,0.05);
+        
+        --btn-shadow: 6px 6px 10px rgba(0,0,0,0.5), -6px -6px 10px rgba(255,255,255,0.05);
+        --btn-shadow-active: inset 4px 4px 8px rgba(0,0,0,0.5), inset -4px -4px 8px rgba(255,255,255,0.05);
       }
 
       body {
-        background-color: var(--bg-light);
+        background-color: var(--bg-color);
         color: var(--text-color);
-        font-family: var(--font-family);
+        font-family: var(--font-stack);
+        transition: background-color 0.3s ease, color 0.3s ease;
       }
 
-      .soft-ui {
-        border-radius: var(--border-radius);
-        background: var(--bg-medium);
-        box-shadow: 8px 8px 16px var(--shadow-dark), -8px -8px 16px var(--shadow-light);
-        transition: all 0.3s ease;
-      }
+      /* --- NEUMORPHIC UTILITY CLASSES --- */
       
-      .soft-ui-inset {
+      .neu-flat {
+        background: var(--bg-color);
+        box-shadow: var(--shadow-outer);
         border-radius: var(--border-radius);
-        background: var(--bg-light);
-        box-shadow: inset 5px 5px 10px var(--shadow-dark), inset -5px -5px 10px var(--shadow-light);
+        border: 1px solid transparent; 
         transition: all 0.3s ease;
       }
 
-      .soft-ui:hover {
-        transform: translateY(-2px);
-        box-shadow: 4px 4px 8px var(--shadow-dark), -4px -4px 8px var(--shadow-light);
+      .neu-flat:hover {
+        transform: translateY(-3px);
       }
 
-      .game-popup-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.5);
-        z-index: 9999;
-        backdrop-filter: blur(5px);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-
-      .game-popup-container {
-        width: 95%;
-        height: 95%;
-        max-width: 1400px;
-        max-height: 900px;
-        background: var(--bg-medium);
+      .neu-pressed {
+        background: var(--bg-color);
+        box-shadow: var(--shadow-inner);
         border-radius: var(--border-radius);
-        overflow: hidden;
-        display: flex;
-        flex-direction: column;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
-      }
-
-      .game-popup-header {
-        padding: 12px 20px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        background: var(--bg-light);
-        border-bottom: 1px solid var(--border-color);
-      }
-
-      .game-popup-close, .game-popup-fullscreen {
-        background: var(--bg-light);
-        box-shadow: 3px 3px 6px var(--shadow-dark), -3px -3px 6px var(--shadow-light);
         border: none;
-        width: 36px;
-        height: 36px;
-        border-radius: 8px;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.2s ease;
+        color: var(--text-color);
       }
 
-      .game-popup-close:active, .game-popup-fullscreen:active {
-        box-shadow: inset 2px 2px 4px var(--shadow-dark), inset -2px -2px 4px var(--shadow-light);
-      }
-
-      .game-popup-loader {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        width: 50px;
-        height: 50px;
-        border: 4px solid rgba(0, 188, 212, 0.2);
-        border-top-color: var(--primary-color);
+      /* Standard Button */
+      .neu-btn {
+        width: 45px; 
+        height: 45px;
         border-radius: 50%;
-        animation: spin 1s linear infinite;
+        background: var(--bg-color);
+        box-shadow: var(--btn-shadow);
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0; 
+        aspect-ratio: 1/1; 
+        color: var(--primary-color);
+        transition: all 0.2s ease;
+        cursor: pointer;
+        border: none; outline: none;
+      }
+      
+      /* Mini Button for Cards */
+      .neu-btn-sm {
+        width: 32px; 
+        height: 32px;
+        border-radius: 50%;
+        background: var(--bg-color);
+        box-shadow: var(--btn-shadow);
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0; 
+        aspect-ratio: 1/1;
+        font-size: 0.8rem;
+        color: var(--text-color);
+        transition: all 0.2s ease;
+        cursor: pointer;
+        border: none; outline: none;
+        z-index: 10;
       }
 
-      @keyframes spin { to { transform: translate(-50%, -50%) rotate(360deg); } }
-      
+      .neu-btn:active, .neu-btn.active, .neu-btn-sm:active {
+        box-shadow: var(--btn-shadow-active);
+        transform: scale(0.95);
+      }
+
+      .neu-btn-sm.active-fav {
+        color: #e91e63; /* Pink for favorites */
+        box-shadow: var(--btn-shadow-active);
+      }
+
+      .neu-btn-sm.danger:hover {
+        color: var(--danger-color);
+      }
+
       select {
-        background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%2300bcd4%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E");
+        background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%234c68ff%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E");
         background-repeat: no-repeat;
         background-position: right 1rem center;
         background-size: 1em;
       }
+
+      /* Popup System */
+      .popup-overlay {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.8);
+        z-index: 50;
+        backdrop-filter: blur(5px);
+        display: flex; align-items: center; justify-content: center;
+      }
+
+      .popup-content {
+        width: 95%; height: 90%;
+        background: var(--bg-color);
+        border-radius: var(--border-radius);
+        overflow: hidden;
+        display: flex; flex-direction: column;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      }
+
+      .loader {
+        border: 4px solid transparent;
+        border-top: 4px solid var(--primary-color);
+        border-radius: 50%;
+        width: 40px; height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto;
+      }
+      @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
   </head>
 
   <body class="min-h-screen">
     <div x-data="gamesApp()" x-init="init()">
-      <header class="p-6">
-        <img src="/media/favicon.png" alt="Logo" class="w-16 h-16 mx-auto mb-4" />
-        <h1 class="text-4xl font-bold text-center">
-          <span style="color: var(--primary-color)">StarlightGG</span>
-        </h1>
-        <p class="text-center mt-2 text-sm text-gray-500">v1.1.0 (Advanced Filtering)</p>
+      
+      <header class="p-8 relative">
+        <div class="absolute top-6 right-6">
+            <button @click="toggleTheme()" class="neu-btn" title="Toggle Theme">
+                <i class="fa-solid" :class="theme === 'dark' ? 'fa-sun' : 'fa-moon'"></i>
+            </button>
+        </div>
+
+        <div class="flex flex-col items-center justify-center">
+            <div class="neu-flat p-4 rounded-full mb-4" style="border-radius: 50%;">
+                <img src="/media/favicon.png" alt="Logo" class="w-12 h-12" />
+            </div>
+            <h1 class="text-4xl font-bold tracking-tight text-center">
+            Starlight<span style="color: var(--primary-color)">GG</span>
+            </h1>
+            <p class="mt-2 text-sm opacity-60 font-medium">Twilight Edition</p>
+        </div>
       </header>
 
-      <main class="container mx-auto p-4 max-w-7xl">
-        <div class="mb-6 flex flex-col md:flex-row gap-4">
-          <div class="flex-1">
+      <main class="container mx-auto px-6 pb-12 max-w-7xl">
+        <div class="mb-10 flex flex-col md:flex-row gap-6 items-center">
+          <div class="flex-1 w-full">
             <input
               type="text"
               x-model="searchQuery"
               @input="applyFilters()"
               :placeholder="searchPlaceholder"
-              class="soft-ui-inset w-full px-4 py-3 focus:outline-none transition"
+              class="neu-pressed w-full px-6 py-4 outline-none transition text-lg"
             />
           </div>
 
-          <div class="w-full md:w-56">
+          <div class="w-full md:w-64">
             <select 
               x-model="filterCategory" 
               @change="applyFilters()"
-              class="soft-ui-inset w-full px-4 py-3 focus:outline-none cursor-pointer appearance-none"
+              class="neu-flat w-full px-6 py-4 outline-none cursor-pointer appearance-none font-medium"
             >
               <option value="all">All Games</option>
+              <option value="recent">🕒 Recent Plays</option>
+              <option value="favorites">❤️ Favorites</option>
               <option value="top">🔥 Top Hits</option>
               <option value="new">✨ New Releases</option>
             </select>
           </div>
         </div>
 
-        <div class="text-center text-gray-500 mb-6">
-            <span x-text="filteredGames.length"></span> games found
+        <div class="text-center mb-8 opacity-50 text-sm font-semibold tracking-wide uppercase">
+            <span x-text="filteredGames.length"></span> titles available
         </div>
 
-        <div x-show="loading" class="text-center py-12">
-          <i class="fa-solid fa-spinner fa-spin text-4xl" style="color: var(--primary-color)"></i>
-          <p class="mt-4 text-gray-500">Syncing game libraries...</p>
+        <div x-show="loading" class="text-center py-20">
+          <div class="loader"></div>
+          <p class="mt-4 opacity-60 font-medium">Syncing Library...</p>
         </div>
 
-        <div x-show="!loading && filteredGames.length === 0" class="text-center py-12">
-          <i class="fa-solid fa-circle-exclamation text-4xl text-gray-400"></i>
-          <p class="mt-4 text-gray-500">No games found in this category.</p>
+        <div x-show="!loading && filteredGames.length === 0" class="text-center py-20">
+            <div class="neu-flat inline-flex p-6 rounded-full text-4xl opacity-40 mb-4" style="border-radius: 50%">
+                <i class="fa-solid fa-ghost"></i>
+            </div>
+            <p class="opacity-60 font-medium" x-text="getEmptyMessage()"></p>
         </div>
 
-        <div x-show="!loading && filteredGames.length > 0" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
+        <div x-show="!loading && filteredGames.length > 0" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-8">
           <template x-for="(game, index) in filteredGames" :key="index">
-            <div class="soft-ui overflow-hidden cursor-pointer" @click="openGame(game)">
-              <div class="relative aspect-square bg-gray-200">
-                <img :src="getGameImage(game)" :alt="game.name" class="w-full h-full object-cover" loading="lazy" />
+            <div class="neu-flat p-4 cursor-pointer flex flex-col items-center group relative" @click="openGame(game)">
+              
+              <div class="absolute top-2 right-2 flex gap-2 z-20">
+                <button 
+                    @click.stop="toggleFavorite(game)" 
+                    class="neu-btn-sm" 
+                    :class="isFavorite(game) ? 'active-fav' : ''"
+                    title="Add to Favorites"
+                >
+                    <i class="fa-heart" :class="isFavorite(game) ? 'fa-solid' : 'fa-regular'"></i>
+                </button>
+                
+                <template x-if="filterCategory === 'recent'">
+                    <button 
+                        @click.stop="removeRecent(game)" 
+                        class="neu-btn-sm danger" 
+                        title="Remove from Recent"
+                    >
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </template>
+              </div>
+
+              <div class="w-full aspect-square rounded-2xl overflow-hidden mb-4 relative shadow-[inset_0_2px_4px_rgba(0,0,0,0.1)]">
+                <img :src="getGameImage(game)" :alt="game.name" class="w-full h-full object-cover transition duration-500 group-hover:scale-110" loading="lazy" />
+                
                 <div class="absolute top-2 left-2 flex flex-col gap-1">
-                  <template x-if="game.top"><span class="bg-red-500 text-white text-[10px] px-2 py-1 rounded font-bold shadow-sm">HOT</span></template>
-                  <template x-if="game.new"><span class="bg-green-500 text-white text-[10px] px-2 py-1 rounded font-bold shadow-sm">NEW</span></template>
+                  <template x-if="game.top"><span class="bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-md font-bold shadow-md">HOT</span></template>
+                  <template x-if="game.new"><span class="bg-green-500 text-white text-[10px] px-2 py-0.5 rounded-md font-bold shadow-md">NEW</span></template>
                 </div>
               </div>
-              <div class="p-3">
-                <p class="text-xs font-semibold text-center truncate" x-text="game.name"></p>
-              </div>
+
+              <p class="text-sm font-semibold text-center truncate w-full px-2" x-text="game.name"></p>
             </div>
           </template>
         </div>
       </main>
 
-      <div class="game-popup-overlay" x-show="popupOpen" x-cloak @click.self="closePopup()">
-        <div class="game-popup-container">
-          <div class="game-popup-header">
-            <div style="width: 36px"></div>
-            <div class="font-bold" x-text="currentGame?.name"></div>
-            <div class="flex gap-2">
-              <button class="game-popup-fullscreen" @click="refreshGame()"><i class="fa-solid fa-rotate-right"></i></button>
-              <button class="game-popup-fullscreen" @click="fullscreenPopup()"><i class="fa-solid fa-expand"></i></button>
-              <button class="game-popup-close" @click="closePopup()"><i class="fa-solid fa-times"></i></button>
+      <div class="popup-overlay" x-show="popupOpen" x-cloak @click.self="closePopup()">
+        <div class="popup-content">
+            <div class="flex items-center justify-between px-6 py-4 bg-[var(--bg-color)] border-b border-[rgba(0,0,0,0.05)]">
+                <div style="width: 140px"></div> 
+                
+                <h2 class="text-lg font-bold truncate text-center flex-1" x-text="currentGame?.name"></h2>
+                
+                <div class="flex gap-4 w-[140px] justify-end">
+                    <button class="neu-btn" @click="refreshGame()" title="Refresh">
+                        <i class="fa-solid fa-rotate-right text-sm"></i>
+                    </button>
+                    <button class="neu-btn" @click="fullscreenPopup()" title="Fullscreen">
+                        <i class="fa-solid fa-expand text-sm"></i>
+                    </button>
+                    <button class="neu-btn text-red-500" @click="closePopup()" title="Close">
+                        <i class="fa-solid fa-times text-lg"></i>
+                    </button>
+                </div>
             </div>
-          </div>
-          <div class="relative flex-1 bg-black">
-            <div x-show="gameLoading" class="game-popup-loader"></div>
-            <iframe x-ref="gameFrame" class="w-full h-full border-none"></iframe>
-          </div>
+
+            <div class="relative flex-1 bg-black w-full h-full">
+                <div x-show="gameLoading" class="absolute inset-0 flex items-center justify-center">
+                    <div class="loader border-t-blue-500"></div>
+                </div>
+                <iframe x-ref="gameFrame" class="w-full h-full border-none block"></iframe>
+            </div>
         </div>
       </div>
+
     </div>
 
     <script>
@@ -222,6 +304,8 @@
       function gamesApp() {
         return {
           allGames: [],
+          recentGames: [],
+          favoriteGames: [], // New favorites array
           filteredGames: [],
           searchQuery: "",
           filterCategory: "all",
@@ -230,8 +314,20 @@
           popupOpen: false,
           gameLoading: false,
           currentGame: null,
+          theme: 'light',
 
           async init() {
+            this.theme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', this.theme);
+
+            // Load Recents
+            const savedRecents = localStorage.getItem('recentGames');
+            if (savedRecents) this.recentGames = JSON.parse(savedRecents);
+
+            // Load Favorites
+            const savedFavs = localStorage.getItem('favoriteGames');
+            if (savedFavs) this.favoriteGames = JSON.parse(savedFavs);
+
             try {
               const [localRes, extraRes] = await Promise.allSettled([
                 fetch("/json/games.json").then(r => r.json()),
@@ -258,16 +354,64 @@
             }
           },
 
+          toggleTheme() {
+            this.theme = this.theme === 'light' ? 'dark' : 'light';
+            localStorage.setItem('theme', this.theme);
+            document.documentElement.setAttribute('data-theme', this.theme);
+          },
+
+          // --- FAVORITES LOGIC ---
+          isFavorite(game) {
+            return this.favoriteGames.some(g => g.name === game.name);
+          },
+
+          toggleFavorite(game) {
+            if (this.isFavorite(game)) {
+                this.favoriteGames = this.favoriteGames.filter(g => g.name !== game.name);
+            } else {
+                this.favoriteGames.push(game);
+            }
+            localStorage.setItem('favoriteGames', JSON.stringify(this.favoriteGames));
+            
+            // Re-apply filters if currently viewing favorites to remove the un-favorited item immediately
+            if (this.filterCategory === 'favorites') {
+                this.applyFilters();
+            }
+          },
+          // -----------------------
+
+          // --- RECENT LOGIC ---
+          removeRecent(game) {
+            this.recentGames = this.recentGames.filter(g => g.name !== game.name);
+            localStorage.setItem('recentGames', JSON.stringify(this.recentGames));
+            this.applyFilters(); // Refresh list immediately
+          },
+          // --------------------
+
           applyFilters() {
             const query = this.searchQuery.toLowerCase();
-            this.filteredGames = this.allGames.filter(g => {
+            let sourceList = this.allGames;
+            
+            if (this.filterCategory === 'recent') sourceList = this.recentGames;
+            if (this.filterCategory === 'favorites') sourceList = this.favoriteGames;
+
+            this.filteredGames = sourceList.filter(g => {
               const matchesSearch = g.name.toLowerCase().includes(query);
               let matchesCategory = true;
+              
               if (this.filterCategory === 'top') matchesCategory = g.top === true;
               if (this.filterCategory === 'new') matchesCategory = g.new === true;
+              
               return matchesSearch && matchesCategory;
             });
-            this.searchPlaceholder = `Search ${this.allGames.length} games...`;
+
+            this.searchPlaceholder = `Search ${sourceList.length} games...`;
+          },
+
+          getEmptyMessage() {
+            if (this.filterCategory === 'recent') return "You haven't played any games yet!";
+            if (this.filterCategory === 'favorites') return "No favorites yet. Click the heart on a game to add it!";
+            return "No games found.";
           },
 
           getGameImage(game) {
@@ -279,6 +423,12 @@
 
           async openGame(game) {
             this.currentGame = game;
+            
+            this.recentGames = this.recentGames.filter(g => g.name !== game.name);
+            this.recentGames.unshift(game);
+            if (this.recentGames.length > 50) this.recentGames.pop();
+            localStorage.setItem('recentGames', JSON.stringify(this.recentGames));
+
             this.popupOpen = true;
             this.gameLoading = true;
             await this.$nextTick();
@@ -292,9 +442,7 @@
 
           async loadWithProxyLogic(url) {
             const frame = this.$refs.gameFrame;
-            
             try {
-                // If it's a jsdelivr link, use direct write, otherwise proxy it
                 if (url.includes("jsdelivr")) {
                     const res = await fetch(url);
                     const html = await res.text();
@@ -305,19 +453,15 @@
                 } else {
                     const response = await fetch(PROXY_URL + encodeURIComponent(url));
                     const html = await response.text();
-
                     const frameDoc = frame.contentDocument || frame.contentWindow.document;
                     const parser = new DOMParser();
                     const doc = parser.parseFromString(html, 'text/html');
-
                     let base = doc.createElement('base');
                     base.href = url;
                     doc.head.prepend(base);
-
                     frameDoc.open();
                     frameDoc.write(doc.documentElement.innerHTML);
                     frameDoc.close();
-
                     frameDoc.querySelectorAll('a').forEach(link => {
                         link.onclick = (e) => {
                             if(link.href.startsWith('http')) {
