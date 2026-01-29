@@ -21,7 +21,16 @@ Follow these steps to connect your website to external services.
 5. **Intergrate:** Locate your pub and sub key, open `/txt/pub.txt` and `/txt/sub.txt` (**Important:** remove sub-c- and pub-c- and add rest!)
 ---
 
+## 💬 Chat Setup (Rumble)
+1. **Get Video ID:** Go to [RumbleTalk.com](http://rumbletalk.com/) and copy the api from the integration steps.
+2. **Configure Page:** Open `/pages/chat_embed.html` in your code editor.
+3. **Update Embed:** Find the `<iframe>` tag and replace the current url in the `src` attribute with your actual Rumble url and div ID given.
+   * Example: `https://rumbletalk.com/chat/embed/IDHERE`
+4. **Save:** Save the file and push to your repository to activate the live chat.
+---
+
 > [!CAUTION]
 > **Important:** This is a manual for developers. Make sure you have your `index.html` open in a code editor like VS Code before starting.
 > **Security:** Since this is a small project and doesn't have backend servers, please rotate your PubNub and GROQ key every now and then in order to not have locked keys!
 > ## Very recommended to delete this setup.md when deploying
+> if you cannot trust people, it is recommended to delete the counter and AI.
