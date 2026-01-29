@@ -39,11 +39,19 @@ We know visibility matters. Use these built-in features to customize your experi
 -   Over 1500 games
 -   Easy to use website
 -   Easy to deploy using a proxy
--   Customizable background
+-   Customizable background (Patterns)
 -   Proxy
 -   Chat Bots
 -   Website chat
 -   Computer Diagnostics
+-   Lag Protection
+-   Cloaking Mechanics
+-   Stats for FPS or PING
+-   Faster
+-   Stronger
+-   Less Stress on CPU
+-   Overlay/Redirect when tab unfocused
+-   More features
 -   Saving Mechanics
 -   And More...
 ---
