@@ -1,4 +1,6 @@
-# <p align="center">Starlight<span style="color: #7dd3fc;">GG</span></p>
+<h1 align="center">
+  Starlight<span style="color: #7dd3fc;">GG</span>
+</h1>
 <p align="center">
   <img src="favicons/favicon.png" alt="Starlight Games Logo" width="120">
 </p>
@@ -6,6 +8,9 @@
 <p align="center">
   <a href="https://github.com/starlightgg">
     <img src="https://img.shields.io/badge/Organization-Starlight--GG-7dd3fc?style=for-the-badge&logo=github&labelColor=0f172a" alt="Organization">
+  </a>
+  <a href="https://github.com/starlightgg/starlightgg.github.io/fork">
+    <img src="https://img.shields.io/github/forks/starlightgg/starlightgg.github.io?label=Fork&style=for-the-badge&color=7dd3fc&labelColor=0f172a" alt="Real-time Forks">
   </a>
   <a href="https://github.com/starlightgg/starlightgg.github.io/stargazers">
     <img src="https://img.shields.io/github/stars/starlightgg/starlightgg.github.io?label=Stars&style=for-the-badge&color=7dd3fc&labelColor=0f172a" alt="Real-time Stars">
