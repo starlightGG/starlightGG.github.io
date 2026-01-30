@@ -1647,8 +1647,9 @@ document.documentElement.setAttribute('data-theme', theme);
                                 showModal("⚠️ <strong>Freeze Detected!</strong><br><br>The game was exited because the browser froze for > 5 seconds.");
                             } else {
                                 showModal("⚠️ <strong>Browser Freeze!</strong><br>Closing tab to prevent crash...");
+                                                                window.manualExitIntent = true;
+
                                 setTimeout(() => window.close(), 500);
-                              window.manualExitIntent = false;
 
                             }
                             lagAccumulator = 0;
@@ -1669,6 +1670,8 @@ document.documentElement.setAttribute('data-theme', theme);
                                     lagAccumulator = 0; 
                                 } else {
                                     showModal("⚠️ <strong>Critical Lag!</strong><br>Browser unresponsive. Closing tab...");
+                                                                    window.manualExitIntent = true;
+
                                     setTimeout(() => window.close(), 500);
                                     lagAccumulator = 0;
                                 }
