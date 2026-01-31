@@ -1083,8 +1083,12 @@ const SURF_INFO_MESSAGE = "<b>Welcome to Surf Web!</b><br><br>Use the dropdown m
             const [overlayEnabled, setOverlayEnabled] = useState(() => localStorage.getItem('overlayToggleState') === 'true');
             const [aboutBlankEnabled, setAboutBlankEnabled] = useState(() => localStorage.getItem('aboutBlankPopupState') === 'true');
             const [statsEnabled, setStatsEnabled] = useState(() => localStorage.getItem('statsToggleState') === 'true');
-            // NEW: Surf Info State
-            const [surfInfoEnabled, setSurfInfoEnabled] = useState(() => localStorage.getItem('surfInfoState') !== 'false');
+            // REMOVED: Surf Info State (Now handled via one-time check in click handler)
+            
+            // NEW: Primary Color State
+            const [primaryColor, setPrimaryColor] = useState(localStorage.getItem('primaryColor') || '#4c68ff');
+            // NEW: Text Color State
+            const [textColor, setTextColor] = useState(localStorage.getItem('textColor') || '#ffffff');
 
             // NEW: Auto Save State
             const [autoSaveEnabled, setAutoSaveEnabled] = useState(() => localStorage.getItem('autoSaveState') === 'true');
@@ -1599,6 +1603,30 @@ document.documentElement.setAttribute('data-theme', theme);
                 setTimeout(fetchKeysAndInit, 1000);
             }, []);
 
+            // --- NEW: COLOR THEME EFFECT ---
+            useEffect(() => {
+                // Helper to lighten/darken color
+                const adjustColor = (color, amount) => {
+                    return '#' + color.replace(/^#/, '').replace(/../g, color => ('0'+Math.min(255, Math.max(0, parseInt(color, 16) + amount)).toString(16)).substr(-2));
+                }
+
+                document.documentElement.style.setProperty('--primary-color', primaryColor);
+                // Auto-generate variants
+                document.documentElement.style.setProperty('--primary-light', adjustColor(primaryColor, 40));
+                document.documentElement.style.setProperty('--primary-dark', adjustColor(primaryColor, -20));
+                
+                localStorage.setItem('primaryColor', primaryColor);
+
+                // NEW: Text Color Logic
+                // Only apply if the user has explicitly set/saved a custom color.
+                // Otherwise, we remove the property to let the CSS Theme (Light/Dark) take over.
+                if (localStorage.getItem('textColor')) {
+                    document.documentElement.style.setProperty('--text-color', textColor);
+                } else {
+                    document.documentElement.style.removeProperty('--text-color');
+                }
+            }, [primaryColor, textColor]);
+
             // --- TOGGLE HANDLERS (Update State & LocalStorage) ---
             const handleToggle = (key, currentState, setter) => {
 
@@ -1834,24 +1862,12 @@ document.documentElement.setAttribute('data-theme', theme);
                  const title = document.title;
                  const favicon = localStorage.getItem('customFaviconURL') || document.querySelector("link[rel*='icon']")?.href;
                  
-              // Constructing the new document
-              win.document.write(`
-                <!DOCTYPE html>
-                <html>
-                <head>
-                    <title>${title}</title>
+                 win.document.write(`
+                    <html><head><title>${title}</title>
                     ${favicon ? `<link rel="icon" href="${favicon}">` : ''}
-                    <script src="${window.location.origin}/js/global.js"><\/script>
-                    <style>
-                        body { margin:0; padding:0; overflow:hidden; background: #000; }
-                        iframe { width:100vw; height:100vh; border:none; }
-                    </style>
-                </head>
-                <body>
-                    <iframe src="${iframeState.src}"></iframe>
-                </body>
-                </html>
-              `);
+                    <style>body{margin:0;overflow:hidden;}iframe{width:100vw;height:100vh;border:none;}</style>
+                    </head><body><iframe src="${iframeState.src}"></iframe></body></html>
+                 `);
                  win.document.close();
             };
             
@@ -2116,14 +2132,17 @@ document.documentElement.setAttribute('data-theme', theme);
                             title: 'Surf Web', 
                             desc: 'Browse the internet freely',
                             accent: true,
-                            // UPDATED: Checks enabled status & shows info modal if preference is on
+                            // UPDATED: One-time info check
                             onClick: () => {
                                 if (!SURF_WEB_ENABLED) {
                                     showModal("This feature has been <b>Disabled by Host</b>.");
                                 } else {
                                     openGame('/pages/surfidle', true);
-                                    if (surfInfoEnabled) {
+                                    
+                                    // Check if seen before
+                                    if (!localStorage.getItem('surfInfoShown')) {
                                         showModal(SURF_INFO_MESSAGE);
+                                        localStorage.setItem('surfInfoShown', 'true');
                                     }
                                 }
                             }
@@ -2281,9 +2300,86 @@ const LinksContent = e('div', { id: 'links-content', className: `menu-tab-conten
                             e('option', { value: 'stripes' }, 'Stripes'),
                             e('option', { value: 'hexagons' }, 'Hexagons'),
                             e('option', { value: 'snow' }, 'Snow'), 
-                            e('option', { value: 'fireworks' }, 'Fireworks'), // Renamed from Lightning
+                            e('option', { value: 'fireworks' }, 'Fireworks'), 
                             e('option', { value: 'waves' }, 'Waves'),
                             e('option', { value: 'none' }, 'None')
+                        )
+                    ),
+
+                    // NEW: Primary Color Picker
+                    e('div', { className: 'settings-item' },
+                        e('label', null, 'Primary Color:'),
+                        e('div', { style: { display: 'flex', alignItems: 'center', gap: '10px' } },
+                            e('input', { 
+                                type: 'color', 
+                                value: primaryColor, 
+                                onChange: (e) => setPrimaryColor(e.target.value),
+                                style: { 
+                                    width: '40px', 
+                                    height: '40px', 
+                                    border: 'none', 
+                                    borderRadius: '50%', 
+                                    cursor: 'pointer', 
+                                    padding: '0', 
+                                    overflow: 'hidden',
+                                    background: 'none'
+                                }
+                            }),
+                            e('button', { 
+                                onClick: () => setPrimaryColor('#4c68ff'), // Reset to Default
+                                style: {
+                                    background: 'var(--secondary-bg)',
+                                    border: '1px solid var(--line-color)',
+                                    borderRadius: '8px',
+                                    padding: '5px 10px',
+                                    fontSize: '0.8em',
+                                    cursor: 'pointer',
+                                    color: 'var(--text-color)'
+                                }
+                            }, 'Reset')
+                        )
+                    ),
+
+                    // NEW: Text Color Picker
+                    e('div', { className: 'settings-item' },
+                        e('label', null, 'Text Color:'),
+                        e('div', { style: { display: 'flex', alignItems: 'center', gap: '10px' } },
+                            e('input', { 
+                                type: 'color', 
+                                value: textColor, 
+                                onChange: (e) => {
+                                    const val = e.target.value;
+                                    setTextColor(val);
+                                    localStorage.setItem('textColor', val);
+                                },
+                                style: { 
+                                    width: '40px', 
+                                    height: '40px', 
+                                    border: 'none', 
+                                    borderRadius: '50%', 
+                                    cursor: 'pointer', 
+                                    padding: '0', 
+                                    overflow: 'hidden',
+                                    background: 'none'
+                                }
+                            }),
+                            e('button', { 
+                                onClick: () => {
+                                    // Reset Logic: Clear storage, Reset state default, Remove CSS override
+                                    localStorage.removeItem('textColor');
+                                    setTextColor('#ffffff'); 
+                                    document.documentElement.style.removeProperty('--text-color');
+                                },
+                                style: {
+                                    background: 'var(--secondary-bg)',
+                                    border: '1px solid var(--line-color)',
+                                    borderRadius: '8px',
+                                    padding: '5px 10px',
+                                    fontSize: '0.8em',
+                                    cursor: 'pointer',
+                                    color: 'var(--text-color)'
+                                }
+                            }, 'Reset')
                         )
                     ),
                     
@@ -2293,11 +2389,8 @@ const LinksContent = e('div', { id: 'links-content', className: `menu-tab-conten
                         e('label', null, 'Show Stats:'),
                         renderSwitch('stats-toggle-switch', statsEnabled, () => handleToggle('statsToggleState', statsEnabled, setStatsEnabled), 'fas fa-chart-line', 'fas fa-times')
                     ),
-                    // NEW: Surf Info Toggle
-                    e('div', { className: 'settings-item' },
-                        e('label', null, 'Show Surf Info:'),
-                        renderSwitch('surf-info-switch', surfInfoEnabled, () => handleToggle('surfInfoState', surfInfoEnabled, setSurfInfoEnabled), 'fas fa-info-circle', 'fas fa-times')
-                    ),
+                    // REMOVED: Surf Info Toggle (Logic moved to DashboardCard)
+                    
                     e('div', { className: 'settings-item' },
                         e('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
                             e('label', null, 'Lag Reducer:'),
