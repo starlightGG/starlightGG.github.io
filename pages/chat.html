@@ -221,9 +221,7 @@
     <div id="toast-container"></div>
     
     <script>
-        // --- Constants ---
-        const TITLE_KEY = 'customPageTitle';
-        const FAVICON_KEY = 'customFaviconURL';
+
 
         // --- Core Functions ---
         function redirectToApp() {
@@ -268,40 +266,13 @@
             }, duration);
         }
 
-        // --- Cloak Logic ---
-        function applyCustomCloak(customTitle, faviconURL) {
-            if (customTitle) {
-                document.title = customTitle;
-                localStorage.setItem(TITLE_KEY, customTitle);
-            }
-            if (faviconURL) {
-                localStorage.setItem(FAVICON_KEY, faviconURL);
-                let faviconEl = document.getElementById("dynamic-favicon");
-                if (!faviconEl) {
-                    faviconEl = document.createElement("link");
-                    faviconEl.rel = "icon";
-                    faviconEl.id = "dynamic-favicon";
-                    document.head.appendChild(faviconEl);
-                }
-                faviconEl.href = faviconURL;
-            }
-        }
-
-        function applyStoredCloak() {
-            const storedTitle = localStorage.getItem(TITLE_KEY);
-            const storedFavicon = localStorage.getItem(FAVICON_KEY);
-            if (storedTitle || storedFavicon) {
-                applyCustomCloak(storedTitle, storedFavicon);
-            } 
-        }
-
+// better global
+<script src="/js/global.js"></script>
         // --- Window Load Event ---
         window.addEventListener('load', () => {
-            // 1. Apply Cloak
-                setTimeout(applyStoredCloak, 800);
 
 
-            // 2. Trigger Toast Notification (Always runs, no localstorage check)
+            // Trigger Toast Notification (Always runs, no localstorage check)
             // Using a small delay (500ms) makes the animation feel smoother after load
             setTimeout(() => {
                 showToast("NOTICE: Usernames & Passwords are Case Sensitive! If you don't have an account, please use Guest Mode.");
