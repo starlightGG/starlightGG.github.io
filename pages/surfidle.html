@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neumorphic Search Display</title>
+    <script>
+        /* Check localStorage before the body renders to prevent white flash */
+        (function() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                document.documentElement.classList.add('dark-theme');
+            }
+        })();
+    </script>
+    <style>
+        /* --- CORE VARIABLES --- */
+        :root {
+            /* Light Theme (Default) */
+            --bg-color: #e0e5ec;
+            --text-color: #333333;
+            --primary-color: #4c68ff;
+            --primary-light: #7c90ff;
+            --primary-dark: #3a50cc;
+            --secondary-bg: #e0e5ec;
+            --glass-color: rgba(255, 255, 255, 0.4);
+            --card-glass: rgba(255, 255, 255, 0.65);
+            --line-color: rgba(0, 0, 0, 0.07);
+            --star-color: #E5B500;
+            --toggle-size: 4rem;
+            --border-radius: 20px;
+            --font-stack: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+
+            /* Neumorphic Shadows (Light) */
+            --shadow-light-top: -6px -6px 12px #ffffff;
+            --shadow-light-bottom: 6px 6px 12px rgba(0, 0, 0, 0.15);
+            --shadow-inset: inset 2px 2px 5px rgba(0, 0, 0, 0.1), inset -2px -2px 5px #ffffff;
+            --card-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            
+            --highlight-light: #ffffff;
+            --shadow-dark: #a3b1c6;
+            --active-color: #3498db;
+        }
+
+        /* --- DARK THEME OVERRIDES --- */
+        .dark-theme {
+            --bg-color: #1a1d23;
+            --text-color: #e0e5ec;
+            --shadow-light-top: -6px -6px 12px #252932;
+            --shadow-light-bottom: 6px 6px 12px #0f1115;
+            --shadow-inset: inset 2px 2px 5px #0f1115, inset -2px -2px 5px #252932;
+            --card-glass: rgba(30, 34, 42, 0.8);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: var(--font-stack);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .display-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        /* The "Lifted" Neumorphic Circle */
+        .icon-circle {
+            width: 100px;
+            height: 100px;
+            background: var(--bg-color);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: var(--shadow-light-top), var(--shadow-light-bottom);
+            color: var(--primary-color);
+        }
+
+        .label {
+            font-size: 1.25rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--text-color);
+            opacity: 0.9;
+        }
+        .info {
+            font-size: 1rem;
+            font-weight: 300;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--text-color);
+            opacity: 0.9;
+        }
+
+        svg {
+            width: 40px;
+            height: 40px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2.5;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="display-container">
+        <div class="icon-circle">
+            <svg viewBox="0 0 24 24">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+        </div>
+        <div class="label">Search</div>
+        <div class = "info">Select a Server on top bar!</div>
+    </div>
+
+</body>
+</html>
