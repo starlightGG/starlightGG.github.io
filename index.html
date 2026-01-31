@@ -811,6 +811,9 @@ const PROXY_SERVERS = [
 // --- HOST CONFIGURATION ---
 const SURF_WEB_ENABLED = true; // Set to false to disable "Surf Web" for all users
 
+// NEW: Surf Info Message (HTML Supported)
+const SURF_INFO_MESSAGE = "<b>Welcome to Surf Web!</b><br><br>Use the dropdown menu at the top to switch between proxy servers.<br><br><b>Tips:</b><br>- If a site is blocked, try a different server.<br>- 'Ultraviolet' usually works best for games.";
+
         // --- MODAL COMPONENT ---
         const Modal = ({ message, isActive, onClose }) => {
             return e('div', { id: 'custom-modal', className: `modal-overlay ${isActive ? 'active' : ''}`, onClick: (ev) => { if(ev.target.id === 'custom-modal') onClose(); } },
@@ -1080,6 +1083,9 @@ const SURF_WEB_ENABLED = true; // Set to false to disable "Surf Web" for all use
             const [overlayEnabled, setOverlayEnabled] = useState(() => localStorage.getItem('overlayToggleState') === 'true');
             const [aboutBlankEnabled, setAboutBlankEnabled] = useState(() => localStorage.getItem('aboutBlankPopupState') === 'true');
             const [statsEnabled, setStatsEnabled] = useState(() => localStorage.getItem('statsToggleState') === 'true');
+            // NEW: Surf Info State
+            const [surfInfoEnabled, setSurfInfoEnabled] = useState(() => localStorage.getItem('surfInfoState') !== 'false');
+
             // NEW: Auto Save State
             const [autoSaveEnabled, setAutoSaveEnabled] = useState(() => localStorage.getItem('autoSaveState') === 'true');
             // NEW: Save Indicator State
@@ -2098,12 +2104,15 @@ document.documentElement.setAttribute('data-theme', theme);
                             title: 'Surf Web', 
                             desc: 'Browse the internet freely',
                             accent: true,
-                            // UPDATED: Checks global HOST constant
+                            // UPDATED: Checks enabled status & shows info modal if preference is on
                             onClick: () => {
                                 if (!SURF_WEB_ENABLED) {
                                     showModal("This feature has been <b>Disabled by Host</b>.");
                                 } else {
                                     openGame('/pages/surfidle', true);
+                                    if (surfInfoEnabled) {
+                                        showModal(SURF_INFO_MESSAGE);
+                                    }
                                 }
                             }
                         })
@@ -2272,7 +2281,11 @@ const LinksContent = e('div', { id: 'links-content', className: `menu-tab-conten
                         e('label', null, 'Show Stats:'),
                         renderSwitch('stats-toggle-switch', statsEnabled, () => handleToggle('statsToggleState', statsEnabled, setStatsEnabled), 'fas fa-chart-line', 'fas fa-times')
                     ),
-                    // REMOVED: Surf Web User Toggle (Controlled by Host Constant now)
+                    // NEW: Surf Info Toggle
+                    e('div', { className: 'settings-item' },
+                        e('label', null, 'Show Surf Info:'),
+                        renderSwitch('surf-info-switch', surfInfoEnabled, () => handleToggle('surfInfoState', surfInfoEnabled, setSurfInfoEnabled), 'fas fa-info-circle', 'fas fa-times')
+                    ),
                     e('div', { className: 'settings-item' },
                         e('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
                             e('label', null, 'Lag Reducer:'),
@@ -2476,6 +2489,9 @@ const LinksContent = e('div', { id: 'links-content', className: `menu-tab-conten
                         e('option', { value: '/pages/surfidle', disabled: true }, 'Select Server...'),
                         PROXY_SERVERS.map(s => e('option', { value: s.url, key: s.name }, s.name))
                     ),
+
+                    // NEW: Help Button for Surf Web
+                    iframeState.isSurfing && e('button', { onClick: () => showModal(SURF_INFO_MESSAGE) }, e('i', { className: 'fas fa-question' }), ' Help'),
 
                     e('button', { onClick: openNewWindow }, e('i', { className: 'fas fa-external-link-alt' }), ' Popout'), // Replaced ↗️
                     e('button', { onClick: () => document.getElementById('my-iframe').requestFullscreen() }, e('i', { className: 'fas fa-expand' }), ' Fullscreen'), // Replaced 📺
