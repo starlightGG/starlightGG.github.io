@@ -74,6 +74,57 @@ function ensureCloakExists() {
 // ==========================================
 // 3. CORE CLONING LOGIC
 // ==========================================
+
+// --- NEW HELPER: Platform Detection & Multi-Link Selection ---
+function getPlatformLink() {
+    const ua = navigator.userAgent;
+    const platform = navigator.platform ? navigator.platform.toLowerCase() : "";
+    
+    // Lists of fake paths for each platform to cloak better!
+    const windowsLinks = [
+        "ms-settings:windowsupdate",
+        "ms-settings:display",
+        "ms-paint:",
+        "ms-calculator:",
+        "ms-settings:privacy"
+    ];
+
+    const chromeOSLinks = [
+        "chrome://os-settings",
+        "chrome://file-manager",
+        "chrome://diagnostics",
+        "chrome://camera-app",
+        "chrome://terminal"
+    ];
+
+    const macLinks = [
+        "x-apple.systempreferences:com.apple.preference.security",
+        "x-apple.systempreferences:com.apple.preference.displays",
+        "file:///System/Applications/Calculator.app",
+        "file:///System/Applications/Notes.app"
+    ];
+
+    // Detect Platform and assign list
+    let selectedList = [];
+
+    if (ua.indexOf("CrOS") !== -1) {
+        // ChromeOS
+        selectedList = chromeOSLinks;
+    } else if (ua.indexOf("Win") !== -1 || platform.includes("win")) {
+        // Windows
+        selectedList = windowsLinks;
+    } else if (ua.indexOf("Mac") !== -1 || platform.includes("mac")) {
+        // MacOS
+        selectedList = macLinks;
+    } else {
+        // Linux / Fallback
+        selectedList = ["pages", "loader", "auth"];
+    }
+
+    // Pick a random link from the selected list
+    return selectedList[Math.floor(Math.random() * selectedList.length)];
+}
+
 function executeCloningLogic() {
     // Ensure the element exists before running logic (redundancy for retry clicks)
     ensureCloakExists();
@@ -84,12 +135,12 @@ function executeCloningLogic() {
     // Only attempt cloning if enabled and not already in about:blank
     if (window.location.href !== 'about:blank' && savedState === 'true') {
 
-        const words = [
-            'chrome://settings', 'chrome://camera-app', 'chrome://file-manager', 'chrome://os-settings'
-        ];
-        const randomWord = words[Math.floor(Math.random() * words.length)];
-
-        const newWindow = window.open(`about:blank#${randomWord}`, '_blank');
+        // --- UPDATED: Get dynamic platform link ---
+        const fakeInternalLink = getPlatformLink();
+        
+        // Open window with the realistic hash
+        const newWindow = window.open(`about:blank#${fakeInternalLink}`, '_blank');
+        
         if (newWindow) {
             // --- SUCCESS ---
 
@@ -97,7 +148,7 @@ function executeCloningLogic() {
             const scriptElement = document.getElementById('cloning-script');
             if (scriptElement) scriptElement.remove();
 
-            // 2. Remove the cloak from the DOM to be copied (so the new tab doesn't start cloaked)
+            // 2. Remove the cloak from the DOM to be copied
             if (cloakElement) cloakElement.remove();
 
             // 3. Clone HTML
