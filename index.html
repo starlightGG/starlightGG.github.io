@@ -1826,22 +1826,41 @@ document.documentElement.setAttribute('data-theme', theme);
                 }
             };
 
-            const openNewWindow = () => {
-                 if (!iframeState.active || !iframeState.src) return showModal("No game loaded!");
-                 const win = window.open('about:blank', '_blank');
-                 if (!win) return showModal("Popups are blocked! Please allow popups for this site.");
-                 
-                 const title = document.title;
-                 const favicon = localStorage.getItem('customFaviconURL') || document.querySelector("link[rel*='icon']")?.href;
-                 
-                 win.document.write(`
-                    <html><head><script src="/js/global.js"></script><title>${title}</title>
-                    ${favicon ? `<link rel="icon" href="${favicon}">` : ''}
-                    <style>body{margin:0;overflow:hidden;}iframe{width:100vw;height:100vh;border:none;}</style>
-                    </head><body><iframe src="${iframeState.src}"></iframe></body></html>
-                 `);
-                 win.document.close();
-            };
+const openNewWindow = () => {
+    if (!iframeState.active || !iframeState.src) return showModal("No game loaded!");
+
+    const win = window.open('about:blank', '_blank');
+    if (!win) return showModal("Popups are blocked! Please allow popups for this site.");
+
+    const title = document.title;
+    const favicon = localStorage.getItem('customFaviconURL') || document.querySelector("link[rel*='icon']")?.href;
+    const scriptPath = window.location.origin + "/js/global.js";
+
+    // Use a Template Literal for the HTML structure
+    const html = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>${title}</title>
+            ${favicon ? `<link rel="icon" href="${favicon}">` : ''}
+            <style>
+                body { margin: 0; padding: 0; overflow: hidden; background: #000; }
+                iframe { width: 100vw; height: 100vh; border: none; display: block; }
+            </style>
+        </head>
+        <body>
+            <iframe src="${iframeState.src}" allowfullscreen></iframe>
+            <script src="${scriptPath}"></script>
+        </body>
+        </html>
+    `;
+
+    win.document.open();
+    win.document.write(html);
+    win.document.close();
+};
             
             // --- DATA MANAGEMENT (Export/Import) ---
             
