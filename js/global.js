@@ -25,7 +25,10 @@
         const storedFavicon = localStorage.getItem(FAVICON_KEY);
         if (storedTitle || storedFavicon) {
             applyCustomCloak(storedTitle, storedFavicon);
-        } 
+        }else{
+            applyCustomCloak("Google", "https://google.com/favicon.ico");
+
+        }
     }
 
     window.addEventListener('load', () => {
