@@ -48,13 +48,14 @@ We know visibility matters. Use these built-in features to customize your experi
 We are faster, stronger, and put less stress on your CPU.
 
 - 🎮 **Over 1500 Games**
-- ⚡ **Lag Protection** & Low CPU Usage
+- ⚡ **Lag Protection/Reducer** & Low CPU Usage
+- 💡 **Light weight** Runs very well on slow computers! 
 - 💻 **Computer Diagnostics** (FPS/Ping Stats)
 - 🤖 **AI Chat Bots** & Website Chat
 - 🛡️ **Easy Proxy Deployment**
 - 🎨 **Customizable Backgrounds** (Patterns)
 - 💾 **Saving Mechanics** (JSON download)
-- 🏃 **Overlay/Redirect** when tab unfocused
+- 🏃 **Overlay/Redirect** when tab unfocused can hide or redirect
 - 🌐 **Easy to use website**
 - 📊 **Stats for FPS or PING**
 - 🔏 **Web Proxy**
