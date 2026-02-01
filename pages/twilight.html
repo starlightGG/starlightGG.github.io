@@ -333,8 +333,8 @@
 
             try {
               const [localRes, extraRes] = await Promise.allSettled([
-                fetch("/json/games.json").then(r => r.json()),
-                fetch("/json/extragames.json").then(r => r.json())
+                fetch("../json/games.json").then(r => r.json()),
+                fetch("../json/extragames.json").then(r => r.json())
               ]);
 
               let combined = [];
