@@ -641,7 +641,7 @@
         #CloakingAlert {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: var(--bg-color); z-index: 20000;
-            display:flex; /* Shown by default, toggle with JS */
+            display:none; /* Shown by default, toggle with JS */
             flex-direction: column; justify-content: center; align-items: center;
             color: var(--primary-color); font-size: 1.2em; font-weight: bold;
             font-family: var(--font-stack);
@@ -813,7 +813,7 @@ const PROXY_SERVERS = [
         { name: "DogeUB (5)", url: "https://algebra.teaching.za.com/search" },
 ];
 
-const SURF_WEB_ENABLED = false; 
+const SURF_WEB_ENABLED = true; 
 const SURF_INFO_MESSAGE = "<b>Welcome to Surf Web!</b><br><br>Use the dropdown menu at the top to switch between proxy servers.<br><br><b>Tips:</b><br>- If a site is blocked, try a different server.<br>- Use <strong>'https://duckduckgo.com'</strong> to actually search, not 'Google'.";
 
         // --- MODAL COMPONENT ---
@@ -2407,7 +2407,7 @@ const LinksContent = e('div', { id: 'links-content', className: `menu-tab-conten
                             e('option', { value: 'stripes' }, 'Stripes'),
                             e('option', { value: 'hexagons' }, 'Hexagons'),
                             e('option', { value: 'snow' }, 'Snow'), 
-                            e('option', { value: 'fireworks' }, 'Fireworks'), // Renamed from Lightning
+                            e('option', { value: 'fireworks' }, 'Fireworks'), 
                             e('option', { value: 'waves' }, 'Waves'),
                             e('option', { value: 'none' }, 'None')
                         )
