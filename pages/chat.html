@@ -227,7 +227,9 @@
 
         // --- Core Functions ---
         function redirectToApp() {
-            window.location.href = '/'; 
+            window.manualExitIntent = true; 
+
+            window.location.href = '../'; 
         }
         
         function refreshChat() {
