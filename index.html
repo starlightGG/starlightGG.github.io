@@ -73,7 +73,7 @@
             
             --highlight-light: #ffffff;
             --shadow-dark: #a3b1c6;
-            --active-color: #3498db;
+            --active-color: #4c68ff; /* Synced with primary color */
         }
 
         /* --- GLOBAL RESET & BOX SIZING --- */
@@ -1073,10 +1073,6 @@ const SURF_INFO_MESSAGE = "<b>Welcome to Surf Web!</b><br><br>Use the dropdown m
             const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
             const [pattern, setPattern] = useState(localStorage.getItem('pattern') || 'lines');
             
-            // RESTORED: Primary Color & Text Color State
-            const [primaryColor, setPrimaryColor] = useState(localStorage.getItem('primaryColor') || '#4c68ff');
-            const [textColor, setTextColor] = useState(localStorage.getItem('textColor') || '');
-
             const [modalState, setModalState] = useState({ isActive: false, message: '' });
             const [time, setTime] = useState('');
             const [onlineCount, setOnlineCount] = useState('Loading...');
@@ -1593,150 +1589,6 @@ document.documentElement.setAttribute('data-theme', theme);
                 };
                 setTimeout(fetchKeysAndInit, 1000);
             }, []);
-
-            // --- NEW: COLOR THEME EFFECT ---
-            useEffect(() => {
-                // HSL Conversion Helper for Smart Contrast
-                const getContrastVariant = (hex, theme) => {
-                    // 1. Parse Hex to RGB
-                    let c = hex.substring(1);
-                    if (c.length === 3) c = c.split('').map(x=>x+x).join('');
-                    const num = parseInt(c, 16);
-                    let r = (num >> 16) & 255;
-                    let g = (num >> 8) & 255;
-                    let b = num & 255;
-
-                    // 2. RGB to HSL
-                    r /= 255; g /= 255; b /= 255;
-                    const max = Math.max(r, g, b), min = Math.min(r, g, b);
-                    let h, s, l = (max + min) / 2;
-
-                    if (max === min) {
-                        h = s = 0; // achromatic
-                    } else {
-                        const d = max - min;
-                        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-                        switch (max) {
-                            case r: h = (g - b) / d + (g < b ? 6 : 0); break;
-                            case g: h = (b - r) / d + 2; break;
-                            case b: h = (r - g) / d + 4; break;
-                        }
-                        h /= 6;
-                    }
-
-                    // Calculate Luma for Theme Decision
-                    const luma = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-
-                    // 3. Force Lightness based on Theme (Smart Fix)
-                    if (theme === 'light') {
-                        // LIGHT MODE LOGIC
-                        
-                        // 1. Minimum Floor (User Request: "Stay at 15, not under")
-                        l = Math.max(0.15, l);
-
-                        // 2. Handling Brightness (The "Cap")
-                        
-                        // A. Low Saturation (Greys/Whites/Blacks)
-                        // If it's basically grey/white (S < 0.15) and bright (L > 0.6), it MUST be dark to be visible.
-                        if (s < 0.15 && l > 0.6) {
-                            l = 0.15; // Snap to Dark Grey
-                        }
-                        // B. Yellow/Lime Check (Specific Hue fix)
-                        // Yellows need to be darker than Blues to be readable.
-                        else if (h >= 0.12 && h <= 0.24 && l > 0.45) {
-                            l = 0.35; // Dark Olive
-                        }
-                        // C. All Other Colors (Blues, Reds, etc.)
-                        // "it shouldn't go dark, it just shouldn't go that white, its a cap"
-                        // If the color is too bright (L > 0.6), we just CAP it at 0.6.
-                        else if (l > 0.6) {
-                            l = 0.6; 
-                        }
-                    } else {
-                        // DARK MODE LOGIC
-                        // If color is naturally bright enough, allow it to stay deep. If dark, force it bright.
-                        const minL = luma > 0.3 ? 0.45 : 0.75;
-                        l = Math.max(minL, Math.min(0.98, l));
-                    }
-
-                    // 4. HSL back to RGB
-                    let r1, g1, b1;
-                    if (s === 0) {
-                        r1 = g1 = b1 = l;
-                    } else {
-                        const hue2rgb = (p, q, t) => {
-                            if (t < 0) t += 1;
-                            if (t > 1) t -= 1;
-                            if (t < 1/6) return p + (q - p) * 6 * t;
-                            if (t < 1/2) return q;
-                            if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
-                            return p;
-                        };
-                        const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
-                        const p = 2 * l - q;
-                        r1 = hue2rgb(p, q, h + 1/3);
-                        g1 = hue2rgb(p, q, h);
-                        b1 = hue2rgb(p, q, h - 1/3);
-                    }
-
-                    // 5. RGB to Hex
-                    const toHex = x => Math.round(x * 255).toString(16).padStart(2, '0');
-                    return `#${toHex(r1)}${toHex(g1)}${toHex(b1)}`;
-                };
-
-                const adjustColor = (color, amount) => {
-                    return '#' + color.replace(/^#/, '').replace(/../g, color => ('0'+Math.min(255, Math.max(0, parseInt(color, 16) + amount)).toString(16)).substr(-2));
-                }
-                
-                // Robust Luma Calculation (Brightness Detection)
-                const getLuma = (hex) => {
-                    if(!hex) return 0;
-                    const c = hex.substring(1);      
-                    const rgb = parseInt(c, 16);   
-                    const r = (rgb >> 16) & 0xff;  
-                    const g = (rgb >>  8) & 0xff;  
-                    const b = (rgb >>  0) & 0xff;  
-                    return 0.2126 * r + 0.7152 * g + 0.0722 * b; 
-                };
-
-                const luma = getLuma(primaryColor);
-                
-                // 1. Set Main Primary Color
-                document.documentElement.style.setProperty('--primary-color', primaryColor);
-                
-                // 2. Sync Switch "Active" Color
-                document.documentElement.style.setProperty('--active-color', primaryColor);
-
-                // 3. Auto-Generate Variants
-                document.documentElement.style.setProperty('--primary-light', adjustColor(primaryColor, 40));
-                document.documentElement.style.setProperty('--primary-dark', adjustColor(primaryColor, -20));
-                
-                // 4. Auto-Detect Contrast (Text on Buttons/Switches)
-                // If button background is bright > 150, text must be BLACK.
-                if (luma > 150) {
-                    document.documentElement.style.setProperty('--switch-icon-color', '#000000');
-                    document.documentElement.style.setProperty('--btn-text-color', '#000000'); 
-                } else {
-                    document.documentElement.style.setProperty('--switch-icon-color', '#ffffff');
-                    document.documentElement.style.setProperty('--btn-text-color', '#ffffff'); 
-                }
-
-                // 5. Smart Content Color (Text/Icons on Page Background)
-                const contentColor = getContrastVariant(primaryColor, theme);
-                document.documentElement.style.setProperty('--primary-content-color', contentColor);
-
-                // 6. Custom Text Color (Overrides Theme Defaults if set)
-                // If textColor is set, apply Smart Contrast to it as well
-                if (textColor) {
-                    const smartTextColor = getContrastVariant(textColor, theme);
-                    document.documentElement.style.setProperty('--text-color', smartTextColor);
-                } else {
-                    document.documentElement.style.removeProperty('--text-color');
-                }
-                
-                localStorage.setItem('primaryColor', primaryColor);
-
-            }, [primaryColor, textColor, theme]); 
 
             // --- TOGGLE HANDLERS (Update State & LocalStorage) ---
             const handleToggle = (key, currentState, setter) => {
