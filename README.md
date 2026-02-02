@@ -75,6 +75,10 @@ We are faster, stronger, and put less stress on your CPU.
 
 ---
 
+* **Setup** [Instructions](/blob/main/setup.md).
+
+---
+
 ## 🛠️ Join the Organization
 We are doing this for the people who want privacy in mind.
 
