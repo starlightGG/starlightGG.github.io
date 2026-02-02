@@ -75,7 +75,7 @@ We are faster, stronger, and put less stress on your CPU.
 
 ---
 
-* **Setup** [Instructions](/blob/main/setup.md).
+* **Setup** [Instructions](/setup.md).
 
 ---
 
