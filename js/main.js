@@ -1,3 +1,4 @@
+
 // Suprise, i made this in react, but only using index.html
         const e = React.createElement;
         const { useState, useEffect, useRef } = React;
@@ -294,8 +295,10 @@ const SURF_INFO_MESSAGE = "<b>Welcome to Surf Web!</b><br><br>Use the dropdown m
             // State
             const [isLoading, setIsLoading] = useState(true); // Loading State
             const [activeTab, setActiveTab] = useState('home');
-            const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
-            const [pattern, setPattern] = useState(localStorage.getItem('pattern') || 'lines');
+            const [theme, setTheme] = useState(localStorage.getItem('theme') || 'dark');
+            const [pattern, setPattern] = useState(localStorage.getItem('pattern') || 'stars');
+            // ADDED: Gradient Toggle State (Default true)
+            const [gradientEnabled, setGradientEnabled] = useState(() => localStorage.getItem('gradientEnabled') !== 'false');
             
             const [modalState, setModalState] = useState({ isActive: false, message: '' });
             const [time, setTime] = useState('');
@@ -448,8 +451,8 @@ document.documentElement.setAttribute('data-theme', theme);
                 const canvas = canvasRef.current;
                 if (!canvas) return;
                 
-                // Only run if pattern is hexagons OR snow OR fireworks OR waves
-                if (pattern !== 'hexagons' && pattern !== 'snow' && pattern !== 'fireworks' && pattern !== 'waves') {
+                // UPDATED: Added 'waves' to the allowed list
+                if (pattern !== 'hexagons' && pattern !== 'snow' && pattern !== 'waves' ) {
                     const ctx = canvas.getContext('2d');
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
                     return;
@@ -556,39 +559,7 @@ document.documentElement.setAttribute('data-theme', theme);
                     }
                 }
 
-                // --- 3. FIREWORK PARTICLE CLASS ---
-                class Firework {
-                    constructor(x, y) {
-                        this.x = x;
-                        this.y = y;
-                        const angle = Math.random() * Math.PI * 2;
-                        const speed = Math.random() * 4 + 1;
-                        this.vx = Math.cos(angle) * speed;
-                        this.vy = Math.sin(angle) * speed;
-                        this.alpha = 1;
-                        this.decay = Math.random() * 0.02 + 0.015;
-                        this.gravity = 0.05;
-                    }
-                    draw() {
-                        ctx.save();
-                        ctx.globalAlpha = this.alpha;
-                        ctx.fillStyle = theme === 'dark' ? 'rgba(100, 200, 255, 1)' : 'rgba(80, 80, 80, 1)';
-                        ctx.beginPath();
-                        ctx.arc(this.x, this.y, 2, 0, Math.PI * 2);
-                        ctx.fill();
-                        ctx.restore();
-                    }
-                    update() {
-                        this.vx *= 0.96;
-                        this.vy *= 0.96;
-                        this.vy += this.gravity;
-                        this.x += this.vx;
-                        this.y += this.vy;
-                        this.alpha -= this.decay;
-                    }
-                }
-
-                // --- 4. WAVE CLASS ---
+                // --- 3. WAVE CLASS ---
                 class Wave {
                     constructor(y) {
                         this.y = y;
@@ -615,6 +586,7 @@ document.documentElement.setAttribute('data-theme', theme);
                     }
                 }
 
+
                 // --- INITIALIZE PARTICLES ---
                 particles = [];
                 if (pattern === 'hexagons') {
@@ -627,8 +599,7 @@ document.documentElement.setAttribute('data-theme', theme);
                      for(let i=0; i<7; i++) {
                         particles.push(new Wave(height * ((i+1)/8)));
                      }
-                }
-
+                } 
                 // --- ANIMATION LOOP ---
                 const animate = () => {
                     ctx.clearRect(0, 0, width, height);
@@ -649,7 +620,7 @@ document.documentElement.setAttribute('data-theme', theme);
                     if (pattern === 'hexagons') {
                         for (let i = 0; i < particles.length; i++) {
                             const p1 = particles[i];
-                            p1.update(); // Removed angle arg
+                            p1.update(); 
                             p1.draw();
                             for (let j = i + 1; j < particles.length; j++) {
                                 const p2 = particles[j];
@@ -667,7 +638,7 @@ document.documentElement.setAttribute('data-theme', theme);
                         }
                     } else if (pattern === 'snow') {
                         for (let i = 0; i < particles.length; i++) {
-                            particles[i].update(); // Removed windX arg
+                            particles[i].update(); 
                             particles[i].draw();
                         }
                     } else if (pattern === 'fireworks') {
@@ -684,6 +655,11 @@ document.documentElement.setAttribute('data-theme', theme);
                             if (particles[i].alpha <= 0) particles.splice(i, 1);
                         }
                     } else if (pattern === 'waves') {
+                        for (let i = 0; i < particles.length; i++) {
+                            particles[i].update();
+                            particles[i].draw();
+                        }
+                    } else if (pattern === 'confetti' || pattern === 'glitter') {
                         for (let i = 0; i < particles.length; i++) {
                             particles[i].update();
                             particles[i].draw();
@@ -709,6 +685,12 @@ document.documentElement.setAttribute('data-theme', theme);
                 localStorage.setItem('theme', theme);
             }, [theme]);
 
+            // ADDED: Apply Gradient Setting to Body
+            useEffect(() => {
+                document.body.setAttribute('data-gradient', gradientEnabled);
+                localStorage.setItem('gradientEnabled', gradientEnabled);
+            }, [gradientEnabled]);
+
             // ADDED: Save Pattern & Trigger Zoom Animation for CSS Backgrounds
             useEffect(() => {
                 localStorage.setItem('pattern', pattern);
@@ -721,7 +703,13 @@ document.documentElement.setAttribute('data-theme', theme);
                     if (isCssPattern) {
                         // 1. Set Start State (Zoomed Out) instantly
                         menu.style.transition = 'none';
-                        menu.style.backgroundSize = '30px 30px'; 
+                        if (pattern =="stars"){
+                                                  menu.style.backgroundSize = '150px 150px'; 
+
+                        }else{
+                                                  menu.style.backgroundSize = '30px 30px'; 
+
+                        }
                         
                         // 2. Wait for next paint frame to apply transition (Double RAF ensures paint)
                         requestAnimationFrame(() => {
@@ -731,7 +719,7 @@ document.documentElement.setAttribute('data-theme', theme);
                             });
                         });
                     } else {
-                        // Canvas patterns (Snow/Hex/Fireworks) handle their own zoom
+                        // Canvas patterns (Snow/Hex/Fireworks/Glitter) handle their own zoom
                         menu.style.backgroundSize = '';
                         menu.style.transition = 'none';
                     }
@@ -1477,16 +1465,21 @@ const LinksContent = e('div', { id: 'links-content', className: `menu-tab-conten
                         renderSwitch('theme-toggle-switch', theme === 'dark', toggleTheme, 'fas fa-moon', 'fas fa-sun')
                     ),
                     
+                    // ADDED: Gradient Toggle
+                    e('div', { className: 'settings-item' },
+                        e('label', null, 'Animated Gradient:'),
+                        renderSwitch('gradient-toggle-switch', gradientEnabled, () => setGradientEnabled(!gradientEnabled), 'fas fa-palette', 'fas fa-ban')
+                    ),
+
                     e('div', { className: 'settings-item' },
                         e('label', null, 'Background:'),
                         e('select', { id: 'pattern-select', value: pattern, onChange: (e) => setPattern(e.target.value) },
                             e('option', { value: 'lines' }, 'Lines'),
                             e('option', { value: 'dots' }, 'Dots'),
                             e('option', { value: 'stars' }, 'Stars'),
-                            e('option', { value: 'stripes' }, 'Stripes'),
+                            e('option', { value: 'stripes' }, 'Scanlines'),
                             e('option', { value: 'hexagons' }, 'Hexagons'),
-                            e('option', { value: 'snow' }, 'Snow'), 
-                            e('option', { value: 'fireworks' }, 'Fireworks'), 
+                            e('option', { value: 'snow' }, 'Starfall'), 
                             e('option', { value: 'waves' }, 'Waves'),
                             e('option', { value: 'none' }, 'None')
                         )
@@ -1811,3 +1804,4 @@ e('div', { id: 'loading-screen', className: isLoading ? '' : 'fade-out' },
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(e(App));
+
