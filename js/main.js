@@ -22,7 +22,7 @@ const PRESETS = [
     { name: "StarlightGG (Default)", title: "StarlightGG", favicon: "/favicon.ico", link: "https://classroom.google.com" },
     { name: "Zearn", title: "Student Home - Zearn", favicon: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y+mAAAAYFBMVEVHcExFvdM6utGKxq8/u9I8utFIvtM8utFFvNM+u9JJvdNAu9Jnxdg/u9E9utFIvtQ/u9E8utFxydolutn1z0D+0Cr1z0H1zj/1z0L1z0H1z0H1zj/1z0H31GD1z0H10EovluFDAAAAIHRSTlMA2P8Vrf8v9EuXcci5auP/XGR9wLmh4v9CW5Vod9EfI0NLlVAAAACgSURBVHgBddDFAcRADATBRTMzO/8ojyTzXH9rUeKUVFKLPxllrXUEzrXfPIy+/RVglaQ+1lD91GCNSENxLk5cm34jvKhnP6lvlvMf7zyVHJhh5HzXdS+Yi2eFIjPAPLYQmGMpCUyDx+yVVIisqilkTUt1wCq2HtjANgKb2CZgXcvNc1VV9TAMJ2wfNbvp9tmyK8B1x/5hlThaur4fT/Ek3sqLEwwJ2FthAAAAAElFTkSuQmCC", link: "https://zearn.org" }
 ];
-
+//replace with ones u know works
 const PROXY_SERVERS = [
     { name: "DogeUB (1)", url: "https://learn.teaching.za.com/search" },
     { name: "DogeUB (2)", url: "https://auth.teaching.za.com/search" },
@@ -30,8 +30,9 @@ const PROXY_SERVERS = [
     { name: "DogeUB (4)", url: "https://ask.teaching.za.com/search" },
         { name: "DogeUB (5)", url: "https://algebra.teaching.za.com/search" },
 ];
-
-const SURF_WEB_ENABLED = false; 
+//enable if wanted
+const SURF_WEB_ENABLED = true; 
+// edit this if wanted (this message is for Doge UB)
 const SURF_INFO_MESSAGE = "<b>Welcome to Surf Web!</b><br><br>Use the dropdown menu at the top to switch between proxy servers.<br><br><b>Tips:</b><br>- If a site is blocked, try a different server.<br>- Use <strong>'https://duckduckgo.com'</strong> to actually search, not 'Google'.";
 
         // --- MODAL COMPONENT ---
