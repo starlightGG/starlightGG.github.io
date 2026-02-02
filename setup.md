@@ -24,7 +24,7 @@ Follow these steps to connect your website to external services.
 ## 💬 Chat Setup (Rumble)
 1. **Get Video ID:** Go to [RumbleTalk.com](http://rumbletalk.com/) and copy the api from the integration steps.
 2. **Configure Page:** Open `/pages/chat_embed.html` in your code editor.
-3. **Update Embed:** Find the `<iframe>` tag and replace the current url in the `src` attribute with your actual Rumble url and div ID given.
+3. **Update Embed:** Find the `<script>` tag and replace the current url in the `src` attribute with your actual Rumble url and div ID given.
    * Example: `https://rumbletalk.com/chat/embed/IDHERE`
 4. **Save:** Save the file and push to your repository to activate the live chat.
 ---
