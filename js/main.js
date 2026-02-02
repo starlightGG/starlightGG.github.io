@@ -1,8 +1,9 @@
-// pretty suprising this uses react somehow
+// Suprise, i made this in react, but only using index.html
         const e = React.createElement;
         const { useState, useEffect, useRef } = React;
 
 // --- NEW PRESETS DATA (Custom Names vs Stealth Titles) ---
+// replace with ones u want
 const PRESETS = [
     { name: "Activate Learning", title: "Activate Learning Digital Platform - Home", favicon: "https://activatelearning.com/wp-content/uploads/2023/05/favicon.png", link: "https://activatelearning.com" },
     { name: "Calculator", title: "Calculator", favicon: "https://www.calculator.net/favicon.ico", link: "https://www.calculator.net" },
@@ -22,7 +23,8 @@ const PRESETS = [
     { name: "StarlightGG (Default)", title: "StarlightGG", favicon: "/favicon.ico", link: "https://classroom.google.com" },
     { name: "Zearn", title: "Student Home - Zearn", favicon: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y+mAAAAYFBMVEVHcExFvdM6utGKxq8/u9I8utFIvtM8utFFvNM+u9JJvdNAu9Jnxdg/u9E9utFIvtQ/u9E8utFxydolutn1z0D+0Cr1z0H1zj/1z0L1z0H1z0H1zj/1z0H31GD1z0H10EovluFDAAAAIHRSTlMA2P8Vrf8v9EuXcci5auP/XGR9wLmh4v9CW5Vod9EfI0NLlVAAAACgSURBVHgBddDFAcRADATBRTMzO/8ojyTzXH9rUeKUVFKLPxllrXUEzrXfPIy+/RVglaQ+1lD91GCNSENxLk5cm34jvKhnP6lvlvMf7zyVHJhh5HzXdS+Yi2eFIjPAPLYQmGMpCUyDx+yVVIisqilkTUt1wCq2HtjANgKb2CZgXcvNc1VV9TAMJ2wfNbvp9tmyK8B1x/5hlThaur4fT/Ek3sqLEwwJ2FthAAAAAElFTkSuQmCC", link: "https://zearn.org" }
 ];
-//replace with ones u know works
+
+//replace with ones u know works (defaults are DogeUB since it works)
 const PROXY_SERVERS = [
     { name: "DogeUB (1)", url: "https://learn.teaching.za.com/search" },
     { name: "DogeUB (2)", url: "https://auth.teaching.za.com/search" },
@@ -755,8 +757,8 @@ document.documentElement.setAttribute('data-theme', theme);
                     if (!window.PubNub) return; // Safety check
                     try {
                         const [pubRes, subRes] = await Promise.all([
-                            fetch('txt/pub.txt'),
-                            fetch('txt/sub.txt')
+                            fetch('/txt/pub.txt'),
+                            fetch('/txt/sub.txt')
                         ]);
                         let pubKey = (await pubRes.text()).trim();
                         let subKey = (await subRes.text()).trim();
@@ -1042,7 +1044,7 @@ document.documentElement.setAttribute('data-theme', theme);
                  const favicon = localStorage.getItem('customFaviconURL') || document.querySelector("link[rel*='icon']")?.href;
                  
                  win.document.write(`
-                    <html><head><script src='js/global.js'><\/script><title>${title}</title>
+                    <html><head><title>${title}</title>
                     ${favicon ? `<link rel="icon" href="${favicon}">` : ''}
                     <style>body{margin:0;overflow:hidden;}iframe{width:100vw;height:100vh;border:none;}</style>
                     </head><body><iframe src="${iframeState.src}"></iframe></body></html>
@@ -1315,8 +1317,11 @@ document.documentElement.setAttribute('data-theme', theme);
                                 if (!SURF_WEB_ENABLED) {
                                     showModal("This feature has been <b>Disabled by Host</b>.");
                                 } else {
-                                    // UPDATED: Pass 'true' for isSurfing
-                                    openGame('pages/surfidle', true);
+                                    // UPDATED: Check for saved server
+                                    const lastServer = localStorage.getItem('SURF_LAST_SERVER');
+                                    const targetUrl = lastServer || 'pages/surfidle';
+
+                                    openGame(targetUrl, true);
                                     
                                     if (!localStorage.getItem('surfInfoShown')) {
                                         showModal(SURF_INFO_MESSAGE);
@@ -1669,12 +1674,16 @@ const LinksContent = e('div', { id: 'links-content', className: `menu-tab-conten
                     // ADDED: Server Selector & Help Button (Only visible when surfing)
                     iframeState.isSurfing && e('select', { 
                         className: 'server-dropdown',
-                        value: iframeState.src,
+                        // UPDATED: Strip query strings so dropdown matches even after Reload
+                        value: iframeState.src.split('?')[0],
                         onChange: (ev) => {
                              const newUrl = ev.target.value;
-                             if (newUrl && newUrl !== iframeState.src) {
+                             // Compare against base URL to avoid loops with timestamps
+                             if (newUrl && newUrl !== iframeState.src.split('?')[0]) {
                                  setGameLoading(true);
                                  setIframeState(prev => ({ ...prev, src: newUrl }));
+                                 // UPDATED: Save selection
+                                 localStorage.setItem('SURF_LAST_SERVER', newUrl);
                              }
                         },
                         style: {
