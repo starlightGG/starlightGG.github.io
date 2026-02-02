@@ -35,7 +35,7 @@ const PROXY_SERVERS = [
 //enable if wanted
 const SURF_WEB_ENABLED = true; 
 // edit this if wanted (this message is for Doge UB)
-const SURF_INFO_MESSAGE = "<b>Welcome to Surf Web!</b><br><br>Use the dropdown menu at the top to switch between proxy servers.<br><br><b>Tips:</b><br>- If a site is blocked, try a different server.<br>- Use <strong>'https://duckduckgo.com'</strong> to actually search, not 'Google'.";
+const SURF_INFO_MESSAGE = "<b>Welcome to Surf Web!</b><br><br>Use the dropdown menu at the top to switch between proxy servers.<br><br><b>Tips:</b><br>- If a site is blocked, try a different server. (All may be blocked, sorry)<br>- Use <strong>'https://duckduckgo.com'</strong> to actually search, not 'Google'.";
 
         // --- MODAL COMPONENT ---
         const Modal = ({ message, isActive, onClose }) => {
