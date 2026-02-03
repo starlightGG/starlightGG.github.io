@@ -848,11 +848,11 @@ document.documentElement.setAttribute('data-theme', theme);
                         
                         // 1. HARD FREEZE DETECTION (Instant Trigger)
                         // UPDATED: Threshold increased to 5 seconds (User Request: "freeze is 5")
-                        // Checks every 500ms. If elapsed > 5000ms, it means the browser hung for ~4.5s+
-                        if (elapsed > 5000) {
+                        // Checks every 500ms. If elapsed > 7500ms, it means the browser hung for ~4.5s+
+                        if (elapsed > 7500) {
                             if (iframeState.active) {
                                 exitGame();
-                                showModal("⚠️ <strong>Freeze Detected!</strong><br><br>The game was exited because the browser froze for > 5 seconds.");
+                                showModal("⚠️ <strong>Freeze Detected!</strong><br><br>The game was exited because the browser froze for > 7.5 seconds.");
                             } else {
                                 showModal("⚠️ <strong>Browser Freeze!</strong><br>Closing tab to prevent crash...");
                                 setTimeout(() => window.close(), 500);
@@ -1481,7 +1481,7 @@ const LinksContent = e('div', { id: 'links-content', className: `menu-tab-conten
                                 className: 'fas fa-question-circle', 
                                 style: { cursor: 'pointer', opacity: 0.7 },
                                 // UPDATED: Info Text to match new logic
-                                onClick: () => showModal("<strong>Lag Reducer Protection</strong><br><br>Prevents browser crashes by monitoring performance.<br><br><b>Triggers if:</b><br>1. Browser freezes for > 5s.<br>2. Sustained lag (low FPS) for 2.5s.<br><br><b>Action:</b><br>- Exits game immediately.<br>- If still frozen, attempts to close tab.")
+                                onClick: () => showModal("<strong>Lag Reducer Protection</strong><br><br>Prevents browser crashes by monitoring performance.<br><br><b>Triggers if:</b><br>1. Browser freezes for > 7.5s.<br>2. Sustained lag (low FPS) for 2.5s.<br><br><b>Action:</b><br>- Exits game immediately.<br>- If still frozen, attempts to close tab.")
                             })
                         ),
                         renderSwitch('lag-reducer-switch', lagReducerEnabled, () => handleToggle('lagReducerState', lagReducerEnabled, setLagReducerEnabled), 'fas fa-tachometer-alt', 'fas fa-times')
