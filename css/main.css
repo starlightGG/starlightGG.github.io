@@ -666,3 +666,9 @@
             .dashboard-container { padding: 20px 10px; }
             .hero-section h2 { font-size: 2em; }
         }
+        /* --- TOGGLE GRADIENT (Added) --- */
+        body[data-gradient="false"] {
+            background: var(--bg-color);
+            animation: none;
+            background-size: auto;
+        }
