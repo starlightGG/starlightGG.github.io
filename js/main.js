@@ -641,30 +641,13 @@ document.documentElement.setAttribute('data-theme', theme);
                             particles[i].update(); 
                             particles[i].draw();
                         }
-                    } else if (pattern === 'fireworks') {
-                        if (Math.random() < 0.1) { 
-                            const exX = Math.random() * width;
-                            const exY = Math.random() * height;
-                            for(let k=0; k<20; k++) {
-                                particles.push(new Firework(exX, exY));
-                            }
-                        }
-                        for (let i = particles.length - 1; i >= 0; i--) {
-                            particles[i].update();
-                            particles[i].draw();
-                            if (particles[i].alpha <= 0) particles.splice(i, 1);
-                        }
                     } else if (pattern === 'waves') {
                         for (let i = 0; i < particles.length; i++) {
                             particles[i].update();
                             particles[i].draw();
                         }
-                    } else if (pattern === 'confetti' || pattern === 'glitter') {
-                        for (let i = 0; i < particles.length; i++) {
-                            particles[i].update();
-                            particles[i].draw();
-                        }
-                    }
+                    } 
+
                     
                     ctx.restore(); // Restore global scale
                     animationFrameId = requestAnimationFrame(animate);
