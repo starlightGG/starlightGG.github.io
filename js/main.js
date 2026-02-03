@@ -668,7 +668,7 @@ document.documentElement.setAttribute('data-theme', theme);
                 localStorage.setItem('theme', theme);
             }, [theme]);
 
-            // ADDED: Apply Gradient Setting to Body
+            // ADDED: Sync Gradient State to Body Attribute
             useEffect(() => {
                 document.body.setAttribute('data-gradient', gradientEnabled);
                 localStorage.setItem('gradientEnabled', gradientEnabled);
@@ -731,8 +731,8 @@ document.documentElement.setAttribute('data-theme', theme);
                     if (!window.PubNub) return; // Safety check
                     try {
                         const [pubRes, subRes] = await Promise.all([
-                            fetch('/txt/pub.txt'),
-                            fetch('/txt/sub.txt')
+                            fetch('txt/pub.txt'),
+                            fetch('txt/sub.txt')
                         ]);
                         let pubKey = (await pubRes.text()).trim();
                         let subKey = (await subRes.text()).trim();
@@ -1647,8 +1647,9 @@ const LinksContent = e('div', { id: 'links-content', className: `menu-tab-conten
             // --- IFRAME OVERLAY (Game View) ---
             const IframeOverlay = e('div', { id: 'iframe-container', style: { display: iframeState.active ? 'flex' : 'none' } },
                 e('nav', { id: 'iframe-nav' },
-                    e('button', { onClick: exitGame }, e('i', { className: 'fas fa-home' }), ' Home'), // Replaced 🏠
-                    e('button', { onClick: reloadGame }, e('i', { className: 'fas fa-sync-alt' }), ' Reload'), // Replaced 🔄
+                    // UPDATED: Wrapped text in 'span' so CSS @media query can hide it on mobile
+                    e('button', { onClick: exitGame }, e('i', { className: 'fas fa-home' }), e('span', null, ' Home')), 
+                    e('button', { onClick: reloadGame }, e('i', { className: 'fas fa-sync-alt' }), e('span', null, ' Reload')),
                     
                     // ADDED: Server Selector & Help Button (Only visible when surfing)
                     iframeState.isSurfing && e('select', { 
@@ -1682,10 +1683,10 @@ const LinksContent = e('div', { id: 'links-content', className: `menu-tab-conten
                         PROXY_SERVERS.map(s => e('option', { value: s.url, key: s.name }, s.name))
                     ),
 
-                    iframeState.isSurfing && e('button', { onClick: () => showModal(SURF_INFO_MESSAGE) }, e('i', { className: 'fas fa-question' }), ' Help'),
+                    iframeState.isSurfing && e('button', { onClick: () => showModal(SURF_INFO_MESSAGE) }, e('i', { className: 'fas fa-question' }), e('span', null, ' Help')),
 
-                    e('button', { onClick: openNewWindow }, e('i', { className: 'fas fa-external-link-alt' }), ' Popout'), // Replaced ↗️
-                    e('button', { onClick: () => document.getElementById('my-iframe').requestFullscreen() }, e('i', { className: 'fas fa-expand' }), ' Fullscreen'), // Replaced 📺
+                    e('button', { onClick: openNewWindow }, e('i', { className: 'fas fa-external-link-alt' }), e('span', null, ' Popout')), 
+                    e('button', { onClick: () => document.getElementById('my-iframe').requestFullscreen() }, e('i', { className: 'fas fa-expand' }), e('span', null, ' Fullscreen')), 
                     e('button', { 
                         id: 'footer-toggle', 
                         onClick: () => {
@@ -1694,7 +1695,11 @@ const LinksContent = e('div', { id: 'links-content', className: `menu-tab-conten
                             // We do NOT save temporary toggle state to localStorage here if we want it to be transient,
                             // BUT user asked for "remember preference". So we update state, which triggers useEffect save.
                         } 
-                    }, footerVisible ? 'Hide Footer' : 'Show Footer'),
+                    }, 
+                        // UPDATED: Added Icon + Span so it works on mobile
+                        e('i', { className: footerVisible ? 'fas fa-chevron-down' : 'fas fa-chevron-up' }),
+                        e('span', null, footerVisible ? ' Hide Footer' : ' Show Footer')
+                    ),
                     // Loading Bar Component inside Nav
                     e('div', { className: `iframe-loading-bar ${gameLoading ? 'active' : ''}` })
                 ),
@@ -1787,4 +1792,5 @@ e('div', { id: 'loading-screen', className: isLoading ? '' : 'fade-out' },
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(e(App));
+
 
