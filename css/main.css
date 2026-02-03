@@ -659,13 +659,11 @@
     }
 }
 
-        /* --- MOBILE RESPONSIVENESS --- */
-        @media (max-width: 600px) {
-            #iframe-nav button span { display: none; } /* Hide text labels on small screens */
-            #iframe-nav button { padding: 10px; justify-content: center; } /* Icon only mode */
-            .dashboard-container { padding: 20px 10px; }
-            .hero-section h2 { font-size: 2em; }
-        }
+@media (max-width: 600px) {
+    #iframe-nav button span { display: none !important; } 
+    #iframe-nav button { padding: 10px !important; justify-content: center !important; }
+    .hero-section h2 { font-size: 2em !important; }
+}
         /* --- TOGGLE GRADIENT (Added) --- */
         body[data-gradient="false"] {
             background: var(--bg-color);
