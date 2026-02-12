@@ -1568,7 +1568,7 @@ const LinksContent = e('div', { id: 'links-content', className: `menu-tab-conten
                             } }, e('i', { className: 'fas fa-lightbulb' })),
                             e('div', { style: { fontSize: '0.9em', opacity: 0.9 } },
                                 e('strong', null, 'Starlight Tip:'), e('br'),
-                                'Auto-saves occur every ', e('strong', null, 25 seconds'), '.', e('br'),
+                                'Auto-saves occur every ', e('strong', null,'25 seconds'), '.', e('br'),
                                 'You must ', e('strong', null, 'Export Full Backup'), ' once to grant permission.', e('br'), e('br'),
                                 'If you are on a ', e('strong', null, 'Chromebook'), ', it is recommended to drag \'n drop the file into ', e('strong', null, 'My Drive'), '.', e('br'), e('br'),
                                 e('i', { className: 'fas fa-exclamation-triangle', style: { color: 'var(--text-bad)' } }), 
