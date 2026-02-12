@@ -168,7 +168,7 @@ document.addEventListener('keydown', (event) => {
     if (overlay && getComputedStyle(overlay).display === 'flex' && isLetterOrSpace) {
         const key = event.key.toUpperCase();
         
-        if (key === 'E' || event.key === ' ') {
+        if (key === 'E') {
             toggleContentVisibility(true); 
             event.preventDefault();
         } else {
