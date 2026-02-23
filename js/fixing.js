@@ -1,7 +1,7 @@
 // Set this to true to enable the maintenance overlay
-const fixing = true;
+const fixing = false;
 
-const logoUrl = 'media/favicon.png'; 
+const logoUrl = '/media/favicon.png'; 
 
 window.addEventListener('load', () => {
     if (fixing) {
