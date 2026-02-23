@@ -1,5 +1,5 @@
 // Set this to true to enable the maintenance overlay
-const fixing = false;
+const fixing = true;
 
 const logoUrl = 'media/favicon.png'; 
 
