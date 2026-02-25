@@ -258,7 +258,7 @@
               <div class="w-full aspect-square rounded-2xl overflow-hidden mb-4 relative shadow-[inset_0_2px_4px_rgba(0,0,0,0.1)]">
 <img 
   :src="getGameImage(game)" 
-  @error="$el.src = 'https://tse2.mm.bing.net/th?q=' + encodeURIComponent(game.name + ' icon ')"
+  @error="$el.src = 'https://tse2.mm.bing.net/th?q=' + encodeURIComponent(game.name + ' icon, square cropped')"
   :alt="game.name" 
   class="w-full h-full object-cover bg-[#1a1c23] transition duration-500 group-hover:scale-110" 
   loading="lazy" 
