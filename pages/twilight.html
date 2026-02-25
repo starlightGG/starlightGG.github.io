@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -255,8 +256,13 @@
               </div>
 
               <div class="w-full aspect-square rounded-2xl overflow-hidden mb-4 relative shadow-[inset_0_2px_4px_rgba(0,0,0,0.1)]">
-                <img :src="getGameImage(game)" :alt="game.name" class="w-full h-full object-cover transition duration-500 group-hover:scale-110" loading="lazy" />
-                
+<img 
+  :src="getGameImage(game)" 
+  @error="$el.src = 'https://tse2.mm.bing.net/th?q=' + encodeURIComponent(game.name + ' icon ')"
+  :alt="game.name" 
+  class="w-full h-full object-cover bg-[#1a1c23] transition duration-500 group-hover:scale-110" 
+  loading="lazy" 
+/>                
                 <div class="absolute top-2 left-2 flex flex-col gap-1">
                   <template x-if="game.top"><span class="bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-md font-bold shadow-md">HOT</span></template>
                   <template x-if="game.new"><span class="bg-green-500 text-white text-[10px] px-2 py-0.5 rounded-md font-bold shadow-md">NEW</span></template>
@@ -417,12 +423,18 @@
             return "No games found.";
           },
 
-          getGameImage(game) {
-            if (game.image?.startsWith("http")) return game.image;
-            if (game.proxy) return `${cdnUrl}/media/games/${game.image}`;
-            const folder = game.url?.split("/")[0] || "";
-            return `${cdnUrl}/cdn/${folder}/${game.image}`;
-          },
+         getGameImage(game) {
+          // If there's no image property at all, go straight to the fallback engine
+          if (!game.image) {
+            return `https://tse2.mm.bing.net/th?q=${encodeURIComponent(game.name + ' logo icon')}`;
+          }
+          
+          // Existing logic
+          if (game.image?.startsWith("http")) return game.image;
+          if (game.proxy) return `${cdnUrl}/media/games/${game.image}`;
+          const folder = game.url?.split("/")[0] || "";
+          return `${cdnUrl}/cdn/${folder}/${game.image}`;
+         },
 
           async openGame(game) {
             this.currentGame = game;
@@ -504,3 +516,5 @@
     </script>
   </body>
 </html>
+
+
