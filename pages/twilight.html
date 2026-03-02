@@ -186,7 +186,6 @@
             <input
               type="text"
               x-model="searchQuery"
-              @input="applyFilters()"
               :placeholder="searchPlaceholder"
               class="neu-pressed w-full px-6 py-4 outline-none transition text-lg"
             />
@@ -195,7 +194,6 @@
           <div class="w-full md:w-64">
             <select 
               x-model="filterCategory" 
-              @change="applyFilters()"
               class="neu-flat w-full px-6 py-4 outline-none cursor-pointer appearance-none font-medium"
             >
               <option value="all">All Games</option>
@@ -343,6 +341,14 @@
           async init() {
             this.theme = localStorage.getItem('theme') || 'light';
             document.documentElement.setAttribute('data-theme', this.theme);
+
+            // ---> THE FIX: Watch for state changes and update securely <---
+            this.$watch('filterCategory', () => {
+                this.applyFilters();
+            });
+            this.$watch('searchQuery', () => {
+                this.applyFilters();
+            });
 
             const savedRecents = localStorage.getItem('recentGames');
             if (savedRecents) this.recentGames = JSON.parse(savedRecents);
