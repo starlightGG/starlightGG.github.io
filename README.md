@@ -76,7 +76,7 @@ We are faster, stronger, and put less stress on your CPU.
 ---
 
 * **Setup** [Instructions](/setup.md).
-* **Proxy Setup** [Instructions](https://starlightgg/starlightgg-proxy).
+* **Proxy Setup** [Instructions](https://github.com/starlightgg/starlightgg-proxy).
 
 ---
 
