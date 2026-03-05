@@ -30,7 +30,7 @@ const PRESETS = [
 
 //replace with ones u know works
 const PROXY_SERVERS = [
-    { name: "StarGGProxy", url: "https://glowing-xylophone-5gg5gp49p4j73p657-8080.app.github.dev/" }
+    { name: "StarGG Proxy", url: "https://expert-succotash-699w97rp7946c556q-8080.app.github.dev/" }
 ,
 ];
 //enable if wanted
