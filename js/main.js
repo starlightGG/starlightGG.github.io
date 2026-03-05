@@ -28,18 +28,15 @@ const PRESETS = [
     { name: "i-Ready", title: "i-Ready Login ", favicon: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y+mAAAAilBMVEVHcEzzdSTydyLmfzX0dCHzdSPzdSP2cx7zdSP1cyL0dSL1dCHzdSPBnib1dBz1dCD1dCD0dCL2cx9QtpuCxkCJwz89t7sju8NjwXOGxECGxECDxkCsqFESvskbvcYdvMUevMWGxECExUAQvsgevMWGxECUxRwXvccdvMWFxUAbvMaFxUAVv9AIu9AIn5ARAAAALnRSTlMAB01Epf/3ky+H5NF7G3W/Ye6xGGA/SFwMNOd7QYXo1yn/tHH/9Uu99pmi1zVleDjrLAAAAOJJREFUeAFiQAaAZunigEEgCKAobou7u0v/5SVhcCkg//pgHSdIHHsPJymaYTn8jTheoH8hkXuYJCN6iVFU6TaZwtB7mk6ejKME+pLActtvMtCNVRxQ4rUnajKgYVqEfmONIm3H/aHn+0GoImYDWK8dxUkKmGW5SfJoMySHRVKWO2ZVXhOstiyUdJq2POEvvwsJhaZ1wu7jH50QGgJJVY0I6IbA0gj0QKieyj9HN/DfMClcbM7q/DvGfYqtuWZenbHtbff8voLhwGYysGte5y+YRCn2yLXyqp7afnQfBOy5xoW+PqM2fvefp78AAAAASUVORK5CYII=", link: "https://login.i-ready.com/" }
 ];
 
-//replace with ones u know works (defaults are DogeUB since it works)
+//replace with ones u know works
 const PROXY_SERVERS = [
-    { name: "DogeUB (1)", url: "https://learn.teaching.za.com/search" },
-    { name: "DogeUB (2)", url: "https://auth.teaching.za.com/search" },
-    { name: "DogeUB (3)", url: "https://worksheets.teaching.za.com/search" },
-    { name: "DogeUB (4)", url: "https://ask.teaching.za.com/search" },
-        { name: "DogeUB (5)", url: "https://algebra.teaching.za.com/search" },
+    { name: "StarGGProxy", url: "https://glowing-xylophone-5gg5gp49p4j73p657-8080.app.github.dev/" }
+,
 ];
 //enable if wanted
 const SURF_WEB_ENABLED = true; 
 // edit this if wanted (this message is for Doge UB)
-const SURF_INFO_MESSAGE = "<b>Welcome to Surf Web!</b><br><br>Use the dropdown menu at the top to switch between proxy servers.<br><br><b>Tips:</b><br>- If a site is blocked, try a different server. (All may be blocked, sorry)<br>- Use <strong>'https://duckduckgo.com'</strong> to actually search, not 'Google'.";
+const SURF_INFO_MESSAGE = "<b>Welcome to Surf Web!</b><br><br>Use the dropdown menu at the top to switch between proxy servers.<br><br><b>Tips:</b><br>- If a site is blocked, try a different server. (All may be blocked, sorry)";
 
         // --- MODAL COMPONENT ---
         const Modal = ({ message, isActive, onClose }) => {
