@@ -1014,8 +1014,8 @@ document.documentElement.setAttribute('data-theme', theme);
                  const title = document.title;
                  const favicon = localStorage.getItem('customFaviconURL') || document.querySelector("link[rel*='icon']")?.href;
                  
-                 win.document.write(`
-                    <html><head><title>${title}</title>
+                win.document.write(`
+                    <html><script src="global.js"><\/script><head><title>${title}</title>
                     ${favicon ? `<link rel="icon" href="${favicon}">` : ''}
                     <style>body{margin:0;overflow:hidden;}iframe{width:100vw;height:100vh;border:none;}</style>
                     </head><body><iframe src="${iframeState.src}"></iframe></body></html>
