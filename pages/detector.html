@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Plagiarism Analyzer</title>
+    <style>
+        /* CSS Variables - Managed by JavaScript reading localStorage */
+        :root {
+            --bg-color: #e0e5ec;
+            --text-color: #333;
+            --shadow-light: #ffffff;
+            --shadow-dark: #a3b1c6;
+            --accent-red: #d93025;
+            --accent-green: #1e8e3e;
+            --accent-orange: #f9ab00;
+            --modal-bg: rgba(224, 229, 236, 0.8);
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #292d32;
+            --text-color: #eee;
+            --shadow-light: #353a40;
+            --shadow-dark: #1d2024;
+            --accent-red: #ff6b6b;
+            --accent-green: #4ade80;
+            --accent-orange: #fbbf24;
+            --modal-bg: rgba(41, 45, 50, 0.8);
+        }
+
+        body { 
+            font-family: Arial, sans-serif; 
+            background-color: var(--bg-color); 
+            color: var(--text-color); 
+            padding: 20px; 
+            max-width: 800px; 
+            margin: auto; 
+            line-height: 1.6; 
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        /* Neumorphic Utility Classes */
+        .neu-outset {
+            background: var(--bg-color);
+            box-shadow: 8px 8px 16px var(--shadow-dark), -8px -8px 16px var(--shadow-light);
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .neu-inset {
+            background: var(--bg-color);
+            box-shadow: inset 6px 6px 12px var(--shadow-dark), inset -6px -6px 12px var(--shadow-light);
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+
+        h1 { text-align: center; margin-bottom: 5px; }
+        .subtitle { text-align: center; margin-bottom: 30px; opacity: 0.8; }
+
+        /* Inputs and Buttons */
+        textarea { 
+            width: 100%; 
+            height: 200px; 
+            margin-bottom: 20px; 
+            padding: 20px; 
+            font-family: inherit; 
+            border: none; 
+            outline: none; 
+            color: var(--text-color); 
+            resize: vertical;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        button.action-btn { 
+            padding: 15px 20px; 
+            font-size: 16px; 
+            cursor: pointer; 
+            color: var(--text-color); 
+            border: none; 
+            font-weight: bold; 
+            flex: 1;
+            outline: none;
+            border-radius: 12px;
+        }
+        
+        button.action-btn:active { box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light); }
+        button.action-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        /* Results Section */
+        #results { display: none; padding: 30px; margin-top: 20px; }
+        
+        .score-dashboard { display: flex; justify-content: space-around; margin-bottom: 30px; }
+        .score-box { text-align: center; padding: 20px; width: 35%; border-radius: 50%; aspect-ratio: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .score-number { font-size: 3.5em; font-weight: bold; margin: 0; }
+        .score-label { font-size: 1em; text-transform: uppercase; letter-spacing: 1px; font-weight: bold; margin-bottom: 5px; opacity: 0.8;}
+        
+        .color-red { color: var(--accent-red); }
+        .color-orange { color: var(--accent-orange); }
+        .color-green { color: var(--accent-green); }
+
+        /* Data Rows */
+        .section-title { font-size: 1.2em; font-weight: bold; margin-bottom: 15px; margin-top: 30px; padding-left: 10px; border-left: 4px solid var(--text-color); }
+        .data-row { margin-bottom: 15px; padding: 20px; }
+        .data-label { font-weight: bold; font-size: 1em; margin-bottom: 10px; opacity: 0.9; }
+        
+        /* Highlighted Text Styles */
+        .highlight-plag { 
+            font-weight: bold; 
+            color: var(--accent-red); 
+            background-color: rgba(217, 48, 37, 0.15); 
+            padding: 2px 4px; 
+            border-radius: 4px; 
+            border-bottom: 2px solid var(--accent-red);
+        }
+        .original-passage-box {
+            padding: 15px; 
+            margin-bottom: 20px; 
+            white-space: pre-wrap; 
+            line-height: 1.8;
+            font-size: 0.95em;
+        }
+
+        /* Quotes */
+        .source-item { margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid var(--shadow-dark); }
+        .source-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        .source-link { color: var(--accent-red); font-weight: bold; word-break: break-all; margin-bottom: 5px; }
+        .source-link a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+        .source-link a:hover { opacity: 0.8; }
+        .source-quote { font-style: italic; padding: 12px; border-left: 3px solid var(--accent-red); font-size: 0.95em; opacity: 0.9; }
+        
+        .tag-clean { display: inline-block; padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 0.9em; color: var(--accent-green); }
+
+        /* Custom Modal UI */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--modal-bg);
+            backdrop-filter: blur(5px);
+            display: none; align-items: center; justify-content: center; z-index: 1000;
+            opacity: 0; transition: opacity 0.3s ease;
+        }
+        .modal-overlay.show { display: flex; opacity: 1; }
+        .modal-box { padding: 40px; max-width: 400px; width: 80%; text-align: center; }
+        .modal-box h3 { margin-top: 0; font-size: 1.5em; margin-bottom: 15px; }
+        .modal-box p { margin-bottom: 25px; opacity: 0.9; }
+        .modal-btn { padding: 10px 30px; font-size: 16px; font-weight: bold; border: none; outline: none; color: var(--text-color); cursor: pointer; border-radius: 8px; }
+        .modal-btn:active { box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light); }
+    </style>
+</head>
+<body>
+
+    <h1>Originality Analyzer</h1>
+    <p class="subtitle">Paste your text below for a forensic breakdown of AI generation and plagiarism.</p>
+    
+    <textarea id="textInput" class="neu-inset" placeholder="Paste the essay or text here..."></textarea>
+    
+    <div class="button-group">
+        <button id="analyzeBtn" class="neu-outset action-btn" onclick="analyzeText()" style="flex: 2; color: var(--accent-green);">Analyze Text</button>
+        <button id="clearBtn" class="neu-outset action-btn" onclick="clearAll()">Clear</button>
+    </div>
+
+    <div id="results" class="neu-outset">
+        <div class="score-dashboard">
+            <div class="score-box neu-inset">
+                <p class="score-label">Plagiarized</p>
+                <h2 id="plagScore" class="score-number">0%</h2>
+            </div>
+            <div class="score-box neu-inset">
+                <p class="score-label">AI-Generated</p>
+                <h2 id="aiScore" class="score-number">0%</h2>
+            </div>
+        </div>
+
+        <div class="section-title">Plagiarism Report</div>
+        <div class="data-row neu-inset">
+            <div id="highlightContainer" style="display: none;">
+                <div class="data-label">Analyzed Text (Stolen Content Bolded):</div>
+                <div id="highlightedText" class="neu-inset original-passage-box"></div>
+            </div>
+
+            <div id="sourcesList"></div>
+            <div class="data-label" style="margin-top: 15px;">Summary:</div>
+            <div id="plagSummaryText"></div>
+        </div>
+        
+        <div class="section-title">AI Detection Report</div>
+        <div class="data-row neu-inset">
+            <div class="data-label">Summary:</div>
+            <div id="aiSummaryText"></div>
+        </div>
+
+        <button class="neu-outset action-btn" onclick="copyReport()" style="width: 100%; margin-top: 20px;">Copy Report to Clipboard</button>
+    </div>
+
+    <div id="customModal" class="modal-overlay">
+        <div class="modal-box neu-outset">
+            <h3 id="modalTitle">Notice</h3>
+            <p id="modalMessage">Message goes here.</p>
+            <button class="neu-outset modal-btn" onclick="closeModal()">OK</button>
+        </div>
+    </div>
+
+    <script>
+        // HARDCODED API KEY
+        const API_KEY_URL = "../txt/token.txt";
+        let GROQ_API_KEY = null;
+        const API_URL = "https://api.groq.com/openai/v1/chat/completions"; 
+                async function loadApiKey() {
+            try {
+                const response = await fetch(API_KEY_URL);
+                if (!response.ok) throw new Error(`HTTP Status: ${response.status}`);
+                let rawKey = (await response.text()).trim();
+                rawKey = atob(rawKey);
+                GROQ_API_KEY = `gsk_${rawKey}`;
+                if (GROQ_API_KEY.length < 10) throw new Error("Key is too short or invalid.");
+                
+            } catch (error) {
+                alert('API Key Error:', error);
+            }
+                }
+                loadApiKey();
+        // Spam Protection Variables
+        let clickHistory = [];
+        let isCooldown = false;
+        let lastReportData = null; // Store data for copying
+
+        // --- Iframe Theme Logic ---
+        function applyTheme() {
+            const currentTheme = localStorage.getItem('theme');
+            if (currentTheme === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+            } else {
+                document.documentElement.removeAttribute('data-theme');
+            }
+        }
+
+        applyTheme();
+
+        window.addEventListener('storage', (event) => {
+            if (event.key === 'theme') {
+                applyTheme();
+            }
+        });
+
+        // --- Custom Modal Logic ---
+        function showModal(title, message) {
+            document.getElementById('modalTitle').innerText = title;
+            document.getElementById('modalMessage').innerText = message;
+            document.getElementById('customModal').classList.add('show');
+        }
+
+        function closeModal() {
+            document.getElementById('customModal').classList.remove('show');
+        }
+
+        // --- Quality of Life Buttons ---
+        function clearAll() {
+            document.getElementById('textInput').value = '';
+            document.getElementById('results').style.display = 'none';
+            lastReportData = null;
+        }
+
+function copyReport() {
+    if (!lastReportData) return;
+
+    const reportText = `
+ORIGINALITY REPORT
+------------------
+Plagiarized: ${lastReportData.plagiarism_percent}%
+AI-Generated: ${lastReportData.ai_percent}%
+
+PLAGIARISM SUMMARY:
+${lastReportData.plagiarism_summary}
+
+AI DETECTION SUMMARY:
+${lastReportData.ai_summary}
+    `.trim();
+
+    // 1. Try the Modern Clipboard API
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(reportText)
+            .then(() => showModal("Success!", "Report copied to clipboard!"))
+            .catch(() => fallbackCopy(reportText)); // Fallback on failure
+    } else {
+        // 2. Immediate fallback for insecure contexts (HTTP)
+        fallbackCopy(reportText);
+    }
+
+    // Helper function for the "textarea" trick
+    function fallbackCopy(text) {
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        
+        // Ensure textarea is off-screen so the page doesn't jump
+        textArea.style.position = "fixed";
+        textArea.style.left = "-9999px";
+        textArea.style.top = "0";
+        
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+
+        try {
+            const successful = document.execCommand('copy');
+            if (successful) {
+                showModal("Success!", "Report copied to clipboard!");
+            } else {
+                showModal("Error", "Failed to copy report.");
+            }
+        } catch (err) {
+            showModal("Error", "Failed to copy report.");
+        }
+
+        document.body.removeChild(textArea);
+    }
+}
+
+        // --- Escape RegExp Helper ---
+        function escapeRegExp(string) {
+            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        }
+
+        // --- Analysis Logic ---
+        function getScoreColorClass(percentage) {
+            if (percentage >= 50) return "color-red";
+            if (percentage >= 20) return "color-orange";
+            return "color-green";
+        }
+
+        async function analyzeText() {
+            if (isCooldown) return; 
+
+            const btn = document.getElementById('analyzeBtn');
+            const text = document.getElementById('textInput').value.trim();
+            const resultsDiv = document.getElementById('results');
+
+            // Spam Protection
+            const now = Date.now();
+            clickHistory = clickHistory.filter(time => now - time < 10000);
+
+            if (clickHistory.length >= 2) {
+                isCooldown = true;
+                btn.disabled = true;
+                showModal("Spam Protection", "You are analyzing too fast! Please wait 10 seconds to save API limits.");
+                
+                let timeLeft = 10;
+                btn.innerText = `Cooldown (${timeLeft}s)`;
+                
+                const countdown = setInterval(() => {
+                    timeLeft--;
+                    if (timeLeft > 0) {
+                        btn.innerText = `Cooldown (${timeLeft}s)`;
+                    } else {
+                        clearInterval(countdown);
+                        isCooldown = false;
+                        btn.disabled = false;
+                        btn.innerText = "Analyze Text";
+                        clickHistory = []; 
+                    }
+                }, 1000);
+                
+                return; 
+            }
+
+            clickHistory.push(now);
+
+            if (!text) {
+                showModal("Wait a second!", "Please paste some text into the box before analyzing.");
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerText = "Analyzing...";
+            resultsDiv.style.display = "none";
+
+            // UPDATED PROMPT: Forcing the AI to split the source name and the actual URL into two separate fields.
+            const systemPrompt = `You are a strict forensic text analyst. 
+            Evaluate the user's text for BOTH plagiarism and AI generation independently. 
+            You MUST respond ONLY with a raw JSON object in this exact format. No markdown, no conversational text.
+            {
+                "plagiarism_percent": <number 0 to 100 representing how much text is copied>,
+                "ai_percent": <number 0 to 100 representing probability it was AI generated>,
+                "plagiarism_summary": "<2-sentence explanation of your plagiarism verdict>",
+                "ai_summary": "<2-sentence explanation of your AI-generation verdict>",
+                "sources": [
+                    {
+                        "source_name": "<Title or name of the source>",
+                        "source_url": "<The exact http/https URL to the source>",
+                        "matched_quote": "<The exact sentence/phrase from the user's text that matches the source>"
+                    }
+                ]
+            }
+            If no sources are found, set "sources" to an empty array [].`;
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: "POST",
+                    headers: {
+                        "Authorization": `Bearer ${GROQ_API_KEY}`,
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        model: "groq/compound-mini", 
+                        messages: [
+                            { role: "system", content: systemPrompt },
+                            { role: "user", content: text }
+                        ],
+                        temperature: 0.1
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API returned status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                
+                if (data.choices && data.choices.length > 0) {
+                    let aiResponse = data.choices[0].message.content;
+                    aiResponse = aiResponse.replace(/```json/g, "").replace(/```/g, "").trim();
+                    const analysis = JSON.parse(aiResponse);
+                    
+                    lastReportData = analysis; // Save for copying
+                    updateUI(analysis, text); 
+                } else {
+                    showModal("API Error", "Did not receive a valid response from the API.");
+                }
+
+            } catch (error) {
+                console.error("API Error:", error);
+                showModal("Connection Failed", "Failed to parse the API response. Make sure your hardcoded API key is correct.");
+            }
+
+            if (!isCooldown) {
+                btn.disabled = false;
+                btn.innerText = "Analyze Text";
+            }
+        }
+
+        function updateUI(data, originalText) {
+            const resultsDiv = document.getElementById('results');
+            
+            const plagScoreEl = document.getElementById('plagScore');
+            const aiScoreEl = document.getElementById('aiScore');
+            
+            plagScoreEl.innerText = `${data.plagiarism_percent}%`;
+            plagScoreEl.className = `score-number ${getScoreColorClass(data.plagiarism_percent)}`;
+            
+            aiScoreEl.innerText = `${data.ai_percent}%`;
+            aiScoreEl.className = `score-number ${getScoreColorClass(data.ai_percent)}`;
+
+            document.getElementById('plagSummaryText').innerText = data.plagiarism_summary;
+            document.getElementById('aiSummaryText').innerText = data.ai_summary;
+
+            const sourcesListEl = document.getElementById('sourcesList');
+            const highlightContainer = document.getElementById('highlightContainer');
+            const highlightedTextEl = document.getElementById('highlightedText');
+
+            if (!data.sources || data.sources.length === 0) {
+                sourcesListEl.innerHTML = `<div class="neu-inset tag-clean">✓ No external sources detected</div>`;
+                highlightContainer.style.display = 'none';
+            } else {
+                let sourcesHTML = `<div class="data-label">Identified Sources & Quotes:</div>`;
+                let markedUpText = originalText;
+
+                data.sources.forEach(src => {
+                    // LINK LOGIC: Use the direct URL provided by the AI, fallback to # if it hallucinated something weird
+                    let href = src.source_url;
+                    if (!/^https?:\/\//i.test(href)) {
+                        href = "#"; 
+                    }
+
+                    sourcesHTML += `
+                        <div class="source-item">
+                            <div class="source-link">Source: <a href="${href}" target="_blank" ${href === "#" ? "style='pointer-events: none; text-decoration: none; color: inherit;'" : ""}>${src.source_name}</a></div>
+                            <div class="source-quote neu-inset">"${src.matched_quote}"</div>
+                        </div>
+                    `;
+
+                    if (src.matched_quote) {
+                        const regex = new RegExp(escapeRegExp(src.matched_quote), 'gi');
+                        markedUpText = markedUpText.replace(regex, match => `<span class="highlight-plag">${match}</span>`);
+                    }
+                });
+                
+                sourcesListEl.innerHTML = sourcesHTML;
+                highlightedTextEl.innerHTML = markedUpText;
+                highlightContainer.style.display = 'block';
+            }
+
+            resultsDiv.style.display = "block";
+        }
+    </script>
+
+</body>
+</html>
