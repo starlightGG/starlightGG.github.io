@@ -379,24 +379,30 @@ ${lastReportData.ai_summary}
             btn.innerText = "Analyzing...";
             resultsDiv.style.display = "none";
 
-            // UPDATED PROMPT: Forcing the AI to split the source name and the actual URL into two separate fields.
-            const systemPrompt = `You are a strict forensic text analyst. 
-            Evaluate the user's text for BOTH plagiarism and AI generation independently. 
-            You MUST respond ONLY with a raw JSON object in this exact format. No markdown, no conversational text.
-            {
-                "plagiarism_percent": <number 0 to 100 representing how much text is copied>,
-                "ai_percent": <number 0 to 100 representing probability it was AI generated>,
-                "plagiarism_summary": "<2-sentence explanation of your plagiarism verdict>",
-                "ai_summary": "<2-sentence explanation of your AI-generation verdict>",
-                "sources": [
-                    {
-                        "source_name": "<Title or name of the source>",
-                        "source_url": "<The exact http/https URL to the source>",
-                        "matched_quote": "<The exact sentence/phrase from the user's text that matches the source>"
-                    }
-                ]
-            }
-            If no sources are found, set "sources" to an empty array [].`;
+const systemPrompt = `You are a strict forensic text analyst. 
+Evaluate the user's text for BOTH plagiarism and AI generation independently.
+
+CRITICAL ANTI-HALLUCINATION RULES:
+1. DO NOT invent, guess, or fabricate URLs. If you recognize copied text but are not 100% certain of the exact, live URL, you MUST set "source_url" to null.
+2. Rely only on your training data for exact matches. If you cannot verify a source, do not cite it.
+3. If no plagiarism is detected, set "sources" to an empty array [].
+
+You MUST respond ONLY with a raw JSON object in this exact format. No markdown formatting blocks (\`\`\`), no conversational text.
+
+{
+    "analysis_reasoning": "<1-paragraph internal thought process analyzing the text's perplexity, burstiness, and known stylistic markers before determining the final scores>",
+    "plagiarism_percent": <number 0 to 100 representing the exact percentage of copied text>,
+    "ai_percent": <number 0 to 100 representing probability it was AI generated>,
+    "plagiarism_summary": "<2-sentence explanation of your plagiarism verdict>",
+    "ai_summary": "<2-sentence explanation of your AI-generation verdict>",
+    "sources": [
+        {
+            "source_name": "<Title, author, or name of the source>",
+            "source_url": "<The exact http/https URL, or null if uncertain>",
+            "matched_quote": "<The exact phrase from the user's text that matches the source>"
+        }
+    ]
+}`;
 
             try {
                 const response = await fetch(API_URL, {
