@@ -382,19 +382,23 @@ ${lastReportData.ai_summary}
 const systemPrompt = `You are a strict forensic text analyst. 
 Evaluate the user's text for BOTH plagiarism and AI generation independently.
 
-CRITICAL ANTI-HALLUCINATION RULES:
-1. DO NOT invent, guess, or fabricate URLs. If you recognize copied text but are not 100% certain of the exact, live URL, you MUST set "source_url" to null.
-2. Rely only on your training data for exact matches. If you cannot verify a source, do not cite it.
-3. If no plagiarism is detected, set "sources" to an empty array [].
+Since you are evaluating against fetched data, use only verified sources. DO NOT guess URLs. If a source is unknown, set "source_url" to null.
+
+CRITERIA FOR AI DETECTION:
+Evaluate the text strictly on the following human vs. AI markers:
+1. Imperfections: Humans make minor typos, phonetic misspellings, and grammatical slip-ups. AI text is typically flawless and highly sterile.
+2. Formatting Quirks: Look for human artifacts like double spaces after periods ("  "), inconsistent line breaks, or erratic use of punctuation. AI uses sanitized, perfect formatting.
+3. Capitalization: Humans occasionally forget to capitalize proper nouns or beginnings of sentences in casual text. AI perfectly adheres to title case and sentence case.
+4. Rhythm & Vocabulary (Burstiness/Perplexity): Humans vary sentence length drastically (short, punchy sentences mixed with run-ons). AI uses highly predictable, symmetrical paragraph structures and crutch words ("Furthermore", "Delve", "Crucial", "In conclusion").
 
 You MUST respond ONLY with a raw JSON object in this exact format. No markdown formatting blocks (\`\`\`), no conversational text.
 
 {
-    "analysis_reasoning": "<1-paragraph internal thought process analyzing the text's perplexity, burstiness, and known stylistic markers before determining the final scores>",
-    "plagiarism_percent": <number 0 to 100 representing the exact percentage of copied text>,
+    "analysis_reasoning": "<1-paragraph analyzing the text for human imperfections (typos, double spaces, capitalization anomalies) vs. AI sterility (perfect grammar, repetitive structure, crutch words)>",
+    "plagiarism_percent": <number 0 to 100>,
     "ai_percent": <number 0 to 100 representing probability it was AI generated>,
-    "plagiarism_summary": "<2-sentence explanation of your plagiarism verdict>",
-    "ai_summary": "<2-sentence explanation of your AI-generation verdict>",
+    "plagiarism_summary": "<2-sentence explanation of your plagiarism verdict based on fetched sources>",
+    "ai_summary": "<2-sentence explanation of your AI-generation verdict specifically citing grammar, formatting, spacing, or style markers>",
     "sources": [
         {
             "source_name": "<Title, author, or name of the source>",
@@ -403,7 +407,6 @@ You MUST respond ONLY with a raw JSON object in this exact format. No markdown f
         }
     ]
 }`;
-
             try {
                 const response = await fetch(API_URL, {
                     method: "POST",
