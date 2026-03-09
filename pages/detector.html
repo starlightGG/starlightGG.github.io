@@ -384,6 +384,11 @@ Evaluate the user's text for BOTH plagiarism and AI generation independently.
 
 Since you are evaluating against fetched data, use only verified sources. DO NOT guess URLs. If a source is unknown, set "source_url" to null.
 
+CRITERIA FOR PLAGIARISM & SOURCING:
+1. Only cite a source if you can verify the text overlaps.
+2. If no plagiarism is detected, set "sources" to an empty array [].
+3. EXACT MATCH RULE: The "matched_quote" MUST be a verbatim, unbroken substring directly from the user's input. Do not alter capitalization, punctuation, or spacing. Do not use ellipses (...). If you change even one character, the frontend highlighting UI will break.
+
 CRITERIA FOR AI DETECTION:
 Evaluate the text strictly on the following human vs. AI markers:
 1. Imperfections: Humans make minor typos, phonetic misspellings, and grammatical slip-ups. AI text is typically flawless and highly sterile.
@@ -394,7 +399,7 @@ Evaluate the text strictly on the following human vs. AI markers:
 You MUST respond ONLY with a raw JSON object in this exact format. No markdown formatting blocks (\`\`\`), no conversational text.
 
 {
-    "analysis_reasoning": "<1-paragraph analyzing the text for human imperfections (typos, double spaces, capitalization anomalies) vs. AI sterility (perfect grammar, repetitive structure, crutch words)>",
+    "analysis_reasoning": "<1-paragraph analyzing the text for human imperfections vs. AI sterility>",
     "plagiarism_percent": <number 0 to 100>,
     "ai_percent": <number 0 to 100 representing probability it was AI generated>,
     "plagiarism_summary": "<2-sentence explanation of your plagiarism verdict based on fetched sources>",
@@ -403,7 +408,7 @@ You MUST respond ONLY with a raw JSON object in this exact format. No markdown f
         {
             "source_name": "<Title, author, or name of the source>",
             "source_url": "<The exact http/https URL, or null if uncertain>",
-            "matched_quote": "<The exact phrase from the user's text that matches the source>"
+            "matched_quote": "<MUST be an exact, continuous, copy-pasted substring from the user's text. No alterations. No ellipses.>"
         }
     ]
 }`;
