@@ -327,7 +327,7 @@ const SURF_INFO_MESSAGE = "<b>Welcome to Surf Web!</b><br><br>Use the dropdown m
                 if (!isLoading) {
                     setTimeout(() => {
                         setCardsAnimated(true);
-                    }, 1000);
+                    }, 1750);
                 }
             }, [isLoading]);
 
