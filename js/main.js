@@ -327,17 +327,15 @@ const SURF_INFO_MESSAGE = "<b>Welcome to Surf Web!</b><br><br>Use the dropdown m
                 if (!isLoading) {
                     setTimeout(() => {
                         setCardsAnimated(true);
-                    }, 100);
+                    }, 1000);
                 }
             }, [isLoading]);
 
             // Reset animation when returning to home
             useEffect(() => {
                 if (activeTab === 'home') {
-                    setCardsAnimated(false);
-                    setTimeout(() => {
+
                         setCardsAnimated(true);
-                    }, 50);
                 }
             }, [activeTab]);
 
