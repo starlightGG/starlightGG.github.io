@@ -19,12 +19,12 @@ const PRESETS = [
     { name: "iCivics", title: "Home | iCivics", favicon: "https://ed.icivics.org/themes/custom/refresh/favicon.ico", link: "https://www.icivics.org" },
     { name: "IL Classroom", title: "Classes | IL Classroom", favicon: "https://ilclassroom.com/assets/favicons/favicon-183965d592e8285a181f1fbbc66918613f816138dae63e353d0839618e7a8382.ico", link: "https://ilclassroom.com" },
     { name: "Khan Academy", title: "Khan Academy", favicon: "https://www.khanacademy.org/favicon.ico", link: "https://www.khanacademy.org" },
-    { name: "Outlook", title: "Outlook Mail", favicon: "https://outlook.live.com/owa/favicon.ico", link: "https://outlook.live.com" },
+    { name: "Outlook", title: "Outlook Mail", favicon: "https://res.public.onecdn.static.microsoft/assets/mail/pwa/v4/pngs/apple-touch-icon.png", link: "https://outlook.live.com" },
     { name: "Pear Assessment", title: "Pear Assessment", favicon: "https://cdn.edulastic.com/JS/webresources/images/manifest/pear-icon-256x256.png", link: "https://app.edulastic.com/home/assignments" },
-    { name: "StarlightGG (Default Page)", title: "StarlightGG | Free Games!", favicon: "https://ssl.gstatic.com/classroom/favicon.ico", link: "https://classroom.google.com" },
+    { name: "StarlightGG (Default Page)", title: "StarlightGG | Free Games!", favicon: "https://starlightgg.github.io/favicon.ico", link: "https://classroom.google.com" },
     { name: "Zearn", title: "Student Home - Zearn", favicon: "https://webassets.zearn.org/assets/zearn_fav_new.png", link: "https://zearn.org" },
     { name: "XanEdu (Sharedbook)", title: "SharedBook", favicon: "https://blog.sharedbook.com/hubfs/favicon.ico", link: "https://www.xanedu.com/" },
-    { name: "Prodigy", title: "Prodigy Math | Boost Student Learning & Love of Math", favicon: "https://www.prodigygame.com/favicon.ico", link: "https://www.prodigygame.com/main-en" },
+    { name: "Prodigy", title: "Prodigy Math | Boost Student Learning & Love of Math", favicon: "https://cdn.prod.website-files.com/67290eb56db5c02dee62db8d/67ad86542f1cda144512a37b_favicon-32x32.png", link: "https://www.prodigygame.com/main-en" },
     { name: "i-Ready", title: "i-Ready Login | Log In to i-Ready Connect", favicon: "https://login.i-ready.com/favicon.ico", link: "https://login.i-ready.com/" }
 ];
 //replace with ones u know works
@@ -844,7 +844,7 @@ const SURF_INFO_MESSAGE = "<b>Welcome to Surf Web!</b><br><br>Use the dropdown m
                         const u = new URL(targetUrl);
                         domain = u.hostname;
                     } catch { domain = targetUrl; }
-                    const favicon = `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
+                    const favicon = `https://www.google.com/s2/favicons?domain=${targetUrl}&sz=64`;
 
                     const proxyUrl = `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(targetUrl)}`;
                     const response = await fetch(proxyUrl);
