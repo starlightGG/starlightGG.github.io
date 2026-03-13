@@ -19,7 +19,7 @@ const PRESETS = [
     { name: "iCivics", title: "Home | iCivics", favicon: "https://ed.icivics.org/themes/custom/refresh/favicon.ico", link: "https://www.icivics.org" },
     { name: "IL Classroom", title: "Classes | IL Classroom", favicon: "https://ilclassroom.com/assets/favicons/favicon-183965d592e8285a181f1fbbc66918613f816138dae63e353d0839618e7a8382.ico", link: "https://ilclassroom.com" },
     { name: "Khan Academy", title: "Khan Academy", favicon: "https://www.khanacademy.org/favicon.ico", link: "https://www.khanacademy.org" },
-    { name: "Outlook", title: "Outlook Mail", favicon: "https://res.public.onecdn.static.microsoft/assets/mail/pwa/v4/pngs/apple-touch-icon.png", link: "https://outlook.live.com" },
+    { name: "Outlook", title: "Outlook Mail", favicon: "https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/microsoft-outlook-icon.png", link: "https://outlook.live.com" },
     { name: "Pear Assessment", title: "Pear Assessment", favicon: "https://cdn.edulastic.com/JS/webresources/images/manifest/pear-icon-256x256.png", link: "https://app.edulastic.com/home/assignments" },
     { name: "StarlightGG (Default Page)", title: "StarlightGG | Free Games!", favicon: "https://starlightgg.github.io/favicon.ico", link: "https://classroom.google.com" },
     { name: "Zearn", title: "Student Home - Zearn", favicon: "https://webassets.zearn.org/assets/zearn_fav_new.png", link: "https://zearn.org" },
