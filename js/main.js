@@ -1,5 +1,5 @@
   
-// Suprise, i made this in react, but only using index.html
+// Suprise, i made this in react!
         const e = React.createElement;
         const { useState, useEffect, useRef } = React;
 
