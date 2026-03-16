@@ -29,7 +29,7 @@ const PRESETS = [
 ];
 //replace with ones u know works
 const PROXY_SERVERS = [
-    { name: "StarGG Proxy", url: "https://expert-succotash-699w97rp7946c556q-8080.app.github.dev/" }
+    { name: "DOGE UB", url: "https://dogeub-99127616725.us-west2.run.app" }
 ,
 ];
 //enable if wanted
