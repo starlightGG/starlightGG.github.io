@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Loading...</title>
-    
-<!-- better global-->
     <script src="../js/global.js"></script>
     <script id="cloning-script" src="../js/cloner.js"></script>
     <script src="../js/settings.js"></script>
@@ -14,17 +12,14 @@
     <style>
         /* --- 1. Soft UI Theme Variables --- */
         :root {
-            /* Light Mode Defaults */
             --bg-color: #e0e5ec;
             --text-color: #4a5568;
             --text-secondary: #718096;
             --card-bg: #e0e5ec;
             
-            /* Neumorphism Shadows */
             --shadow-light: #ffffff;
             --shadow-dark: #a3b1c6;
             
-            /* Accents */
             --primary-color: #4c68ff;
             --success-color: #008069;
             --warning-color: #f7941d;
@@ -32,7 +27,6 @@
             --font-stack: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
         }
 
-        /* Dark Mode Overrides */
         [data-theme="dark"] {
             --bg-color: #292d32;
             --text-color: #e2e8f0;
@@ -53,20 +47,19 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
-            overflow: hidden; /* Prevent body scroll, let container handle it if needed */
+            overflow: hidden; 
             transition: background 0.3s ease;
         }
 
         /* --- 2. Main Layout & Container --- */
         .main-app-container {
-            width: 90%;
-            max-width: 1000px;
-            height: 85vh;
+            width: 95%;
+            max-width: 1400px; 
+            height: 90vh;
             padding: 30px;
             background: var(--card-bg);
             border-radius: 20px;
             
-            /* Neumorphic Outset Shadow */
             box-shadow: 
                 15px 15px 30px var(--shadow-dark), 
                 -15px -15px 30px var(--shadow-light);
@@ -88,7 +81,15 @@
             margin-bottom: 20px;
         }
 
-        /* --- 3. Chat Embed Area (Recessed Screen) --- */
+        /* --- 3. Layout Wrapper --- */
+        .content-wrapper {
+            display: flex;
+            flex-grow: 1;
+            gap: 20px;
+            min-height: 0; 
+        }
+
+        /* --- 4. Chat Embed Area --- */
         .chat-embed-area {
             flex-grow: 1;
             border-radius: 15px;
@@ -96,7 +97,6 @@
             background-color: var(--bg-color);
             position: relative;
             
-            /* Neumorphic Inset Shadow (Recessed look) */
             box-shadow: 
                 inset 6px 6px 12px var(--shadow-dark), 
                 inset -6px -6px 12px var(--shadow-light);
@@ -109,7 +109,121 @@
             display: block;
         }
 
-        /* --- 4. Footer Buttons --- */
+        /* --- 5. GIF Sidebar Styles --- */
+        .gif-sidebar {
+            width: 320px;
+            border-radius: 15px;
+            padding: 15px;
+            background-color: var(--bg-color);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            
+            box-shadow: 
+                inset 6px 6px 12px var(--shadow-dark), 
+                inset -6px -6px 12px var(--shadow-light);
+        }
+
+        .gif-search-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        /* Input wrapper to position the clear button inside */
+        .search-input-wrapper {
+            position: relative;
+            flex-grow: 1;
+            display: flex;
+        }
+
+        #gif-search-bar {
+            width: 100%;
+            padding: 10px 30px 10px 10px; /* Extra right padding for the X */
+            border: none;
+            border-radius: 8px;
+            background: var(--bg-color);
+            color: var(--text-color);
+            box-shadow: 
+                inset 3px 3px 6px var(--shadow-dark), 
+                inset -3px -3px 6px var(--shadow-light);
+            outline: none;
+        }
+
+        #clear-search-btn {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 14px;
+            display: none; /* Hidden by default */
+            padding: 5px;
+        }
+
+        #clear-search-btn:hover {
+            color: var(--text-color);
+        }
+
+        #gif-search-btn {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 8px;
+            background: var(--primary-color);
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 
+                3px 3px 6px var(--shadow-dark), 
+                -3px -3px 6px var(--shadow-light);
+            transition: transform 0.1s;
+        }
+
+        #gif-search-btn:active {
+            transform: scale(0.95);
+            box-shadow: inset 2px 2px 5px rgba(0,0,0,0.2);
+        }
+
+        #gif-container {
+            flex-grow: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            align-content: flex-start;
+            padding-bottom: 10px;
+        }
+
+        #gif-container::-webkit-scrollbar { width: 6px; }
+        #gif-container::-webkit-scrollbar-track { background: transparent; }
+        #gif-container::-webkit-scrollbar-thumb { background: var(--shadow-dark); border-radius: 10px; }
+
+        .gif-item {
+            width: 135px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            background-color: var(--shadow-light);
+        }
+
+        .gif-item:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .gif-instruction {
+            text-align: center;
+            font-size: 0.85em;
+            color: var(--text-secondary);
+            font-weight: bold;
+            padding-top: 5px;
+            margin-top: auto; 
+        }
+
+        /* --- 6. Footer Buttons --- */
         .footer-actions {
             margin-top: 25px;
             display: flex;
@@ -132,7 +246,6 @@
             gap: 5px;
             text-decoration: none;
 
-            /* Button Shadow */
             box-shadow: 
                 5px 5px 10px var(--shadow-dark), 
                 -5px -5px 10px var(--shadow-light);
@@ -151,12 +264,11 @@
             box-shadow: inset 2px 2px 5px rgba(0,0,0,0.2);
         }
 
-        /* Button Colors */
         .back-button { background-color: var(--primary-color); }
         .refresh-button { background-color: var(--success-color); }
         .fullscreen-button { background-color: var(--warning-color); }
 
-        /* --- 5. Toast Notification Styles --- */
+        /* --- 7. Toast Notification --- */
         #toast-container {
             visibility: hidden;
             min-width: 300px;
@@ -180,14 +292,18 @@
         #toast-container.show {
             visibility: visible;
             opacity: 1;
-            top: 50px; /* Slight slide down effect */
+            top: 50px;
+        }
+
+        @media (max-width: 800px) {
+            .content-wrapper { flex-direction: column; }
+            .gif-sidebar { width: auto; height: 250px; }
         }
     </style>
 </head>
 <body>
 
     <script>
-        // 1. APPLY THEME IMMEDIATELY
         (function() {
             try {
                 const storedTheme = localStorage.getItem('theme');
@@ -202,19 +318,35 @@
         <h1>Starlight Games | Community Chat</h1>
         <p>For the best experience, we recommend using the fullscreen option, especially on Chromebooks.</p>
         
-        <div class="chat-embed-area">
-            <iframe id="chatFrame" src="/pages/chat_embed"></iframe>            
+        <div class="content-wrapper">
+            
+            <div class="chat-embed-area">
+                <iframe id="chatFrame" src="/pages/chat_embed"></iframe>
+            </div>
+            
+            <div class="gif-sidebar">
+                <div class="gif-search-controls">
+                    <div class="search-input-wrapper">
+                        <input type="text" id="gif-search-bar" placeholder="Search GIFs...">
+                        <button id="clear-search-btn" aria-label="Clear Search">✖</button>
+                    </div>
+                    <button id="gif-search-btn">🔍</button>
+                </div>
+                
+                <div id="gif-container"></div>
+                
+                <div class="gif-instruction">Click a GIF to share!</div>
+            </div>
+
         </div>
         
         <div class="footer-actions">
             <button class="nav-button back-button" onclick="redirectToApp()">
                 ← Back to App
             </button>
-            
             <button class="nav-button refresh-button" onclick="refreshChat()">
                 ↻ Refresh Chat
             </button>
-            
             <button class="nav-button fullscreen-button" onclick="toggleFullscreen()">
                 ⛶ Fullscreen
             </button>
@@ -224,12 +356,9 @@
     <div id="toast-container"></div>
     
     <script>
-
-
-        // --- Core Functions ---
+        // --- Navigation ---
         function redirectToApp() {
             window.manualExitIntent = true; 
-
             window.location.href = '../'; 
         }
         
@@ -243,7 +372,6 @@
 
         function toggleFullscreen() {
             const chatFrame = document.getElementById('chatFrame');
-
             if (!document.fullscreenElement) {
                 if (chatFrame.requestFullscreen) chatFrame.requestFullscreen();
                 else if (chatFrame.mozRequestFullScreen) chatFrame.mozRequestFullScreen();
@@ -257,31 +385,152 @@
             }
         }
 
-        // --- Toast Logic ---
         function showToast(message, duration = 6000) {
             const toast = document.getElementById("toast-container");
             toast.textContent = message;
-            
-            // Add the 'show' class to make it visible
             toast.className = "show";
-            
-            // Hide it after 'duration' milliseconds
             setTimeout(function(){ 
                 toast.className = toast.className.replace("show", ""); 
             }, duration);
         }
 
-        // --- Window Load Event ---
+        // --- GIF Search & Infinite Scroll Logic ---
+        let currentPos = '';
+        let isFetchingGifs = false;
+
+        const searchBar = document.getElementById('gif-search-bar');
+        const clearBtn = document.getElementById('clear-search-btn');
+        const searchBtn = document.getElementById('gif-search-btn');
+        const gifContainer = document.getElementById('gif-container');
+
+        // Toggle clear button visibility
+        searchBar.addEventListener('input', () => {
+            clearBtn.style.display = searchBar.value.length > 0 ? 'block' : 'none';
+        });
+
+        // Clear button action
+        clearBtn.addEventListener('click', () => {
+            searchBar.value = '';
+            clearBtn.style.display = 'none';
+            searchBar.focus();
+            gifContainer.innerHTML = ''; // Wipe grid
+        });
+
+        searchBtn.addEventListener('click', () => searchGifs(false));
+        searchBar.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') searchGifs(false);
+        });
+
+        // Infinite Scroll listener
+        gifContainer.addEventListener('scroll', () => {
+            // If user scrolls within 50px of the bottom, load more
+            if (gifContainer.scrollTop + gifContainer.clientHeight >= gifContainer.scrollHeight - 50) {
+                if (!isFetchingGifs && currentPos) {
+                    searchGifs(true);
+                }
+            }
+        });
+
+        async function searchGifs(loadMore = false) {
+            const query = searchBar.value;
+            
+            if (!query || isFetchingGifs) return;
+            isFetchingGifs = true;
+
+            // If it's a new search, clear position and show loading
+            if (!loadMore) {
+                currentPos = '';
+                gifContainer.innerHTML = '<div style="width: 100%; text-align: center;">Searching...</div>';
+            }
+
+            try {
+                // Pass the current position (pos) to Tenor API
+                const url = `https://g.tenor.com/v1/search?q=${query}&key=LIVDSRZULELA&limit=20&pos=${currentPos}`;
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (!loadMore) {
+                    gifContainer.innerHTML = '';
+                }
+
+                if (!data.results || data.results.length === 0) {
+                    if (!loadMore) gifContainer.innerHTML = '<div style="width: 100%; text-align: center;">No GIFs found.</div>';
+                    isFetchingGifs = false;
+                    return;
+                }
+
+                // Save next position string for infinite scrolling
+                currentPos = data.next;
+
+                data.results.forEach(gifData => {
+                    const formats = gifData.media_formats || (gifData.media && gifData.media[0]);
+                    if (!formats || !formats.gif) return;
+
+                    const img = document.createElement('img');
+                    img.src = formats.tinygif ? formats.tinygif.url : formats.gif.url; 
+                    img.className = 'gif-item';
+                    img.title = "Click to copy!";
+
+                    img.addEventListener('click', () => {
+                        copyToClipboard(formats.gif.url);
+                    });
+
+                    gifContainer.appendChild(img);
+                });
+            } catch (error) {
+                if (!loadMore) {
+                    gifContainer.innerHTML = '<div style="width: 100%; text-align: center; color: red;">Error fetching GIFs.</div>';
+                }
+                console.error(error);
+            }
+            isFetchingGifs = false;
+        }
+
+        function copyToClipboard(text) {
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(text).then(() => {
+                    showToast("Copied! Paste in chat (Ctrl+V) to send", 4000);
+                }).catch(err => {
+                    fallbackCopyTextToClipboard(text);
+                });
+            } else {
+                fallbackCopyTextToClipboard(text);
+            }
+        }
+
+        function fallbackCopyTextToClipboard(text) {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            textArea.style.position = "fixed";
+            textArea.style.top = "-9999px";
+            textArea.style.left = "-9999px";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    showToast("Copied! Paste in chat (Ctrl+V) to send", 4000);
+                }
+            } catch (err) {
+                console.error('Fallback copy failed: ', err);
+            }
+            document.body.removeChild(textArea);
+        }
+
+        // --- Initialization ---
         window.addEventListener('load', () => {
-
-
-            // Trigger Toast Notification (Always runs, no localstorage check)
-            // Using a small delay (500ms) makes the animation feel smoother after load
             setTimeout(() => {
                 showToast("NOTICE: Usernames & Passwords are Case Sensitive! If you don't have an account, please use Guest Mode.");
             }, 500);
-        });
 
+            // Trigger default search and show the clear button
+            searchBar.value = 'IShowSpeed';
+            clearBtn.style.display = 'block';
+            searchGifs(false);
+        });
     </script>
 </body>
 </html>
+
