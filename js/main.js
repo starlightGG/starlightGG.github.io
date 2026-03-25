@@ -941,7 +941,8 @@ const SURF_INFO_MESSAGE = "<b>Welcome to Surf Web!</b><br><br>Use the dropdown m
                     <html><script src="global.js"><\/script><head><title>${title}</title>
                     ${favicon ? `<link rel="icon" href="${favicon}">` : ''}
                     <style>body{margin:0;overflow:hidden;}iframe{width:100vw;height:100vh;border:none;}</style>
-                    </head><body><iframe src="${iframeState.src}"></iframe></body></html>
+                    </head><body><iframe src="${iframeState.src}"    sandbox= 'allow-scripts allow-top-navigation allow-forms allow-same-origin allow-pointer-lock allow-modals allow-orientation-lock allow-presentation'
+></iframe></body></html>
                  `);
                  win.document.close();
             };
@@ -1526,6 +1527,8 @@ const SURF_INFO_MESSAGE = "<b>Welcome to Surf Web!</b><br><br>Use the dropdown m
                     src: iframeState.src, 
                     allowFullScreen: true,
                     onLoad: () => setGameLoading(false)
+                      sandbox: 'allow-scripts allow-top-navigation allow-forms allow-same-origin allow-pointer-lock allow-modals allow-orientation-lock allow-presentation'
+
                 })
             );
 
