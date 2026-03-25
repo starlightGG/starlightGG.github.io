@@ -164,7 +164,7 @@
 
         /* Cards animate AFTER loading */
         .card-animate {
-            animation: slideUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+          animation: slideUp 0.5s ease-out;
             animation-fill-mode: both;
         }
 
@@ -577,17 +577,10 @@
             background: var(--card-glass);
             border-radius: 15px;
             box-shadow: var(--shadow-light-bottom);
-            transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
             animation: slideUp 0.5s ease-out;
             animation-fill-mode: both;
         }
-        
-        .settings-item:nth-child(1) { animation-delay: 0.05s; }
-        .settings-item:nth-child(2) { animation-delay: 0.1s; }
-        .settings-item:nth-child(3) { animation-delay: 0.15s; }
-        .settings-item:nth-child(4) { animation-delay: 0.2s; }
-        .settings-item:nth-child(5) { animation-delay: 0.25s; }
-        .settings-item:nth-child(6) { animation-delay: 0.3s; }
+
         
         .settings-item:hover {
             transform: translateX(5px);
