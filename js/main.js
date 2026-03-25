@@ -1526,7 +1526,7 @@ const SURF_INFO_MESSAGE = "<b>Welcome to Surf Web!</b><br><br>Use the dropdown m
                     id: 'my-iframe', 
                     src: iframeState.src, 
                     allowFullScreen: true,
-                    onLoad: () => setGameLoading(false)
+                    onLoad: () => setGameLoading(false),
                       sandbox: 'allow-scripts allow-top-navigation allow-forms allow-same-origin allow-pointer-lock allow-modals allow-orientation-lock allow-presentation'
 
                 })
