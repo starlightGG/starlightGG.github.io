@@ -1,7 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-                <script>pass = prompt("Enter password"); if (pass == '8513'){alert("Granted")}else{alert("WRONG, try again"); pass2 = prompt("Enter password"); if (pass2 == '8513'){alert("Granted")}else{alert("WRONG!"); window.location.href = "https://google.com";}}</script>
+<script>
+  // Check if already authorized
+  if (localStorage.getItem('isAuthorized') === 'true') {
+    console.log("Already authorized");
+  } else {
+    let pass = prompt("Enter password");
+    if (pass == "8513") {
+      alert("Granted");
+      // Save authorization state
+      localStorage.setItem('isAuthorized', 'true');
+    } else {
+      alert("WRONG, try again");
+      let pass2 = prompt("Enter password");
+      if (pass2 == "8513") {
+        alert("Granted");
+        localStorage.setItem('isAuthorized', 'true');
+      } else {
+        alert("WRONG! Redirecting...");
+        window.location.href = "https://google.com";
+      }
+    }
+  }
+</script>
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
