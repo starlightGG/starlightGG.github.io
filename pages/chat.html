@@ -129,7 +129,6 @@
             gap: 10px;
         }
 
-        /* Input wrapper to position the clear button inside */
         .search-input-wrapper {
             position: relative;
             flex-grow: 1;
@@ -138,7 +137,7 @@
 
         #gif-search-bar {
             width: 100%;
-            padding: 10px 30px 10px 10px; /* Extra right padding for the X */
+            padding: 10px 30px 10px 10px;
             border: none;
             border-radius: 8px;
             background: var(--bg-color);
@@ -159,7 +158,7 @@
             color: var(--text-secondary);
             cursor: pointer;
             font-size: 14px;
-            display: none; /* Hidden by default */
+            display: none;
             padding: 5px;
         }
 
@@ -203,10 +202,17 @@
 
         .gif-item {
             width: 135px;
+            height: 100px; /* Fixed height for observer stability */
             border-radius: 8px;
             cursor: pointer;
-            transition: transform 0.2s;
+            transition: transform 0.2s, opacity 0.3s;
             background-color: var(--shadow-light);
+            object-fit: cover;
+            opacity: 0; /* Hidden until in sight */
+        }
+
+        .gif-item.in-sight {
+            opacity: 1;
         }
 
         .gif-item:hover {
@@ -394,7 +400,7 @@
             }, duration);
         }
 
-        // --- GIF Search & Infinite Scroll Logic ---
+        // --- GIF Search & Sight-Based Logic ---
         let currentPos = '';
         let isFetchingGifs = false;
 
@@ -403,17 +409,34 @@
         const searchBtn = document.getElementById('gif-search-btn');
         const gifContainer = document.getElementById('gif-container');
 
-        // Toggle clear button visibility
+        // Observer to hide/show based on sight
+        const gifObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                const img = entry.target;
+                if (entry.isIntersecting) {
+                    if (img.dataset.src) {
+                        img.src = img.dataset.src;
+                        img.classList.add('in-sight');
+                    }
+                } else {
+                    img.src = ''; // Unload from memory
+                    img.classList.remove('in-sight');
+                }
+            });
+        }, {
+            root: gifContainer,
+            rootMargin: '150px' // Load slightly before they enter the view
+        });
+
         searchBar.addEventListener('input', () => {
             clearBtn.style.display = searchBar.value.length > 0 ? 'block' : 'none';
         });
 
-        // Clear button action
         clearBtn.addEventListener('click', () => {
             searchBar.value = '';
             clearBtn.style.display = 'none';
             searchBar.focus();
-            gifContainer.innerHTML = ''; // Wipe grid
+            gifContainer.innerHTML = ''; 
         });
 
         searchBtn.addEventListener('click', () => searchGifs(false));
@@ -421,9 +444,7 @@
             if (e.key === 'Enter') searchGifs(false);
         });
 
-        // Infinite Scroll listener
         gifContainer.addEventListener('scroll', () => {
-            // If user scrolls within 50px of the bottom, load more
             if (gifContainer.scrollTop + gifContainer.clientHeight >= gifContainer.scrollHeight - 50) {
                 if (!isFetchingGifs && currentPos) {
                     searchGifs(true);
@@ -437,14 +458,12 @@
             if (!query || isFetchingGifs) return;
             isFetchingGifs = true;
 
-            // If it's a new search, clear position and show loading
             if (!loadMore) {
                 currentPos = '';
                 gifContainer.innerHTML = '<div style="width: 100%; text-align: center;">Searching...</div>';
             }
 
             try {
-                // Pass the current position (pos) to Tenor API
                 const url = `https://g.tenor.com/v1/search?q=${query}&key=LIVDSRZULELA&limit=20&pos=${currentPos}`;
                 const response = await fetch(url);
                 const data = await response.json();
@@ -459,7 +478,6 @@
                     return;
                 }
 
-                // Save next position string for infinite scrolling
                 currentPos = data.next;
 
                 data.results.forEach(gifData => {
@@ -467,14 +485,17 @@
                     if (!formats || !formats.gif) return;
 
                     const img = document.createElement('img');
-                    img.src = formats.tinygif ? formats.tinygif.url : formats.gif.url; 
+                    const realUrl = formats.tinygif ? formats.tinygif.url : formats.gif.url;
+                    
                     img.className = 'gif-item';
+                    img.dataset.src = realUrl; // Store URL for observer
                     img.title = "Click to copy!";
 
                     img.addEventListener('click', () => {
                         copyToClipboard(formats.gif.url);
                     });
 
+                    gifObserver.observe(img);
                     gifContainer.appendChild(img);
                 });
             } catch (error) {
@@ -525,7 +546,6 @@
                 showToast("NOTICE: Usernames & Passwords are Case Sensitive! If you don't have an account, please use Guest Mode.");
             }, 500);
 
-            // Trigger default search and show the clear button
             searchBar.value = 'IShowSpeed';
             clearBtn.style.display = 'block';
             searchGifs(false);
@@ -533,4 +553,3 @@
     </script>
 </body>
 </html>
-
