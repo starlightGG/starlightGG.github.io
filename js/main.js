@@ -289,7 +289,7 @@ const SURF_INFO_MESSAGE = "<b>Welcome to Surf Web!</b><br><br>Use the dropdown m
             const [quote, setQuote] = useState('Loading quote...');
             const [isQuoteFading, setIsQuoteFading] = useState(false);
             
-            const [footerVisible, setFooterVisible] = useState(() => localStorage.getItem('footerVisible') !== 'false');
+            const [footerVisible, setFooterVisible] = useState(() => localStorage.getItem('footerVisible') === 'true');
             const [tabProtection, setTabProtection] = useState(() => localStorage.getItem('tabProtectionState') === 'true');
             const [redirectEnabled, setRedirectEnabled] = useState(() => localStorage.getItem('redirectToggleState') === 'true');
             const [overlayEnabled, setOverlayEnabled] = useState(() => localStorage.getItem('overlayToggleState') === 'true');
@@ -1532,7 +1532,7 @@ const SURF_INFO_MESSAGE = "<b>Welcome to Surf Web!</b><br><br>Use the dropdown m
                 })
             );
 
-            const shouldShowFooter = activeTab !== 'chatbots' && activeTab !== 'settings' && (activeTab !== 'game-view' || footerVisible);
+            const shouldShowFooter = activeTab !== 'settings' && (activeTab !== 'game-view' || footerVisible);
 
             return e(React.Fragment, null,
                 e('div', { id: 'loading-screen', className: isLoading ? '' : 'fade-out' },
