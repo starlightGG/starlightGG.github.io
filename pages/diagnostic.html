@@ -3,14 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>System Performance Benchmark</title>
+    <title>System Specs & Performance Benchmark</title>
+    
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            
+            if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+                document.documentElement.classList.add('dark-mode');
+            } else {
+                document.documentElement.classList.add('light-mode');
+            }
+        })();
+    </script>
+
     <style>
-        :root {
-            --bg: #0f111a;
-            --panel: #1a1d2d;
-            --text: #e2e8f0;
-            --text-secondary: #94a3b8;
-            --accent: #3b82f6;
+        /* --- Neumorphic Variables --- */
+        :root.light-mode {
+            --bg: #e0e5ec;
+            --text: #2d3748;
+            --text-secondary: #718096;
+            --shadow-light: #ffffff;
+            --shadow-dark: #a3b1c6;
+            --overlay: rgba(224, 229, 236, 0.8);
+            
+            --accent: #8b5cf6;
             --grade-s: #10b981;
             --grade-a: #84cc16;
             --grade-b: #eab308;
@@ -19,80 +37,339 @@
             --grade-f: #64748b;
         }
 
-        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background-color: var(--bg); color: var(--text); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        :root.dark-mode {
+            --bg: #292d32;
+            --text: #e2e8f0;
+            --text-secondary: #94a3b8;
+            --shadow-light: #31363c;
+            --shadow-dark: #212428;
+            --overlay: rgba(41, 45, 50, 0.85);
+            
+            --accent: #a78bfa;
+            --grade-s: #34d399;
+            --grade-a: #a3e635;
+            --grade-b: #facc15;
+            --grade-c: #fb923c;
+            --grade-d: #f87171;
+            --grade-f: #94a3b8;
+        }
+
+        * { 
+            box-sizing: border-box; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+        }
         
-        .dashboard { display: flex; flex-wrap: wrap; gap: 20px; max-width: 1000px; width: 100%; justify-content: center; }
-        .panel { background: var(--panel); border-radius: 12px; padding: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); text-align: center; flex: 1; min-width: 300px; }
+        body { 
+            background-color: var(--bg); 
+            color: var(--text); 
+            margin: 0; 
+            padding: 20px; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            transition: background-color 0.5s ease, color 0.5s ease;
+            overflow-x: hidden;
+        }
+        
+        /* --- Animations --- */
+        @keyframes slideUpFade {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes breatheCalibrating {
+            0% { box-shadow: 7px 7px 15px var(--shadow-dark), -7px -7px 15px var(--shadow-light); color: var(--text-secondary); transform: scale(1); }
+            50% { box-shadow: inset 7px 7px 15px var(--shadow-dark), inset -7px -7px 15px var(--shadow-light); color: var(--accent); transform: scale(0.98); }
+            100% { box-shadow: 7px 7px 15px var(--shadow-dark), -7px -7px 15px var(--shadow-light); color: var(--text-secondary); transform: scale(1); }
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            70% { transform: scale(1.05); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes shimmerText {
+            0% { opacity: 0.4; }
+            50% { opacity: 1; color: var(--accent); text-shadow: 0 0 8px var(--accent); }
+            100% { opacity: 0.4; }
+        }
+
+        @keyframes floatHeader {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        .dashboard { 
+            display: flex; 
+            flex-wrap: wrap; 
+            gap: 30px; 
+            max-width: 1200px; 
+            width: 100%; 
+            justify-content: center; 
+        }
+        
+        /* Neumorphic Outer Elements */
+        .panel { 
+            background: var(--bg); 
+            border-radius: 20px; 
+            padding: 30px; 
+            box-shadow: 9px 9px 16px var(--shadow-dark), -9px -9px 16px var(--shadow-light);
+            text-align: center; 
+            flex: 1; 
+            min-width: 320px; 
+            animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        .panel:nth-child(2) {
+            animation-delay: 0.15s;
+        }
         
         /* Grader Styles */
-        #grade-circle { width: 150px; height: 150px; border-radius: 50%; background: var(--text-secondary); color: #fff; font-size: 4rem; font-weight: bold; display: flex; justify-content: center; align-items: center; margin: 0 auto 15px; transition: background 0.5s ease; }
-        #grade-title { font-size: 1.5rem; margin: 0 0 10px; font-weight: 600; }
-        #grade-note { color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 20px; min-height: 40px; }
+        #grade-circle { 
+            width: 160px; 
+            height: 160px; 
+            border-radius: 50%; 
+            background: var(--bg);
+            box-shadow: 7px 7px 15px var(--shadow-dark), -7px -7px 15px var(--shadow-light);
+            color: var(--text-secondary); 
+            font-size: 4.5rem; 
+            font-weight: bold; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            margin: 0 auto 25px; 
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); 
+        }
+
+        .calibrating {
+            animation: breatheCalibrating 2s infinite ease-in-out;
+        }
         
-        .tool-btn { background: var(--accent); color: #fff; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 1rem; font-weight: bold; transition: opacity 0.2s, background 0.2s; }
-        .tool-btn:hover:not(:disabled) { opacity: 0.8; }
-        .tool-btn:disabled { background: var(--text-secondary); cursor: not-allowed; opacity: 0.6; }
+        #grade-title { font-size: 1.5rem; margin: 0 0 10px; font-weight: 600; transition: color 0.3s; }
+        #grade-note { color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 5px; min-height: 40px; transition: opacity 0.3s; display: flex; align-items: center; justify-content: center;}
+        #exact-score { font-size: 1.3rem; font-weight: bold; margin-bottom: 20px; opacity: 0; transition: opacity 0.5s ease; }
+        
+        /* Neumorphic Buttons & Inputs */
+        .tool-btn, .utils-grid button { 
+            background: var(--bg); 
+            color: var(--text); 
+            border: none; 
+            padding: 12px 24px; 
+            border-radius: 12px; 
+            cursor: pointer; 
+            font-size: 1rem; 
+            font-weight: bold; 
+            box-shadow: 5px 5px 10px var(--shadow-dark), -5px -5px 10px var(--shadow-light);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); 
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .tool-btn:hover:not(:disabled), .utils-grid button:hover { 
+            color: var(--accent);
+            transform: translateY(-2px);
+            box-shadow: 7px 7px 14px var(--shadow-dark), -7px -7px 14px var(--shadow-light);
+        }
+        
+        .tool-btn:active:not(:disabled), .utils-grid button:active { 
+            transform: translateY(1px);
+            box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light);
+            color: var(--text);
+        }
+        
+        .tool-btn:disabled { 
+            color: var(--text-secondary); 
+            cursor: not-allowed; 
+            box-shadow: 2px 2px 5px var(--shadow-dark), -2px -2px 5px var(--shadow-light);
+        }
+
+        input[type="text"] {
+            background: var(--bg);
+            border: none;
+            box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light);
+            border-radius: 10px;
+            padding: 12px 15px;
+            color: var(--text);
+            font-size: 1rem;
+            outline: none;
+            transition: box-shadow 0.3s ease;
+        }
+
+        input[type="text"]:focus {
+            box-shadow: inset 6px 6px 12px var(--shadow-dark), inset -6px -6px 12px var(--shadow-light);
+        }
 
         /* Metrics Grid */
-        .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 15px; text-align: left; margin-bottom: 20px; }
-        .metric-box { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; }
-        .metric-label { font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; }
-        .metric-value { font-size: 1.4rem; font-weight: bold; margin-top: 5px; transition: color 0.3s; }
+        .metrics-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); 
+            gap: 20px; 
+            text-align: left; 
+            margin-bottom: 30px; 
+        }
+        
+        .metric-box { 
+            background: var(--bg); 
+            padding: 18px; 
+            border-radius: 16px; 
+            box-shadow: inset 5px 5px 10px var(--shadow-dark), inset -5px -5px 10px var(--shadow-light);
+            animation: popIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .metric-box:hover {
+            transform: scale(1.03) translateY(-2px);
+            box-shadow: inset 2px 2px 5px var(--shadow-dark), inset -2px -2px 5px var(--shadow-light), 
+                        5px 5px 10px var(--shadow-dark), -5px -5px 10px var(--shadow-light);
+        }
+
+        .metric-label { font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
+        .metric-value { font-size: 1.25rem; font-weight: bold; margin-top: 6px; transition: color 0.4s ease; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .testing-anim { animation: shimmerText 1.5s infinite; }
 
         /* Utilities */
-        .utils-grid { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
-        .utils-grid button { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: var(--text); padding: 10px 15px; border-radius: 6px; cursor: pointer; transition: 0.2s; }
-        .utils-grid button:hover { background: rgba(255,255,255,0.2); }
+        .utils-grid { display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; }
+
+        .soft-divider {
+            height: 2px;
+            background: transparent;
+            border: none;
+            box-shadow: inset 0px 1px 1px var(--shadow-dark), inset 0px -1px 1px var(--shadow-light);
+            margin: 25px 0;
+            width: 100%;
+        }
 
         /* Modal Styles */
-        #modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 1000; }
-        #modal-overlay.active { display: flex; }
-        .modal-content { background: var(--panel); padding: 30px; border-radius: 12px; max-width: 500px; width: 90%; text-align: center; position: relative; }
-        .close-btn { position: absolute; top: 15px; right: 20px; font-size: 1.5rem; cursor: pointer; color: var(--text-secondary); }
-        .close-btn:hover { color: var(--text); }
-        .test-display-area { background: rgba(0,0,0,0.3); padding: 20px; border-radius: 8px; margin: 20px 0; }
-        .big-text { font-size: 2.5rem; font-weight: bold; color: var(--accent); }
-        .med-text { font-size: 1.2rem; margin-top: 10px; color: var(--text-secondary); }
+        #modal-overlay { 
+            position: fixed; 
+            top: 0; left: 0; 
+            width: 100%; height: 100%; 
+            background: var(--overlay); 
+            backdrop-filter: blur(5px);
+            display: none; 
+            justify-content: center; 
+            align-items: center; 
+            z-index: 1000; 
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        #modal-overlay.active { 
+            display: flex; 
+            opacity: 1;
+        }
+        
+        .modal-content { 
+            background: var(--bg); 
+            padding: 40px; 
+            border-radius: 20px; 
+            max-width: 500px; 
+            width: 90%; 
+            text-align: center; 
+            position: relative; 
+            box-shadow: 12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light);
+            transform: scale(0.9) translateY(20px);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
 
+        #modal-overlay.active .modal-content {
+            transform: scale(1) translateY(0);
+        }
+        
+        .close-btn { 
+            position: absolute; 
+            top: 15px; 
+            right: 25px; 
+            font-size: 2rem; 
+            cursor: pointer; 
+            color: var(--text-secondary); 
+            transition: transform 0.2s, color 0.2s;
+        }
+        
+        .close-btn:hover { color: var(--accent); transform: rotate(90deg); }
+        
+        .test-display-area { 
+            background: var(--bg); 
+            padding: 30px; 
+            border-radius: 16px; 
+            margin: 25px 0; 
+            box-shadow: inset 6px 6px 12px var(--shadow-dark), inset -6px -6px 12px var(--shadow-light);
+            transition: box-shadow 0.3s ease, background 0.3s ease;
+        }
+        
+        .big-text { font-size: 2.5rem; font-weight: bold; color: var(--accent); transition: color 0.3s; }
+        .med-text { font-size: 1.2rem; margin-top: 10px; color: var(--text-secondary); transition: color 0.3s;}
+
+        #scroll-track {
+            height: 150px; 
+            overflow-y: scroll; 
+            border-radius: 12px;
+            background: var(--bg);
+            box-shadow: inset 5px 5px 10px var(--shadow-dark), inset -5px -5px 10px var(--shadow-light);
+            scroll-behavior: smooth;
+        }
+        
+        ::-webkit-scrollbar { width: 12px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { 
+            background: var(--shadow-dark); 
+            border-radius: 10px; 
+            border: 3px solid var(--bg);
+        }
     </style>
 </head>
 <body>
 
-    <h1 style="margin-bottom: 30px;">System Performance Benchmark</h1>
+    <h1 style="margin-bottom: 40px; text-shadow: 2px 2px 4px var(--shadow-light); color: var(--text); animation: floatHeader 4s ease-in-out infinite; text-align: center;">Specs & Performance Benchmark</h1>
 
     <div class="dashboard">
-        <div class="panel" style="flex: 0.4;">
-            <div id="grade-circle">...</div>
-            <h2 id="grade-title">Calibrating System...</h2>
-            <p id="grade-note">Running Math, CPU, RAM, and FPS tests...</p>
-            <button id="retry-btn" class="tool-btn" style="display: none;" onclick="restartBenchmark()">Run Again</button>
+        <div class="panel" style="flex: 0.35;">
+            <div id="grade-circle" class="calibrating">...</div>
+            <h2 id="grade-title">Analyzing Specs...</h2>
+            <p id="grade-note">Evaluating Hardware (80%) and Speed (20%)...</p>
+            <div id="exact-score">--/100</div>
+            <button id="retry-btn" class="tool-btn" style="display: none; margin-top: 10px; animation: popIn 0.5s ease forwards;" onclick="restartBenchmark()">Rescan System</button>
         </div>
 
-        <div class="panel" style="flex: 0.6;">
+        <div class="panel" style="flex: 0.65;">
+            <div class="metric-label" style="margin-bottom: 15px; text-align: center; color: var(--accent);">Hardware Specifications (80% Weight)</div>
             <div class="metrics-grid">
-                <div class="metric-box"><div class="metric-label">Live FPS</div><div class="metric-value" id="fps-value">--</div></div>
-                <div class="metric-box"><div class="metric-label">Network Ping</div><div class="metric-value" id="ping-value">--</div></div>
-                <div class="metric-box"><div class="metric-label">Math Speed</div><div class="metric-value" id="math-value">--</div></div>
                 <div class="metric-box"><div class="metric-label">Logical Cores</div><div class="metric-value" id="cores-value">--</div></div>
                 <div class="metric-box"><div class="metric-label">System RAM</div><div class="metric-value" id="ram-value">--</div></div>
-                <div class="metric-box"><div class="metric-label">Page Load</div><div class="metric-value" id="load-value">--</div></div>
-                <div class="metric-box"><div class="metric-label">First Paint (FCP)</div><div class="metric-value" id="fcp-value">--</div></div>
-                <div class="metric-box"><div class="metric-label">Event Latency</div><div class="metric-value" id="latency-value">--</div></div>
-                <div class="metric-box"><div class="metric-label">Local Storage</div><div class="metric-value" id="local-storage-status" style="font-size: 1.2rem;">Testing...</div></div>
-                <div class="metric-box"><div class="metric-label">WebAssembly</div><div class="metric-value" id="wasm-support-status" style="font-size: 1.2rem;">Testing...</div></div>
-                <div class="metric-box"><div class="metric-label">GPU Render</div><div class="metric-value" id="gpu-value" style="font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Testing...</div></div>
+                <div class="metric-box"><div class="metric-label">GPU Render</div><div class="metric-value testing-anim" id="gpu-value">Testing...</div></div>
                 <div class="metric-box"><div class="metric-label">Resolution</div><div class="metric-value" id="res-value">--</div></div>
+                <div class="metric-box"><div class="metric-label">Max Texture Size</div><div class="metric-value testing-anim" id="texture-value">--</div></div>
+                <div class="metric-box"><div class="metric-label">Color Depth</div><div class="metric-value" id="color-value">--</div></div>
+                <div class="metric-box"><div class="metric-label">Storage Quota</div><div class="metric-value testing-anim" id="storage-value">Testing...</div></div>
+                <div class="metric-box"><div class="metric-label">Battery Status</div><div class="metric-value testing-anim" id="battery-value">Testing...</div></div>
             </div>
 
-            <hr style="border-color: rgba(255,255,255,0.1); margin: 20px 0;">
-            <div class="metric-label" style="margin-bottom: 15px; text-align: center;">Utility Tests</div>
+            <hr class="soft-divider">
+            <div class="metric-label" style="margin-bottom: 15px; text-align: center; color: var(--accent);">Live Speed & Network (20% Weight)</div>
+            
+            <div class="metrics-grid">
+                <div class="metric-box"><div class="metric-label">Math Speed</div><div class="metric-value testing-anim" id="math-value">--</div></div>
+                <div class="metric-box"><div class="metric-label">Live FPS</div><div class="metric-value testing-anim" id="fps-value">--</div></div>
+                <div class="metric-box"><div class="metric-label">Network Ping</div><div class="metric-value testing-anim" id="ping-value">--</div></div>
+                <div class="metric-box"><div class="metric-label">Connection API</div><div class="metric-value testing-anim" id="conn-value">Testing...</div></div>
+                <div class="metric-box"><div class="metric-label">Page Load</div><div class="metric-value testing-anim" id="load-value">--</div></div>
+                <div class="metric-box"><div class="metric-label">Event Latency</div><div class="metric-value testing-anim" id="latency-value">--</div></div>
+            </div>
+
+            <hr class="soft-divider">
+            <div class="metric-label" style="margin-bottom: 20px; text-align: center;">Interactive Utilities</div>
             
             <div class="utils-grid">
                 <button onclick="openTest('cps')">CPS Test</button>
+                <button onclick="openTest('reaction')">Reaction Test</button>
+                <button onclick="openTest('typing')">Typing Speed</button>
                 <button onclick="openTest('keyboard')">Key Tester</button>
                 <button onclick="openTest('scroll')">Scroll Speed</button>
-                <button onclick="openTest('pageload')">Page Load Details</button>
+                <button onclick="openTest('pageload')">Load Details</button>
                 <button onclick="openTest('stress')">CPU Stress</button>
             </div>
         </div>
@@ -107,20 +384,24 @@
     </div>
 
     <script>
-        // --- 1. Grading Titles & Notes ---
-        const sTitles = ["NASA Computer", "Absolute Beast", "Quantum Setup", "God Tier", "Future Proof"];
-        const aTitles = ["High End", "Gamer Spec", "Powerhouse", "Smooth Operator", "Pro Rig"];
-        const bTitles = ["Solid Workhorse", "Reliable Machine", "Good Enough", "Office Champion", "Reliable Daily"];
-        const cTitles = ["Average Potato", "Budget Build", "Chromebook Tier", "It Runs Doom", "Browser Warrior"];
-        const dTitles = ["Survival Mode", "Barely Alive", "Potato Light", "Glitchy Mess", "Slide Show"];
-        const fTitles = ["Toaster Edition", "Smart Fridge", "Potato Powered", "Hamster Wheel", "Abacus"];
+        // --- 1. Grading Titles & Notes Pools ---
+        const sTitles = ["God Tier Rig", "NASA Supercomputer", "Absolute Powerhouse", "Future Proof", "Quantum Mainframe", "Sentient AI Host", "Silicon Masterpiece", "Unstoppable Force", "The Server Farm", "Overkill Engaged", "Glorious Master Race", "Liquid Cooled Beast"];
+        const sNotes = ["Top tier specs detected. You could simulate the universe on this.", "Flawless performance across the board. Nothing can slow this down.", "Is this a supercomputer in disguise? Incredible benchmark.", "Specs so high, the benchmark barely made it break a sweat.", "Absolute overkill for web browsing, but we respect the flex.", "It doesn't get much faster than this. Incredible hardware."];
 
-        const sNotes = ["Flawless.", "No notes.", "Perfection.", "Pristine.", "Nothing slows this down."];
-        const aNotes = ["Great job.", "Solid.", "Very nice.", "Smooth operator.", "Looking sharp."];
-        const bNotes = ["Good enough.", "Standard.", "Not bad.", "Gets the job done.", "Acceptable."];
-        const cNotes = ["Average.", "Meh.", "Could be better.", "Passing, barely.", "Functional."];
-        const dNotes = ["Struggling.", "Yikes.", "Barely hanging on.", "Please close some tabs.", "Painful."];
-        const fNotes = ["Time for an upgrade.", "Oh no.", "RIP.", "Is this a smart fridge?", "Have you tried turning it off?"];
+        const aTitles = ["High-End Spec", "Gamer Grade", "Elite Workstation", "Top Tier", "Prosumer Dream", "Enthusiast Build", "Heavy Duty", "Silky Smooth", "Frame Rate Fanatic", "Performance Beast"];
+        const aNotes = ["Excellent hardware loadout. Handles heavy multitasking like a pro.", "Very strong benchmark results. Built for serious work and play.", "Near flawless execution. A highly capable and optimized machine.", "Great specs! You won't be experiencing lag anytime soon.", "High tier processing power detected. Smooth sailing ahead."];
+
+        const bTitles = ["Solid Daily Driver", "Reliable Machine", "Great All-Rounder", "Office Champion", "The Workhorse", "Perfectly Balanced", "Sensible Setup", "Mid-Range Marvel", "Dependable Rig", "Jack of All Trades"];
+        const bNotes = ["Solid mid-range specs. Gets the job done without complaining.", "A highly dependable setup. Good balance of hardware and speed.", "Respectable performance. Handles standard workloads with ease.", "Not the fastest, not the slowest. The goldilocks zone of tech.", "Perfectly capable for everyday tasks and moderate workflows."];
+
+        const cTitles = ["Average Potato", "Budget Build", "Acceptable", "It Runs Browser", "The Bare Minimum", "Student Laptop", "Legacy Hardware", "Casual Scroller", "Web Warrior", "Cloud Dependent"];
+        const cNotes = ["Entry-level hardware. Might struggle with heavy multitasking.", "Decent enough for web browsing and light, everyday tasks.", "Showing its age, but it's still hanging in there.", "Perfectly fine if you keep your tab count under control.", "Relying heavily on cloud processing, but it survives."];
+
+        const dTitles = ["Survival Mode", "Struggling Spec", "Potato Powered", "Time for Upgrade", "Chromebook Energy", "Sputtering Engine", "Life Support", "Dial-Up Vibes", "Barely Breathing", "Digital Dinosaur"];
+        const dNotes = ["Struggling legacy specs. Browsers might take a moment to breathe.", "Hardware bottlenecks detected. Be gentle with your tasks.", "Running purely on willpower and a prayer at this point.", "We recommend closing a few background apps... immediately.", "It technically works, but patience is required."];
+
+        const fTitles = ["Literal Toaster", "Smart Fridge", "Abacus", "E-Waste Tier", "Powered by a Hamster", "Digital Relic", "Paperweight", "Is this a Calculator?", "Carrier Pigeon", "Etch A Sketch"];
+        const fNotes = ["Severe hardware bottleneck. Please send help to your CPU.", "Did you build this out of spare microwave parts?", "The benchmark miraculously finished before the system crashed.", "Performance critical. An upgrade is highly recommended.", "We are genuinely surprised this page even rendered.", "Your ping is measured in business days."];
 
         const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
@@ -132,7 +413,9 @@
             pingSamples: [],
             mathScore: 0,
             cores: navigator.hardwareConcurrency || 2, 
-            ram: navigator.deviceMemory || 2
+            ram: navigator.deviceMemory || 2,
+            gpu: 'Unknown',
+            pixels: screen.width * screen.height
         };
 
         let isGradeFinalized = false;
@@ -141,37 +424,98 @@
         let pingTimeout;
         let latencyInterval;
 
-        window.updateMetric = function(id, val, type) {
+        document.querySelectorAll('.metric-box').forEach((box, index) => {
+            box.style.animationDelay = `${index * 0.08}s`;
+        });
+
+        window.updateMetric = function(id, val, passColor) {
             const el = document.getElementById(id);
             if (el) {
+                el.classList.remove('testing-anim');
                 el.textContent = val;
-                if (type === 'passfail') {
-                    el.style.color = val === 'PASS' ? 'var(--grade-s)' : 'var(--grade-d)';
-                }
+                if (passColor) el.style.color = passColor;
             }
         };
 
-        // --- 3. Implementation of Metrics ---
+        // --- 3. Hardware & Spec Tests ---
+        function runHardwareSpecTests() {
+            updateMetric('cores-value', systemState.cores, systemState.cores >= 8 ? 'var(--grade-s)' : (systemState.cores >= 4 ? 'var(--grade-b)' : 'var(--grade-d)'));
+            updateMetric('ram-value', systemState.ram + ' GB', systemState.ram >= 8 ? 'var(--grade-s)' : (systemState.ram >= 4 ? 'var(--grade-b)' : 'var(--grade-d)'));
+            updateMetric('res-value', `${screen.width}x${screen.height}`, systemState.pixels > 2000000 ? 'var(--grade-s)' : 'var(--grade-b)');
+            updateMetric('color-value', `${screen.colorDepth}-bit`, screen.colorDepth >= 24 ? 'var(--grade-s)' : 'var(--grade-d)');
 
-        // A. Load & Paint Metrics
-        function measurePaintAndLoadMetrics() {
-            try {
-                const paintObserver = new PerformanceObserver((list) => {
-                    for (const entry of list.getEntriesByName('first-contentful-paint')) {
-                        const val = Math.round(entry.startTime);
-                        const el = document.getElementById('fcp-value');
-                        if (el) {
-                            el.textContent = val + ' ms';
-                            el.style.color = val < 1000 ? 'var(--grade-s)' : (val < 2500 ? 'var(--grade-b)' : 'var(--grade-d)');
-                        }
-                    }
-                });
-                paintObserver.observe({ type: 'paint', buffered: true });
-            } catch (e) {
-                document.getElementById('fcp-value').textContent = 'N/A';
+            if (navigator.getBattery) {
+                navigator.getBattery().then(battery => {
+                    const level = Math.round(battery.level * 100);
+                    const charging = battery.charging ? ' (Plugged In)' : '';
+                    updateMetric('battery-value', `${level}%${charging}`, level > 50 ? 'var(--grade-s)' : 'var(--grade-c)');
+                }).catch(() => updateMetric('battery-value', 'Desktop / NA', 'var(--text-secondary)'));
+            } else {
+                updateMetric('battery-value', 'Unsupported API', 'var(--grade-d)');
             }
 
-            // Ensures page load waits until it is fully completed to capture total time
+            if (navigator.storage && navigator.storage.estimate) {
+                navigator.storage.estimate().then(estimate => {
+                    if (estimate.quota) {
+                        const gb = (estimate.quota / (1024 * 1024 * 1024)).toFixed(1);
+                        updateMetric('storage-value', `~${gb} GB Quota`, gb > 50 ? 'var(--grade-s)' : 'var(--grade-b)');
+                    } else {
+                        updateMetric('storage-value', 'Hidden', 'var(--text-secondary)');
+                    }
+                }).catch(() => updateMetric('storage-value', 'Error', 'var(--grade-d)'));
+            } else {
+                updateMetric('storage-value', 'Unsupported API', 'var(--grade-d)');
+            }
+
+            if (navigator.connection) {
+                const type = navigator.connection.effectiveType || 'Unknown';
+                const speed = navigator.connection.downlink ? `${navigator.connection.downlink} Mbps` : '';
+                updateMetric('conn-value', `${type.toUpperCase()} ${speed}`, type === '4g' ? 'var(--grade-s)' : 'var(--grade-c)');
+            } else {
+                updateMetric('conn-value', 'Unsupported API', 'var(--grade-d)');
+            }
+
+            const gpuEl = document.getElementById('gpu-value');
+            const texEl = document.getElementById('texture-value');
+            gpuEl.classList.remove('testing-anim');
+            texEl.classList.remove('testing-anim');
+            try {
+                const canvas = document.createElement('canvas');
+                const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+                if (gl) {
+                    const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+                    const renderer = debugInfo ? gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) : 'Generic WebGL';
+                    let cleanRenderer = renderer.replace('ANGLE (', '').replace('Direct3D11 vs_5_0 ps_5_0', '').split(',')[0].trim();
+                    if(cleanRenderer.endsWith(')')) cleanRenderer = cleanRenderer.slice(0, -1);
+                    
+                    systemState.gpu = cleanRenderer;
+                    gpuEl.textContent = cleanRenderer;
+                    gpuEl.title = renderer; 
+                    
+                    const maxTexture = gl.getParameter(gl.MAX_TEXTURE_SIZE);
+                    texEl.textContent = `${maxTexture} px`;
+                    texEl.style.color = maxTexture >= 8192 ? 'var(--grade-s)' : 'var(--grade-b)';
+
+                    if (cleanRenderer.includes('Apple') || cleanRenderer.includes('NVIDIA') || cleanRenderer.includes('AMD') || cleanRenderer.includes('Radeon') || cleanRenderer.includes('RTX') || cleanRenderer.includes('GTX')) {
+                        gpuEl.style.color = 'var(--grade-s)';
+                    } else {
+                        gpuEl.style.color = 'var(--grade-b)'; 
+                    }
+                } else {
+                    systemState.gpu = 'No WebGL';
+                    gpuEl.textContent = 'No WebGL';
+                    texEl.textContent = 'N/A';
+                    gpuEl.style.color = 'var(--grade-d)';
+                }
+            } catch(e) {
+                systemState.gpu = 'Error';
+                gpuEl.textContent = 'Error';
+                gpuEl.style.color = 'var(--grade-f)';
+            }
+        }
+
+        // --- 4. Speed & Dynamic Tests ---
+        function measurePaintAndLoadMetrics() {
             window.addEventListener('load', () => {
                 setTimeout(() => {
                     let val = 0;
@@ -182,75 +526,23 @@
                         const t = window.performance.timing;
                         val = t.loadEventEnd - t.navigationStart;
                     }
-
-                    const el = document.getElementById('load-value');
-                    if (el) {
-                        if (val > 0) {
-                            el.textContent = val + ' ms';
-                            el.style.color = val < 1000 ? 'var(--grade-s)' : (val < 3000 ? 'var(--grade-b)' : 'var(--grade-d)');
-                        } else {
-                            el.textContent = 'Error';
-                            el.style.color = 'var(--grade-d)';
-                        }
-                    }
+                    if (val > 0) updateMetric('load-value', val + ' ms', val < 1000 ? 'var(--grade-s)' : (val < 3000 ? 'var(--grade-b)' : 'var(--grade-d)'));
+                    else updateMetric('load-value', 'Error', 'var(--grade-d)');
                 }, 100); 
             });
         }
 
-        // B. Event Loop Latency
         function measureInteractionMetrics() {
             if(latencyInterval) clearInterval(latencyInterval);
             let lastTime = performance.now();
-            
             latencyInterval = setInterval(() => {
                 const now = performance.now();
                 const latency = Math.max(0, Math.round((now - lastTime) - 100)); 
-                
-                const el = document.getElementById('latency-value');
-                if (el) {
-                    el.textContent = latency + ' ms';
-                    el.style.color = latency <= 10 ? 'var(--grade-s)' : (latency <= 50 ? 'var(--grade-b)' : 'var(--grade-d)');
-                }
-                
-                // Clear the interval so it permanently freezes on the very first number it calculates
+                updateMetric('latency-value', latency + ' ms', latency <= 10 ? 'var(--grade-s)' : (latency <= 50 ? 'var(--grade-b)' : 'var(--grade-d)'));
                 clearInterval(latencyInterval); 
             }, 100);
         }
 
-        // C. System & GPU Info
-        function runGPUInfoTest() {
-            const gpuEl = document.getElementById('gpu-value');
-            try {
-                const canvas = document.createElement('canvas');
-                const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-                if (gl) {
-                    const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
-                    const renderer = debugInfo ? gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) : 'Generic WebGL';
-                    let cleanRenderer = renderer.replace('ANGLE (', '').replace('Direct3D11 vs_5_0 ps_5_0', '').split(',')[0].trim();
-                    if(cleanRenderer.endsWith(')')) cleanRenderer = cleanRenderer.slice(0, -1);
-                    
-                    gpuEl.textContent = cleanRenderer;
-                    gpuEl.title = renderer; 
-                    gpuEl.style.color = 'var(--grade-s)';
-                } else {
-                    gpuEl.textContent = 'No WebGL';
-                    gpuEl.style.color = 'var(--grade-d)';
-                }
-            } catch(e) {
-                gpuEl.textContent = 'Error';
-                gpuEl.style.color = 'var(--grade-f)';
-            }
-        }
-
-        function runSystemInfoTests() {
-            const resEl = document.getElementById('res-value');
-            if (resEl) {
-                resEl.textContent = `${screen.width}x${screen.height}`;
-                resEl.style.color = 'var(--grade-b)'; 
-            }
-        }
-
-        // --- 4. The Hardware & Performance Tests ---
         function runMathBenchmark() {
             const start = performance.now();
             let val = 0;
@@ -258,12 +550,7 @@
                 val += Math.sqrt(i) * Math.sin(i);
             }
             systemState.mathScore = performance.now() - start; 
-
-            const mathEl = document.getElementById('math-value');
-            if (mathEl) {
-                mathEl.textContent = Math.round(systemState.mathScore) + ' ms';
-                mathEl.style.color = systemState.mathScore < 30 ? 'var(--grade-s)' : (systemState.mathScore < 75 ? 'var(--grade-b)' : 'var(--grade-d)');
-            }
+            updateMetric('math-value', Math.round(systemState.mathScore) + ' ms', systemState.mathScore < 30 ? 'var(--grade-s)' : (systemState.mathScore < 75 ? 'var(--grade-b)' : 'var(--grade-d)'));
         }
 
         let lastFrameTime = performance.now();
@@ -275,14 +562,7 @@
                 systemState.currentFps = frameCount;
                 frameCount = 0;
                 lastFrameTime = now;
-                
-                const fpsEl = document.getElementById('fps-value');
-                if (fpsEl) {
-                    fpsEl.textContent = systemState.currentFps;
-                    if (systemState.currentFps >= 50) fpsEl.style.color = 'var(--grade-s)';
-                    else if (systemState.currentFps >= 30) fpsEl.style.color = 'var(--grade-b)';
-                    else fpsEl.style.color = 'var(--grade-d)';
-                }
+                updateMetric('fps-value', systemState.currentFps, systemState.currentFps >= 50 ? 'var(--grade-s)' : (systemState.currentFps >= 30 ? 'var(--grade-b)' : 'var(--grade-d)'));
             }
             requestAnimationFrame(measureFPS);
         }
@@ -296,15 +576,7 @@
             } catch (e) {
                 systemState.currentPing = 999; 
             }
-            
-            const pingEl = document.getElementById('ping-value');
-            if (pingEl) {
-                pingEl.textContent = systemState.currentPing + ' ms';
-                if (systemState.currentPing < 50) pingEl.style.color = 'var(--grade-s)';
-                else if (systemState.currentPing < 100) pingEl.style.color = 'var(--grade-b)';
-                else pingEl.style.color = 'var(--grade-d)';
-            }
-
+            updateMetric('ping-value', systemState.currentPing + ' ms', systemState.currentPing < 50 ? 'var(--grade-s)' : (systemState.currentPing < 100 ? 'var(--grade-b)' : 'var(--grade-d)'));
             pingTimeout = setTimeout(measurePing, 2000);
         }
 
@@ -313,29 +585,51 @@
             return arr.reduce((a, b) => a + b, 0) / arr.length;
         }
 
-        // --- 5. The Grader ---
+        // --- 5. The Grader (80% Specs, 20% Speed Algorithm) ---
         function updateGradeUI(percentage) {
             const circle = document.getElementById('grade-circle');
             const title = document.getElementById('grade-title');
             const note = document.getElementById('grade-note');
-            let grade, bg, titleText, noteText;
+            const exactScore = document.getElementById('exact-score');
+            
+            let grade, textColor, titleText, noteText;
 
-            if (percentage >= 95) { grade = 'S'; bg = 'var(--grade-s)'; titleText = pick(sTitles); noteText = pick(sNotes); }
-            else if (percentage >= 85) { grade = 'A'; bg = 'var(--grade-a)'; titleText = pick(aTitles); noteText = pick(aNotes); }
-            else if (percentage >= 70) { grade = 'B'; bg = 'var(--grade-b)'; titleText = pick(bTitles); noteText = pick(bNotes); }
-            else if (percentage >= 55) { grade = 'C'; bg = 'var(--grade-c)'; titleText = pick(cTitles); noteText = pick(cNotes); }
-            else if (percentage >= 40) { grade = 'D'; bg = 'var(--grade-d)'; titleText = pick(dTitles); noteText = pick(dNotes); }
-            else { grade = 'F'; bg = 'var(--grade-f)'; titleText = pick(fTitles); noteText = pick(fNotes); }
-
-            const avgFps = getAverage(systemState.fpsSamples);
-            if (avgFps < 15 && avgFps > 0) noteText = "It's a slideshow. Is your graphics card made of wood?";
+            // Updated Randomization Logic
+            if (percentage >= 90) { grade = 'S'; textColor = 'var(--grade-s)'; titleText = pick(sTitles); noteText = pick(sNotes); }
+            else if (percentage >= 75) { grade = 'A'; textColor = 'var(--grade-a)'; titleText = pick(aTitles); noteText = pick(aNotes); }
+            else if (percentage >= 60) { grade = 'B'; textColor = 'var(--grade-b)'; titleText = pick(bTitles); noteText = pick(bNotes); }
+            else if (percentage >= 45) { grade = 'C'; textColor = 'var(--grade-c)'; titleText = pick(cTitles); noteText = pick(cNotes); }
+            else if (percentage >= 30) { grade = 'D'; textColor = 'var(--grade-d)'; titleText = pick(dTitles); noteText = pick(dNotes); }
+            else { grade = 'F'; textColor = 'var(--grade-f)'; titleText = pick(fTitles); noteText = pick(fNotes); }
 
             if (circle) {
-                circle.textContent = grade;
-                circle.style.background = bg;
+                circle.classList.remove('calibrating');
+                circle.style.transform = "scale(0)"; 
+                setTimeout(() => {
+                    circle.textContent = grade;
+                    circle.style.color = textColor;
+                    circle.style.textShadow = `0 0 15px ${textColor}60`;
+                    circle.style.transform = "scale(1.1)";
+                    setTimeout(() => circle.style.transform = "scale(1)", 200);
+                }, 300);
             }
-            if (title) title.textContent = titleText;
-            if (note) note.textContent = noteText;
+            
+            if (title) {
+                title.style.opacity = 0;
+                setTimeout(() => { title.textContent = titleText; title.style.color = textColor; title.style.opacity = 1; }, 300);
+            }
+            if (note) {
+                note.style.opacity = 0;
+                setTimeout(() => { note.textContent = noteText; note.style.opacity = 1; }, 300);
+            }
+            if (exactScore) {
+                exactScore.style.opacity = 0;
+                setTimeout(() => { 
+                    exactScore.textContent = `Score: ${percentage} / 100`; 
+                    exactScore.style.color = textColor;
+                    exactScore.style.opacity = 1; 
+                }, 400);
+            }
             
             const retryBtn = document.getElementById('retry-btn');
             if (retryBtn) retryBtn.style.display = 'inline-block';
@@ -347,43 +641,54 @@
             clearInterval(sampleInterval);
             if (pingTimeout) clearTimeout(pingTimeout);
 
-            const avgFps = getAverage(systemState.fpsSamples);
-            const avgPing = getAverage(systemState.pingSamples);
-            
             let score = 0;
-            let maxScore = 0;
 
-            maxScore += 35;
-            if (avgFps >= 58) score += 35;
-            else if (avgFps >= 50) score += 25;
-            else if (avgFps >= 30) score += 15;
-            else if (avgFps >= 15) score += 5;
-
-            maxScore += 15;
-            if (avgPing > 0 && avgPing < 999) {
-                if (avgPing < 40) score += 15;
-                else if (avgPing < 80) score += 10;
-                else if (avgPing < 150) score += 5;
-            } else if (avgPing === 0) { score += 10; }
-
-            maxScore += 15;
-            if (systemState.cores >= 8) score += 15;
+            // --- 80% WEIGHT: FIXED HARDWARE SPECS (Max 80 pts) ---
+            if (systemState.cores >= 12) score += 25;
+            else if (systemState.cores >= 8) score += 20;
+            else if (systemState.cores >= 6) score += 15;
             else if (systemState.cores >= 4) score += 10;
-            else if (systemState.cores >= 2) score += 5;
+            else score += 5;
 
-            maxScore += 20;
-            if (systemState.mathScore < 30) score += 20;
-            else if (systemState.mathScore < 75) score += 15;
-            else if (systemState.mathScore < 150) score += 8;
-            else score += 2;
+            if (systemState.ram >= 16) score += 25;
+            else if (systemState.ram >= 8) score += 15;
+            else if (systemState.ram >= 4) score += 8;
+            else score += 4;
 
-            updateGradeUI((score / maxScore) * 100);
+            const g = systemState.gpu.toLowerCase();
+            if (g.includes('apple') || g.includes('nvidia') || g.includes('amd') || g.includes('radeon') || g.includes('rtx') || g.includes('gtx')) score += 20;
+            else if (g !== 'no webgl' && g !== 'error') score += 10; 
+            else score += 0;
+
+            if (systemState.pixels >= 3686400) score += 10; 
+            else if (systemState.pixels >= 2073600) score += 6; 
+            else score += 3;
+
+            // --- 20% WEIGHT: LIVE SPEED METRICS (Max 20 pts) ---
+            const avgFps = getAverage(systemState.fpsSamples);
+            if (avgFps >= 50) score += 8; 
+            else if (avgFps >= 30) score += 5;
+            else if (avgFps >= 15) score += 2;
+
+            const validPings = systemState.pingSamples.filter(p => p < 999);
+            const avgPing = getAverage(validPings);
+            if (validPings.length > 0) {
+                if (avgPing < 50) score += 5;
+                else if (avgPing < 100) score += 3;
+                else if (avgPing < 150) score += 1;
+            }
+
+            if (systemState.mathScore < 50) score += 7; 
+            else if (systemState.mathScore < 100) score += 4;
+            else if (systemState.mathScore < 150) score += 2;
+
+            updateGradeUI(score);
         }
 
         function startSampling() {
             sampleInterval = setInterval(() => {
                 if (systemState.currentFps > 0) systemState.fpsSamples.push(systemState.currentFps);
-                if (systemState.currentPing > 0 && systemState.currentPing < 999) systemState.pingSamples.push(systemState.currentPing);
+                if (systemState.currentPing > 0) systemState.pingSamples.push(systemState.currentPing);
             }, 500);
         }
 
@@ -397,39 +702,35 @@
             systemState.pingSamples = [];
             systemState.mathScore = 0;
 
-            document.getElementById('grade-circle').textContent = '...';
-            document.getElementById('grade-circle').style.background = 'var(--text-secondary)';
-            document.getElementById('grade-title').textContent = 'Calibrating System...';
-            document.getElementById('grade-note').textContent = 'Running Math, CPU, RAM, and FPS tests...';
+            const circle = document.getElementById('grade-circle');
+            circle.textContent = '...';
+            circle.style.color = 'var(--text-secondary)';
+            circle.style.textShadow = 'none';
+            circle.classList.add('calibrating');
+            
+            document.getElementById('grade-title').textContent = 'Analyzing Specs...';
+            document.getElementById('grade-title').style.color = 'var(--text)';
+            document.getElementById('grade-note').textContent = 'Evaluating Hardware (80%) and Speed (20%)...';
+            
+            const exactScore = document.getElementById('exact-score');
+            if (exactScore) { exactScore.style.opacity = 0; exactScore.textContent = '--/100'; }
+            
             document.getElementById('retry-btn').style.display = 'none';
             
             runMathBenchmark();
             startSampling();
-            benchmarkTimer = setTimeout(finalizeBenchmark, 10000);
+            benchmarkTimer = setTimeout(finalizeBenchmark, 6000); 
         }
 
-        // --- 6. Pass/Fail Checks ---
-        function runLocalStorageTest() {
-            try {
-                localStorage.setItem('__t', '1');
-                localStorage.removeItem('__t');
-                updateMetric('local-storage-status', 'PASS', 'passfail');
-            } catch (e) {
-                updateMetric('local-storage-status', 'FAIL', 'passfail');
-            }
-        }
-            
-        function runWasmSupportTest() {
-            if (typeof WebAssembly === 'object' && WebAssembly !== null) {
-                updateMetric('wasm-support-status', 'PASS', 'passfail');
-            } else {
-                updateMetric('wasm-support-status', 'FAIL', 'passfail');
-            }
-        }
-
-        // --- 7. Utility Modals ---
         function closeModal() {
-            document.getElementById('modal-overlay').classList.remove('active');
+            const modal = document.getElementById('modal-overlay');
+            modal.classList.remove('active');
+            
+            // Wait for the fade-out animation to finish before removing it from the flow
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 300);
+            
             document.onkeydown = null;
         }
 
@@ -437,32 +738,40 @@
             const modal = document.getElementById('modal-overlay');
             const mTitle = document.getElementById('modal-title');
             const mBody = document.getElementById('modal-body');
-            modal.classList.add('active');
+            
+            modal.style.display = 'flex';
+            setTimeout(() => modal.classList.add('active'), 10);
 
             if (type === 'keyboard') {
                 mTitle.textContent = "Keyboard Tester";
                 mBody.innerHTML = `
-                    <p>Press any key to see its code.</p>
+                    <p style="color: var(--text-secondary);">Press any key to see its code.</p>
                     <div class="test-display-area">
-                        <div id="key-display" class="big-text">...</div>
+                        <div id="key-display" class="big-text" style="animation: popIn 0.3s ease;">...</div>
                         <div id="code-display" class="med-text">Waiting for input</div>
                     </div>
+                    <button class="tool-btn" onclick="closeModal()">Close</button>
                 `;
                 document.onkeydown = function(e) {
                     if (e.key === 'Escape') { closeModal(); return; }
                     e.preventDefault();
-                    document.getElementById('key-display').textContent = e.key;
+                    const keyDisp = document.getElementById('key-display');
+                    keyDisp.textContent = e.key === " " ? "Space" : e.key;
+                    keyDisp.style.animation = 'none';
+                    keyDisp.offsetHeight; 
+                    keyDisp.style.animation = 'popIn 0.2s ease';
                     document.getElementById('code-display').textContent = `Code: ${e.code}`;
                 };
             } 
             else if (type === 'scroll') {
                 mTitle.textContent = "Scroll Speed Test";
                 mBody.innerHTML = `
-                    <p>Scroll inside the box below!</p>
-                    <div class="test-display-area"><div id="scroll-speed" class="big-text">0 px/s</div></div>
-                    <div id="scroll-track" style="height: 150px; overflow-y: scroll; border: 1px solid var(--text-secondary); border-radius: 6px;">
-                        <div style="height: 1000px; background: linear-gradient(var(--panel), var(--accent)); opacity: 0.2;"></div>
+                    <p style="color: var(--text-secondary);">Scroll inside the box below!</p>
+                    <div class="test-display-area" style="padding: 15px;"><div id="scroll-speed" class="big-text" style="font-size: 2rem;">0 px/s</div></div>
+                    <div id="scroll-track">
+                        <div style="height: 100000px; padding: 20px; color: var(--text-secondary); opacity: 0.5;">Scroll Down &darr;</div>
                     </div>
+                    <button class="tool-btn" style="margin-top: 20px;" onclick="closeModal()">Close</button>
                 `;
                 const track = document.getElementById('scroll-track');
                 let lastPos = track.scrollTop, lastTime = Date.now();
@@ -478,17 +787,17 @@
             else if (type === 'stress') {
                 mTitle.textContent = "CPU Stress Test";
                 mBody.innerHTML = `
-                    <p>Heavy calculations for 5 seconds.</p>
+                    <p style="color: var(--text-secondary);">Heavy calculations for 5 seconds.</p>
                     <div class="test-display-area">
                         <div id="modal-fps-display" class="big-text">-- FPS</div>
                         <div id="stress-status" class="med-text">Ready?</div>
                     </div>
                     <button id="stress-btn" class="tool-btn" onclick="runStressTest()">Start Stress Test</button>
+                    <button class="tool-btn" style="margin-left: 10px;" onclick="closeModal()">Close</button>
                 `;
             }
             else if (type === 'pageload') {
                 mTitle.textContent = "Page Load Diagnostics";
-                
                 let dns = 'N/A', dom = 'N/A', total = 'N/A';
                 const navEntry = performance.getEntriesByType('navigation')[0];
                 
@@ -496,70 +805,253 @@
                     dns = Math.round(navEntry.domainLookupEnd - navEntry.domainLookupStart) + ' ms';
                     dom = Math.round(navEntry.domInteractive - navEntry.startTime) + ' ms';
                     total = Math.round(navEntry.loadEventEnd - navEntry.startTime) + ' ms';
-                } else if (window.performance && window.performance.timing) {
-                    const t = window.performance.timing;
-                    dns = (t.domainLookupEnd - t.domainLookupStart) + ' ms';
-                    dom = (t.domInteractive - t.navigationStart) + ' ms';
-                    total = (t.loadEventEnd - t.navigationStart) + ' ms';
                 }
 
                 mBody.innerHTML = `
-                    <p>Detailed breakdown of how fast this page loaded for you.</p>
-                    <div class="metrics-grid" style="grid-template-columns: 1fr; gap: 10px; margin-bottom: 25px;">
-                        <div class="metric-box" style="padding: 10px;"><div class="metric-label">DNS Lookup Time</div><div class="metric-value">${dns}</div></div>
-                        <div class="metric-box" style="padding: 10px;"><div class="metric-label">DOM Interactive</div><div class="metric-value">${dom}</div></div>
-                        <div class="metric-box" style="padding: 10px;"><div class="metric-label">Total Load Time</div><div class="metric-value" style="color: var(--grade-s);">${total}</div></div>
+                    <p style="color: var(--text-secondary);">Detailed breakdown of how fast this page loaded.</p>
+                    <div class="metrics-grid" style="grid-template-columns: 1fr; gap: 15px; margin-bottom: 25px;">
+                        <div class="metric-box" style="padding: 15px; animation: none;"><div class="metric-label">DNS Lookup Time</div><div class="metric-value">${dns}</div></div>
+                        <div class="metric-box" style="padding: 15px; animation: none;"><div class="metric-label">DOM Interactive</div><div class="metric-value">${dom}</div></div>
+                        <div class="metric-box" style="padding: 15px; animation: none;"><div class="metric-label">Total Load Time</div><div class="metric-value" style="color: var(--grade-s);">${total}</div></div>
                     </div>
-                    <button class="tool-btn" onclick="closeModal()">Close Diagnostics</button>
+                    <button class="tool-btn" onclick="closeModal()">Close</button>
                 `;
             }
             else if (type === 'cps') {
                 window.resetCPS();
                 mTitle.textContent = "CPS Test (5s)";
                 mBody.innerHTML = `
-                    <div class="test-display-area" style="cursor:pointer; user-select: none;" id="click-area" onclick="countClick()">
-                        <div id="click-status" class="med-text">Click to Start!</div>
-                        <div id="click-count" class="big-text" style="font-size: 3rem;">0</div>
+                    <div class="test-display-area" 
+                         style="cursor:pointer; user-select: none; transition: transform 0.1s; min-height: 250px; display: flex; flex-direction: column; justify-content: center; align-items: center;" 
+                         id="click-area" 
+                         oncontextmenu="return false;" 
+                         onclick="countClick()" 
+                         onmousedown="this.style.transform='scale(0.95)'" 
+                         onmouseup="this.style.transform='scale(1)'" 
+                         onmouseleave="this.style.transform='scale(1)'">
+                        <div id="click-status" class="med-text">Click Here to Start!</div>
+                        <div id="click-count" class="big-text" style="font-size: 4.5rem; margin-top: 10px;">0</div>
                     </div>
-                    <button class="tool-btn" onclick="resetCPS()">Restart Test</button>
+                    <div style="margin-top: 20px;">
+                        <button class="tool-btn" onclick="resetCPS()">Reset</button>
+                        <button class="tool-btn" style="margin-left: 10px;" onclick="closeModal()">Close</button>
+                    </div>
                 `;
+            }
+            else if (type === 'reaction') {
+                mTitle.textContent = "Reaction Time Test";
+                mBody.innerHTML = `
+                    <div class="test-display-area" id="reaction-area" style="cursor:pointer; user-select: none; transition: none;" onmousedown="handleReactionClick()">
+                        <div id="reaction-status" class="med-text" style="font-weight: bold; margin-bottom: 5px; transition: none;">Click to Start</div>
+                        <div id="reaction-time" class="big-text" style="font-size: 3rem; transition: none;">0 ms</div>
+                    </div>
+                    <div style="margin-top: 20px;">
+                        <button class="tool-btn" onclick="resetReaction()">Reset</button>
+                        <button class="tool-btn" style="margin-left: 10px;" onclick="closeModal()">Close</button>
+                    </div>
+                `;
+                window.resetReaction();
+            }
+            else if (type === 'typing') {
+                mTitle.textContent = "Typing Speed Test";
+                mBody.innerHTML = `
+                    <p style="color: var(--text-secondary); margin-bottom: 20px;">Type the words below as fast as you can.</p>
+                    <div class="test-display-area" style="padding: 20px; text-align: left;">
+                        <div id="type-target" style="font-size: 1.4rem; font-weight: 500; margin-bottom: 20px; user-select: none; line-height: 1.6; color: var(--text-secondary); letter-spacing: 1px; overflow-wrap: break-word; word-break: break-word;"></div>
+                        
+                        <input type="text" id="type-input" style="width: 100%; text-align: center; font-size: 1.1rem;" placeholder="Start typing..." autocomplete="off" oninput="handleTyping()">
+                    </div>
+                    <div id="type-result" class="big-text" style="font-size: 2rem; margin-bottom: 20px;">-- WPM</div>
+                    <button class="tool-btn" onclick="resetTyping()">New Words</button>
+                    <button class="tool-btn" style="margin-left: 10px;" onclick="closeModal()">Close</button>
+                `;
+                window.resetTyping();
             }
         }
 
+        /* --- Tool Logics --- */
+        let reactionState = 'idle'; 
+        let reactionStartTime = 0;
+        let reactionTimeout;
+        
+        window.handleReactionClick = function() {
+            const area = document.getElementById('reaction-area');
+            const status = document.getElementById('reaction-status');
+            const timeEl = document.getElementById('reaction-time');
+            
+            if (reactionState === 'idle') {
+                reactionState = 'waiting';
+                area.style.background = 'var(--grade-d)';
+                status.textContent = "Wait for Green...";
+                status.style.color = '#fff';
+                timeEl.style.color = '#fff';
+                timeEl.textContent = "...";
+                
+                reactionTimeout = setTimeout(() => {
+                    reactionState = 'ready';
+                    area.style.background = 'var(--grade-s)';
+                    status.textContent = "CLICK NOW!";
+                    reactionStartTime = performance.now();
+                }, Math.random() * 3000 + 1000); 
+                
+            } else if (reactionState === 'waiting') {
+                clearTimeout(reactionTimeout);
+                reactionState = 'idle';
+                status.textContent = "Too early! Click to restart.";
+                area.style.background = 'var(--grade-c)';
+            } else if (reactionState === 'ready') {
+                const time = Math.round(performance.now() - reactionStartTime);
+                reactionState = 'done';
+                status.textContent = "Your Time:";
+                timeEl.textContent = time + " ms";
+                
+                area.style.background = 'var(--bg)';
+                timeEl.style.color = 'var(--accent)';
+                status.style.color = 'var(--text-secondary)';
+                
+                setTimeout(() => reactionState = 'idle', 500); 
+            } else if (reactionState === 'done') {
+                window.resetReaction();
+            }
+        };
+
+        window.resetReaction = function() {
+            clearTimeout(reactionTimeout);
+            reactionState = 'idle';
+            const area = document.getElementById('reaction-area');
+            if (area) {
+                area.style.background = 'var(--bg)';
+                document.getElementById('reaction-status').textContent = "Click to Start";
+                document.getElementById('reaction-status').style.color = 'var(--text-secondary)';
+                document.getElementById('reaction-time').textContent = "0 ms";
+                document.getElementById('reaction-time').style.color = 'var(--accent)';
+            }
+        };
+
+        let typeStartTime = 0;
+        let typeActive = false;
+        
+        window.handleTyping = function() {
+            const input = document.getElementById('type-input');
+            const targetEl = document.getElementById('type-target');
+            const result = document.getElementById('type-result');
+            
+            const target = window.currentTargetText;
+            const typed = input.value;
+            
+            // Start the timer on the first keystroke
+            if (!typeActive && typed.length > 0) {
+                typeActive = true;
+                typeStartTime = performance.now();
+            }
+
+            // Rebuild the target text display character by character
+            let formattedHTML = '';
+            for (let i = 0; i < target.length; i++) {
+                if (i < typed.length) {
+                    if (typed[i] === target[i]) {
+                        // Correct letter: Make it Green
+                        formattedHTML += `<span style="color: var(--grade-s);">${target[i]}</span>`;
+                    } else {
+                        // Incorrect letter: Make it Red & Underlined
+                        let charToDisplay = target[i] === ' ' ? '&nbsp;' : target[i];
+                        formattedHTML += `<span style="color: var(--grade-d); text-decoration: underline red; text-underline-offset: 4px; font-weight: bold;">${charToDisplay}</span>`;
+                    }
+                } else {
+                    // Not typed yet: Keep it default
+                    formattedHTML += target[i]; 
+                }
+            }
+            targetEl.innerHTML = formattedHTML;
+            
+            // Check for completion
+            if (typed === target) {
+                const timeTaken = (performance.now() - typeStartTime) / 1000 / 60; // Time in minutes
+                const words = target.split(' ').length;
+                const wpm = Math.round(words / timeTaken);
+                
+                result.textContent = wpm + " WPM";
+                result.style.color = 'var(--grade-s)';
+                input.disabled = true;
+                typeActive = false;
+            }
+        };
+
+        // Define the master list and the active "deck" outside the function so they don't erase on reset
+        window.allSentences = [
+            "The quick brown fox jumps over the lazy dog.",
+            "A journey of a thousand miles begins with a single step.",
+            "Life is what happens when you are busy making other plans.",
+            "Technology is best when it brings people together.",
+            "The early bird gets the worm, but the second mouse gets the cheese.",
+            "Success is not final, failure is not fatal: it is the courage to continue that counts.",
+            "Two things are infinite: the universe and human stupidity.",
+            "To be yourself in a world that is constantly trying to make you something else is a great accomplishment.",
+            "In three words I can sum up everything I have learned about life: it goes on.",
+            "The only way to do great work is to love what you do.",
+            "Believe you can and you are halfway there.",
+            "You miss one hundred percent of the shots you do not take.",
+            "It is during our darkest moments that we must focus to see the light.",
+            "Do not go where the path may lead, go instead where there is no path and leave a trail.",
+            "The future belongs to those who believe in the beauty of their dreams."
+        ];
+        window.availableSentences = []; // This acts as our current "deck"
+
+        window.resetTyping = function() {
+            typeActive = false;
+            
+            // If we've run out of sentences, shuffle the deck and start over!
+            if (window.availableSentences.length === 0) {
+                window.availableSentences = [...window.allSentences];
+            }
+            
+            // Pick a random index from the remaining available sentences
+            const randomIndex = Math.floor(Math.random() * window.availableSentences.length);
+            
+            // Remove that sentence from the available list AND set it as the current text
+            window.currentTargetText = window.availableSentences.splice(randomIndex, 1)[0];
+            
+            // Set the UI
+            const targetEl = document.getElementById('type-target');
+            if (targetEl) targetEl.textContent = window.currentTargetText;
+
+            const input = document.getElementById('type-input');
+            if (input) {
+                input.disabled = false;
+                input.value = '';
+                input.maxLength = window.currentTargetText.length; // Prevent typing past the end
+                document.getElementById('type-result').textContent = '-- WPM';
+                document.getElementById('type-result').style.color = 'var(--accent)';
+                setTimeout(() => input.focus(), 100);
+            }
+        };
         function runStressTest() {
             const btn = document.getElementById('stress-btn');
             const status = document.getElementById('stress-status');
             const fpsDisplay = document.getElementById('modal-fps-display');
             
-            // Disable Button State
-            if (btn) {
-                btn.disabled = true;
-                btn.textContent = "Running...";
-            }
-            if(status) status.textContent = "Stressing CPU...";
+            if (btn) { btn.disabled = true; btn.textContent = "Running..."; }
+            if(status) { status.textContent = "Stressing CPU..."; status.classList.add('testing-anim'); }
             
             const start = Date.now();
             const fpsSync = setInterval(() => { 
-                if(fpsDisplay) fpsDisplay.textContent = systemState.currentFps + " FPS"; 
+                if(fpsDisplay) {
+                    fpsDisplay.textContent = systemState.currentFps + " FPS"; 
+                    if(systemState.currentFps < 30) fpsDisplay.style.color = "var(--grade-d)";
+                }
             }, 100);
             
             function heavyLoad() {
                 if (Date.now() - start > 5000) {
-                    if(status) status.textContent = "Done!";
+                    if(status) { status.textContent = "Done!"; status.classList.remove('testing-anim'); }
+                    if(fpsDisplay) fpsDisplay.style.color = "var(--accent)";
                     clearInterval(fpsSync); 
-                    
-                    // Re-enable Button State
-                    if (btn) {
-                        btn.disabled = false;
-                        btn.textContent = "Run Again";
-                    }
+                    if (btn) { btn.disabled = false; btn.textContent = "Run Again"; }
                     return;
                 }
-                // Meaningless math loop to choke the main thread
                 let arr = []; 
                 for(let i=0; i<100000; i++) arr.push(Math.sqrt(Math.random() * i)); 
                 arr.sort();
-                
                 requestAnimationFrame(heavyLoad);
             }
             heavyLoad();
@@ -567,55 +1059,56 @@
 
         let clicks = 0, cpsActive = false, cpsTimeout;
         window.countClick = function() {
+            const countDisp = document.getElementById('click-count');
             if (!cpsActive && clicks === 0) {
                 cpsActive = true;
-                document.getElementById('click-status').textContent = "GO GO GO!";
+                document.getElementById('click-status').textContent = "Keep Clicking!";
+                document.getElementById('click-status').classList.add('testing-anim');
                 cpsTimeout = setTimeout(() => {
                     cpsActive = false;
-                    document.getElementById('click-status').textContent = `Speed: ${clicks / 5} CPS`;
+                    const status = document.getElementById('click-status');
+                    status.classList.remove('testing-anim');
+                    status.textContent = `Speed: ${clicks / 5} CPS`;
                     document.getElementById('click-area').onclick = null; 
                 }, 5000);
             }
             if (cpsActive) {
                 clicks++;
-                document.getElementById('click-count').textContent = clicks;
+                countDisp.textContent = clicks;
+                countDisp.style.animation = 'none';
+                countDisp.offsetHeight; 
+                countDisp.style.animation = 'popIn 0.15s ease';
             }
         }
+        
         window.resetCPS = function() {
             clearTimeout(cpsTimeout); clicks = 0; cpsActive = false;
             const ca = document.getElementById('click-area');
             if (ca) {
                 ca.onclick = window.countClick;
-                document.getElementById('click-status').textContent = "Click to Start!";
+                const status = document.getElementById('click-status');
+                status.classList.remove('testing-anim');
+                status.textContent = "Click Here to Start!";
                 document.getElementById('click-count').textContent = "0";
             }
         }
 
         // --- Init ---
         document.addEventListener('DOMContentLoaded', () => {
-            const coreEl = document.getElementById('cores-value');
-            if (coreEl) {
-                coreEl.textContent = systemState.cores;
-                coreEl.style.color = systemState.cores >= 8 ? 'var(--grade-s)' : (systemState.cores >= 4 ? 'var(--grade-b)' : 'var(--grade-d)');
-            }
-            
-            const ramEl = document.getElementById('ram-value');
-            if (ramEl) {
-                ramEl.textContent = systemState.ram + ' GB';
-                ramEl.style.color = systemState.ram >= 8 ? 'var(--grade-s)' : (systemState.ram >= 4 ? 'var(--grade-b)' : 'var(--grade-d)');
-            }
-
+            runHardwareSpecTests(); 
             measurePaintAndLoadMetrics();
             measureInteractionMetrics();
             measureFPS(); 
             measurePing(); 
-            
-            runLocalStorageTest();
-            runWasmSupportTest();
-            runGPUInfoTest();
-            runSystemInfoTests();
-            
             restartBenchmark();
+        
+            // Add click-off to close modal
+            document.getElementById('modal-overlay').addEventListener('click', function(e) {
+                // Only close if the user clicked the actual overlay background, not the content inside
+                if (e.target === this) {
+                    closeModal();
+                }
+            });
         });
     </script>
 </body>
