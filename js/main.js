@@ -1200,13 +1200,13 @@ const SURF_INFO_MESSAGE = "<b>Welcome to Surf Web!</b><br><br>Use the dropdown m
                 e('div', { className: 'settings-group-title', style: { width: '90%', maxWidth: '800px', marginTop: '20px' } }, 'Starlight Official'),
                 e('div', { className: 'menu-buttons', style: { marginTop: '10px' } },
                     e('button', { 
-                        onClick: () => openGame('pages/twilight'),
+                        onClick: () => showModal('Please use Nova Hub as this hub is down, sorry for the inconvenience'),//openGame('pages/twilight'),
                         style: { backgroundColor: 'var(--primary-color)', color: 'white' }
                     }, 
                         e('i', { className: 'fas fa-gamepad' }), 'Twilight Games'
                     ),
                     e('button', { onClick: () => openGame('pages/gamesearch') }, 
-                        e('i', { className: 'fas fa-gamepad' }), 'StarlightGG Hub'
+                        e('i', { className: 'fas fa-gamepad' }), 'Nova Hub'
                     )
                 ),
 
